@@ -1,0 +1,75 @@
+---
+import IconSearch from '../icons/IconSearch.astro';
+
+const upcomingMarkets = [
+	{ initials: 'SC', name: 'Schull Country Market', time: 'Sun · 11:00–14:00', badge: 'Tomorrow' },
+	{ initials: 'MF', name: 'Macroom Farmers', time: 'Tue · 10:00–13:00' },
+];
+
+const nearbyMarket = {
+	initials: 'DF',
+	name: 'Douglas Farmers Market',
+	schedule: 'every week on Saturday at 9',
+	area: 'Cork',
+	distance: '4.1 km',
+};
+---
+
+<div class="flex flex-[0_0_300px] justify-center">
+	<div class="h-130 w-72 rounded-t-[44px] bg-ink p-2.5 pb-0 shadow-phone">
+		<div class="relative h-full w-full overflow-hidden rounded-t-[36px] bg-[#F2F2F7] px-4 pt-6.5 pb-0">
+			<div class="mb-3.5 flex items-start justify-between">
+				<div class="font-display text-[22px] font-extrabold leading-none tracking-[-0.02em] text-black">MarketDay</div>
+				<div class="flex items-center gap-1 text-xs font-bold text-brand">
+					<div class="h-1.5 w-1.5 rounded-full bg-brand"></div>Cork City
+				</div>
+			</div>
+			<div class="mb-3.5 flex h-9.5 items-center gap-2 rounded-full bg-white px-3.5 shadow-[0_1px_4px_rgba(0,0,0,0.06)]">
+				<IconSearch class="h-3.25 w-3.25" />
+				<span class="text-xs text-[rgba(60,60,67,0.5)]">Search markets, vendors or produce</span>
+			</div>
+			<div class="mb-3.5 rounded-[20px] bg-brand p-4">
+				<div class="mb-1 font-display text-base leading-[1.15] font-bold text-white">Support local producers</div>
+				<div class="text-[11.5px] leading-[1.35] text-white/85">
+					Every pre-order goes straight to the stallholder — pay at the stall when you collect.
+				</div>
+				<div class="mt-3 inline-flex h-7 items-center rounded-full bg-white px-3.25 text-[11.5px] font-bold text-brand">
+					How it works
+				</div>
+			</div>
+			<div class="mb-2 text-sm font-bold text-black">Upcoming markets</div>
+			<div class="mb-3.5 flex gap-2">
+				{
+					upcomingMarkets.map((market) => (
+						<div class="flex-1 overflow-hidden rounded-2xl bg-white">
+							<div class="relative flex h-14.5 items-center justify-center bg-mint">
+								{market.badge && (
+									<span class="absolute top-1.5 right-1.5 flex h-4 items-center rounded-full bg-white px-1.5 text-[8px] font-bold text-forest">
+										{market.badge}
+									</span>
+								)}
+								<span class="text-xl font-extrabold text-forest">{market.initials}</span>
+							</div>
+							<div class="p-2">
+								<div class="text-[11px] leading-[1.2] font-bold text-black">{market.name}</div>
+								<div class="text-[9.5px] text-[rgba(60,60,67,0.55)]">{market.time}</div>
+							</div>
+						</div>
+					))
+				}
+			</div>
+			<div class="mb-2 text-sm font-bold text-black">Nearby markets</div>
+			<div class="flex items-center gap-2.5 rounded-2xl bg-white px-3 py-2.5 shadow-[0_2px_10px_rgba(0,0,0,0.05)]">
+				<div class="flex h-10.5 w-10.5 shrink-0 items-center justify-center rounded-xl bg-mint text-[15px] font-extrabold text-forest">
+					{nearbyMarket.initials}
+				</div>
+				<div class="min-w-0 flex-1">
+					<div class="text-[12.5px] font-bold text-black">{nearbyMarket.name}</div>
+					<div class="mb-0.75 text-[10.5px] text-[rgba(60,60,67,0.55)]">{nearbyMarket.schedule}</div>
+					<span class="rounded-full bg-brand/13 px-1.75 py-px text-[9.5px] font-semibold text-brand">{nearbyMarket.area}</span>
+				</div>
+				<span class="shrink-0 text-[11px] font-bold text-brand">{nearbyMarket.distance}</span>
+			</div>
+		</div>
+	</div>
+</div>

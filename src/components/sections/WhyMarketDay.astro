@@ -1,0 +1,27 @@
+---
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import FeatureCard from '../ui/FeatureCard.astro';
+import { features, heroFeature } from '../../data/home';
+---
+
+<div class="bg-sand">
+	<div class="mx-auto max-w-310 px-14 py-24">
+		<div class="mx-auto mb-13 max-w-155 text-center">
+			<SectionEyebrow>Why MarketDay</SectionEyebrow>
+			<h2 class="font-display text-[44px] leading-[1.02] font-bold tracking-[-0.02em] text-ink">
+				Better for you, better for the market
+			</h2>
+		</div>
+		<div class="grid grid-cols-[1.4fr_1fr_1fr] auto-rows-fr gap-5">
+			<div class="relative row-span-2 min-h-85 overflow-hidden rounded-3xl">
+				<img src={heroFeature.image} alt="" class="absolute inset-0 h-full w-full object-cover" />
+				<div class="absolute inset-0 bg-[linear-gradient(to_top,rgba(31,42,37,0.82),rgba(31,42,37,0.05)_60%)]"></div>
+				<div class="absolute inset-x-0 bottom-0 p-7">
+					<div class="mb-2 font-display text-2xl font-bold tracking-[-0.01em] text-white">{heroFeature.title}</div>
+					<div class="text-[15px] leading-[1.5] text-white/85">{heroFeature.description}</div>
+				</div>
+			</div>
+			{features.map((feature) => <FeatureCard {...feature} />)}
+		</div>
+	</div>
+</div>

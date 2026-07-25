@@ -1,0 +1,33 @@
+---
+import IconReceipt from '../icons/IconReceipt.astro';
+import IconSparkle from '../icons/IconSparkle.astro';
+import IconLeaf from '../icons/IconLeaf.astro';
+import IconClock from '../icons/IconClock.astro';
+import type { Feature } from '../../data/home';
+
+const featureIcons = {
+	receipt: IconReceipt,
+	sparkle: IconSparkle,
+	leaf: IconLeaf,
+	clock: IconClock,
+} as const;
+
+type Props = Feature;
+
+const { title, description, icon, accent } = Astro.props;
+const Icon = featureIcons[icon];
+const isClay = accent === 'clay';
+---
+
+<div class="rounded-3xl bg-white p-6.5 shadow-card">
+	<div
+		class:list={[
+			'mb-4 flex h-12 w-12 items-center justify-center rounded-[14px]',
+			isClay ? 'bg-clay/14' : 'bg-brand/13',
+		]}
+	>
+		<Icon class={`h-6 w-6 ${isClay ? 'text-clay' : 'text-brand'}`} strokeWidth={1.9} />
+	</div>
+	<div class="mb-1.75 font-display text-[19px] font-bold tracking-[-0.01em] text-ink">{title}</div>
+	<div class="text-sm leading-normal text-body">{description}</div>
+</div>

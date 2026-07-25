@@ -1,0 +1,37 @@
+---
+import IconAppleLogo from '../icons/IconAppleLogo.astro';
+import IconPlayLogo from '../icons/IconPlayLogo.astro';
+
+interface Props {
+	store: 'apple' | 'google';
+	theme?: 'light' | 'dark';
+	href: string;
+	class?: string;
+}
+
+const { store, theme = 'light', href, class: className } = Astro.props;
+
+const copy =
+	store === 'apple'
+		? { small: 'Download on the', big: 'App Store', label: 'Download on the App Store' }
+		: { small: 'Get it on', big: 'Google Play', label: 'Get it on Google Play' };
+
+const iconColor =
+	store === 'apple' ? (theme === 'light' ? 'text-ink' : 'text-white') : theme === 'light' ? 'text-brand' : 'text-brand-light';
+---
+
+<a
+	href={href}
+	aria-label={copy.label}
+	class:list={[
+		'flex items-center gap-2.75 rounded-[13px] px-5',
+		theme === 'light' ? 'h-13.5 bg-white' : 'h-14 bg-ink',
+		className,
+	]}
+>
+	{store === 'apple' ? <IconAppleLogo class={`h-5.5 w-5.5 ${iconColor}`} /> : <IconPlayLogo class={`h-5 w-5 ${iconColor}`} />}
+	<div class="flex flex-col text-left leading-[1.05]">
+		<span class:list={['text-[10px]', theme === 'light' ? 'text-ink/60' : 'text-white/75']}>{copy.small}</span>
+		<span class:list={['text-[17px] font-semibold', theme === 'light' ? 'text-ink' : 'text-white']}>{copy.big}</span>
+	</div>
+</a>

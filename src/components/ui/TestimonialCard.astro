@@ -1,0 +1,42 @@
+---
+import IconStar from '../icons/IconStar.astro';
+import IconQuote from '../icons/IconQuote.astro';
+import type { Testimonial } from '../../data/home';
+
+type Props = Testimonial;
+
+const { quote, name, role, initials, variant, avatarTone = 'mint' } = Astro.props;
+const isDark = variant === 'dark';
+
+const avatarClass = isDark
+	? 'bg-white text-forest'
+	: avatarTone === 'peach'
+		? 'bg-peach text-peach-ink'
+		: 'bg-mint text-forest';
+---
+
+<div class:list={['flex flex-col rounded-3xl p-7.5 shadow-card', isDark ? 'bg-brand' : 'bg-white']}>
+	{
+		isDark ? (
+			<IconQuote class="mb-4 h-7.5 w-7.5" />
+		) : (
+			<div class="mb-4.5 flex gap-0.75">
+				{Array.from({ length: 5 }).map(() => (
+					<IconStar class="h-4 w-4" />
+				))}
+			</div>
+		)
+	}
+	<p class:list={['mb-6 flex-1 text-[16.5px] leading-[1.55]', isDark ? 'text-white' : 'text-body-dark']}>
+		"{quote}"
+	</p>
+	<div class="flex items-center gap-3">
+		<div class:list={['flex h-10.5 w-10.5 shrink-0 items-center justify-center rounded-full text-[15px] font-bold', avatarClass]}>
+			{initials}
+		</div>
+		<div>
+			<div class:list={['text-[14.5px] font-semibold', isDark ? 'text-white' : 'text-ink']}>{name}</div>
+			<div class:list={['text-[13px]', isDark ? 'text-white/80' : 'text-muted']}>{role}</div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,17 @@
+---
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import TestimonialCard from '../ui/TestimonialCard.astro';
+import { testimonials } from '../../data/home';
+---
+
+<div class="mx-auto max-w-310 px-14 py-24">
+	<div class="mb-11 max-w-140">
+		<SectionEyebrow>Loved on both sides of the stall</SectionEyebrow>
+		<h2 class="font-display text-[44px] leading-[1.02] font-bold tracking-[-0.02em] text-ink">
+			Shoppers and vendors, in their words
+		</h2>
+	</div>
+	<div class="grid grid-cols-3 gap-5">
+		{testimonials.map((testimonial) => <TestimonialCard {...testimonial} />)}
+	</div>
+</div>

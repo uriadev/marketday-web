@@ -1,0 +1,16 @@
+---
+import IconCheck from '../icons/IconCheck.astro';
+
+interface Props {
+	label: string;
+}
+
+const { label } = Astro.props;
+---
+
+<div class="flex items-center gap-3">
+	<div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand">
+		<IconCheck class="h-3.25 w-3.25 text-white" />
+	</div>
+	<span class="text-[15.5px] text-white/90">{label}</span>
+</div>

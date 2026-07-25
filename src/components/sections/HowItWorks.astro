@@ -1,0 +1,23 @@
+---
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import StepCard from '../ui/StepCard.astro';
+import { steps } from '../../data/home';
+---
+
+<div id="how-it-works" class="mx-auto max-w-310 px-14 py-24">
+	<div class="mb-12 flex flex-wrap items-end justify-between gap-8">
+		<div class="max-w-140">
+			<SectionEyebrow>How it works</SectionEyebrow>
+			<h2 class="font-display text-[44px] leading-[1.02] font-bold tracking-[-0.02em] text-ink">
+				Four steps from craving to collection
+			</h2>
+		</div>
+		<p class="max-w-85 text-base leading-[1.6] text-body">
+			The whole loop takes about two minutes — and you never pay a booking fee or a penny more than
+			the stall price.
+		</p>
+	</div>
+	<div class="grid grid-cols-4 gap-5">
+		{steps.map((step) => <StepCard {...step} />)}
+	</div>
+</div>

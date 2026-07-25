@@ -1,0 +1,23 @@
+---
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import FaqItem from '../ui/FaqItem.astro';
+import { faqs } from '../../data/home';
+---
+
+<div class="bg-sand">
+	<div class="mx-auto flex max-w-310 flex-wrap items-start gap-14 px-14 py-24">
+		<div class="flex-[0_0_320px]">
+			<SectionEyebrow>FAQ</SectionEyebrow>
+			<h2 class="mb-4 font-display text-[40px] leading-[1.05] font-bold tracking-[-0.02em] text-ink">
+				Good questions, quick answers
+			</h2>
+			<p class="text-[15.5px] leading-[1.6] text-body">
+				Still stuck? Reach us in the app under Help &amp; support — we usually reply within a few hours
+				on market days.
+			</p>
+		</div>
+		<div class="flex flex-[1_1_480px] flex-col gap-3">
+			{faqs.map((faq) => <FaqItem {...faq} />)}
+		</div>
+	</div>
+</div>

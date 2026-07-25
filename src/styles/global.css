@@ -1,0 +1,37 @@
+@import 'tailwindcss';
+
+@theme {
+	--font-display: 'Bricolage Grotesque', sans-serif;
+	--font-sans: 'Hanken Grotesk', -apple-system, system-ui, sans-serif;
+	--font-mono: ui-monospace, Menlo, monospace;
+
+	--color-forest: #2f5a45;
+	--color-brand: #4ca67e;
+	--color-brand-light: #8fd3b0;
+	--color-mint: #d7ebe0;
+	--color-ink: #1f2a25;
+	--color-ink-soft: #16201b;
+	--color-cream: #faf6ef;
+	--color-sand: #f1eee4;
+	--color-gold: #e8a53d;
+	--color-amber: #e8a06b;
+	--color-clay: #d77a45;
+	--color-peach: #f3d9c4;
+	--color-peach-ink: #b85f2e;
+	--color-body: #4d4a42;
+	--color-body-dark: #2b3630;
+	--color-muted: #8a877e;
+
+	--shadow-card: 0 2px 14px rgba(31, 42, 37, 0.05);
+	--shadow-phone: 0 -10px 50px -10px rgba(0, 0, 0, 0.35);
+}
+
+@layer base {
+	body {
+		@apply bg-cream font-sans text-body;
+	}
+
+	a {
+		@apply text-[#2f6a4d] no-underline hover:text-[#3f8f68];
+	}
+}

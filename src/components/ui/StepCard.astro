@@ -1,0 +1,41 @@
+---
+import IconPin from '../icons/IconPin.astro';
+import IconBasket from '../icons/IconBasket.astro';
+import IconClock from '../icons/IconClock.astro';
+import IconBox from '../icons/IconBox.astro';
+import type { Step } from '../../data/home';
+
+const stepIcons = {
+	pin: IconPin,
+	basket: IconBasket,
+	clock: IconClock,
+	box: IconBox,
+} as const;
+
+type Props = Step;
+
+const { number, title, description, icon, variant } = Astro.props;
+const Icon = stepIcons[icon];
+const isDark = variant === 'dark';
+---
+
+<div class={`rounded-[22px] p-6.5 shadow-card ${isDark ? 'bg-ink' : 'bg-white'}`}>
+	<div
+		class:list={[
+			'mb-5 flex h-13 w-13 items-center justify-center rounded-[15px]',
+			isDark ? 'bg-clay' : 'bg-brand',
+		]}
+	>
+		<Icon class="h-6.5 w-6.5 text-white" />
+	</div>
+	<div class:list={['mb-2 font-mono text-xs font-bold', isDark ? 'text-amber' : 'text-brand']}>{number}</div>
+	<div
+		class:list={[
+			'mb-2 font-display text-xl font-bold tracking-[-0.01em]',
+			isDark ? 'text-white' : 'text-ink',
+		]}
+	>
+		{title}
+	</div>
+	<div class:list={['text-[14.5px] leading-[1.5]', isDark ? 'text-white/75' : 'text-body']}>{description}</div>
+</div>
