@@ -9,7 +9,7 @@ export const brand = {
 };
 
 export const primaryNavLinks: NavLink[] = [
-	{ label: 'Markets', href: '#' },
+	{ label: 'Markets', href: '#why-marketday' },
 	{ label: 'How it works', href: '#how-it-works' },
 	{ label: 'For vendors', href: '#for-vendors' },
 ];

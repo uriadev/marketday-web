@@ -27,11 +27,21 @@
 }
 
 @layer base {
+	html {
+		scroll-behavior: smooth;
+	}
+
 	body {
 		@apply bg-cream font-sans text-body;
 	}
 
 	a {
 		@apply text-[#2f6a4d] no-underline hover:text-[#3f8f68];
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
 	}
 }
