@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteNav from '../components/sections/SiteNav.astro';
+import PrivacyHero from '../components/sections/PrivacyHero.astro';
+import PrivacyBody from '../components/sections/PrivacyBody.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+---
+
+<Layout
+	title="Privacy Policy — MarketDay"
+	description="How MarketDay collects, uses, and protects your data across our app and website."
+>
+	<div class="w-full overflow-hidden">
+		<div class="mx-auto max-w-310">
+			<SiteNav variant="light" />
+		</div>
+		<PrivacyHero />
+		<PrivacyBody />
+		<SiteFooter />
+	</div>
+</Layout>

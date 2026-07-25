@@ -1,0 +1,62 @@
+---
+import { privacySections, privacyContact } from '../../data/privacy';
+---
+
+<div class="mx-auto flex max-w-310 flex-wrap items-start gap-10 px-5 pb-16 sm:px-8 lg:gap-14 lg:px-14 lg:pb-24">
+	<nav aria-label="Privacy policy sections" class="flex w-full flex-col gap-1 lg:sticky lg:top-10 lg:w-65 lg:flex-none">
+		{
+			privacySections.map((section) => (
+				<a href={`#${section.id}`} class="py-2 text-[14.5px] text-body">
+					{section.navLabel}
+				</a>
+			))
+		}
+	</nav>
+
+	<div class="flex min-w-0 flex-1 flex-col gap-11">
+		{
+			privacySections.map((section) =>
+				section.id === 'contact' ? (
+					<div id={section.id} class="flex flex-col gap-3.5 rounded-[22px] bg-sand p-8">
+						<h2 class="font-display text-[20px] font-bold tracking-[-0.01em] text-ink sm:text-[22px]">{section.title}</h2>
+						<p class="text-[15.5px] leading-[1.65] text-body">
+							Questions about this policy or your data? Reach our privacy team directly, or visit our <a href="/contact">Contact page</a>.
+						</p>
+						<div class="-mt-1.5 flex flex-col gap-0.5 text-[15px] text-ink">
+							<div><strong>Email:</strong> {privacyContact.email}</div>
+							<div><strong>Post:</strong> {privacyContact.postalAddress}</div>
+						</div>
+					</div>
+				) : (
+					<div id={section.id} class="flex flex-col gap-3.5">
+						<h2 class="font-display text-[22px] font-bold tracking-[-0.01em] text-ink sm:text-[26px]">{section.title}</h2>
+						{section.blocks.map((block) => {
+							if (block.kind === 'paragraph') {
+								return <p class="text-[16px] leading-[1.7] text-body">{block.text}</p>;
+							}
+							if (block.kind === 'paragraphWithLink') {
+								return (
+									<p class="text-[16px] leading-[1.7] text-body">
+										{block.before}
+										<a href={block.linkHref}>{block.linkText}</a>
+										{block.after}
+									</p>
+								);
+							}
+							return (
+								<ul class="flex list-none flex-col gap-1 text-[16px] leading-[1.75] text-body">
+									{block.items.map((item) => (
+										<li>
+											{item.lead && <strong class="text-ink">{item.lead} — </strong>}
+											{item.text}
+										</li>
+									))}
+								</ul>
+							);
+						})}
+					</div>
+				),
+			)
+		}
+	</div>
+</div>

@@ -41,13 +41,13 @@ export const footerColumns: FooterColumn[] = [
 		links: [
 			{ label: 'About', href: '#' },
 			{ label: 'Contact', href: '/contact' },
-			{ label: 'Privacy', href: '#' },
+			{ label: 'Privacy', href: '/privacy' },
 		],
 	},
 ];
 
 export const legalLinks: NavLink[] = [
 	{ label: 'Terms', href: '#' },
-	{ label: 'Privacy', href: '#' },
+	{ label: 'Privacy', href: '/privacy' },
 	{ label: 'Cookies', href: '#' },
 ];
