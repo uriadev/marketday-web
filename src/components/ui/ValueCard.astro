@@ -1,0 +1,31 @@
+---
+import IconLeaf from '../icons/IconLeaf.astro';
+import IconBag from '../icons/IconBag.astro';
+import IconCard from '../icons/IconCard.astro';
+import type { AboutValue } from '../../data/about';
+
+const valueIcons = {
+	leaf: IconLeaf,
+	bag: IconBag,
+	card: IconCard,
+} as const;
+
+type Props = AboutValue;
+
+const { icon, accent, title, description } = Astro.props;
+const Icon = valueIcons[icon];
+const isClay = accent === 'clay';
+---
+
+<div class="rounded-3xl bg-white p-7.5 shadow-card">
+	<div
+		class:list={[
+			'mb-4.5 flex h-12 w-12 items-center justify-center rounded-[14px]',
+			isClay ? 'bg-clay/14' : 'bg-brand/13',
+		]}
+	>
+		<Icon class={`h-6 w-6 ${isClay ? 'text-clay' : 'text-brand'}`} strokeWidth={1.9} />
+	</div>
+	<div class="mb-2 font-display text-xl font-bold tracking-[-0.01em] text-ink">{title}</div>
+	<div class="text-[15px] leading-[1.55] text-body">{description}</div>
+</div>

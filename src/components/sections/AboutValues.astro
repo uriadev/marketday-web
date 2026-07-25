@@ -1,0 +1,17 @@
+---
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import ValueCard from '../ui/ValueCard.astro';
+import { aboutValues } from '../../data/about';
+---
+
+<div class="mx-auto max-w-310 px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
+	<div class="mx-auto mb-13 max-w-155 text-center">
+		<SectionEyebrow>What we believe</SectionEyebrow>
+		<h2 class="font-display text-[32px] leading-[1.05] font-bold tracking-[-0.02em] text-ink sm:text-[36px] lg:text-[40px]">
+			The principles behind every feature
+		</h2>
+	</div>
+	<div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+		{aboutValues.map((value) => <ValueCard {...value} />)}
+	</div>
+</div>

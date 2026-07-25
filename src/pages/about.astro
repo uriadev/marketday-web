@@ -1,0 +1,27 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteNav from '../components/sections/SiteNav.astro';
+import AboutHero from '../components/sections/AboutHero.astro';
+import AboutStory from '../components/sections/AboutStory.astro';
+import AboutImpact from '../components/sections/AboutImpact.astro';
+import AboutValues from '../components/sections/AboutValues.astro';
+import AboutCta from '../components/sections/AboutCta.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+---
+
+<Layout
+	title="About — MarketDay"
+	description="Why MarketDay exists, how we started, and the principles behind every feature we build."
+>
+	<div class="w-full overflow-hidden">
+		<div class="mx-auto max-w-310">
+			<SiteNav variant="light" />
+		</div>
+		<AboutHero />
+		<AboutStory />
+		<AboutImpact />
+		<AboutValues />
+		<AboutCta />
+		<SiteFooter />
+	</div>
+</Layout>

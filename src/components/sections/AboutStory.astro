@@ -1,0 +1,26 @@
+---
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+
+const storyImage = '/assets/marketday/market-1.png';
+---
+
+<div class="mx-auto flex max-w-310 flex-wrap items-center gap-10 px-5 pb-16 sm:px-8 lg:gap-14 lg:px-14 lg:pb-24">
+	<div class="relative min-h-95 flex-[1_1_420px] overflow-hidden rounded-[28px]">
+		<img src={storyImage} alt="" class="absolute inset-0 h-full w-full object-cover" />
+	</div>
+	<div class="min-w-80 flex-[1_1_420px]">
+		<SectionEyebrow>Our story</SectionEyebrow>
+		<h2 class="mb-4.5 font-display text-[30px] leading-[1.08] font-bold tracking-[-0.02em] text-ink sm:text-[36px]">
+			A better handshake between stall and shopper
+		</h2>
+		<p class="mb-4 text-[16px] leading-[1.65] text-body">
+			MarketDay launched in Dublin in 2024, built with a handful of stallholders who were tired of
+			over-picking for a Saturday crowd that never quite showed up on time. The fix was simple: let people
+			reserve what they want before they arrive.
+		</p>
+		<p class="text-[16px] leading-[1.65] text-body">
+			Today we work with independent growers, bakers and producers across 40+ markets — no middlemen, no
+			marked-up prices, just a faster way to get good food into good hands.
+		</p>
+	</div>
+</div>
