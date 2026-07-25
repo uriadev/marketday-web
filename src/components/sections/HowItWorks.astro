@@ -4,11 +4,11 @@ import StepCard from '../ui/StepCard.astro';
 import { steps } from '../../data/home';
 ---
 
-<div id="how-it-works" class="mx-auto max-w-310 px-14 py-24">
+<div id="how-it-works" class="mx-auto max-w-310 px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
 	<div class="mb-12 flex flex-wrap items-end justify-between gap-8">
 		<div class="max-w-140">
 			<SectionEyebrow>How it works</SectionEyebrow>
-			<h2 class="font-display text-[44px] leading-[1.02] font-bold tracking-[-0.02em] text-ink">
+			<h2 class="font-display text-[32px] leading-[1.02] font-bold tracking-[-0.02em] text-ink sm:text-[38px] lg:text-[44px]">
 				Four steps from craving to collection
 			</h2>
 		</div>
@@ -17,7 +17,7 @@ import { steps } from '../../data/home';
 			the stall price.
 		</p>
 	</div>
-	<div class="grid grid-cols-4 gap-5">
+	<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-4">
 		{steps.map((step) => <StepCard {...step} />)}
 	</div>
 </div>

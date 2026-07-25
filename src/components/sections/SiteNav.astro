@@ -2,7 +2,7 @@
 import { brand, primaryNavLinks } from '../../data/site';
 ---
 
-<div class="relative flex items-center justify-between px-14 py-6.5">
+<div class="relative flex items-center justify-between px-5 py-6.5 sm:px-8 lg:px-14">
 	<a href="#" class="flex items-center gap-2.5">
 		<div class="flex h-8.5 w-8.5 items-center justify-center overflow-hidden rounded-[10px] bg-white">
 			<img src={brand.logo} alt={brand.name} class="h-6.5 w-6.5 object-contain" />
@@ -10,7 +10,7 @@ import { brand, primaryNavLinks } from '../../data/site';
 		<span class="font-display text-[21px] font-bold tracking-[-0.02em] text-white">{brand.name}</span>
 	</a>
 	<div class="flex items-center gap-8.5">
-		{primaryNavLinks.map((link) => <a href={link.href} class="text-[15px] font-medium text-white/80">{link.label}</a>)}
+		{primaryNavLinks.map((link) => <a href={link.href} class="hidden text-[15px] font-medium text-white/80 md:inline">{link.label}</a>)}
 		<a href="#download" class="flex h-11 items-center rounded-full bg-white px-5.5 text-[15px] font-semibold text-ink">
 			Get the app
 		</a>

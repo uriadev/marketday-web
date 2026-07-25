@@ -4,14 +4,14 @@ import TestimonialCard from '../ui/TestimonialCard.astro';
 import { testimonials } from '../../data/home';
 ---
 
-<div class="mx-auto max-w-310 px-14 py-24">
+<div class="mx-auto max-w-310 px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
 	<div class="mb-11 max-w-140">
 		<SectionEyebrow>Loved on both sides of the stall</SectionEyebrow>
-		<h2 class="font-display text-[44px] leading-[1.02] font-bold tracking-[-0.02em] text-ink">
+		<h2 class="font-display text-[32px] leading-[1.02] font-bold tracking-[-0.02em] text-ink sm:text-[38px] lg:text-[44px]">
 			Shoppers and vendors, in their words
 		</h2>
 	</div>
-	<div class="grid grid-cols-3 gap-5">
+	<div class="grid grid-cols-1 gap-5 md:grid-cols-3">
 		{testimonials.map((testimonial) => <TestimonialCard {...testimonial} />)}
 	</div>
 </div>

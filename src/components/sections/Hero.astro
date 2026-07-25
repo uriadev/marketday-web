@@ -7,21 +7,21 @@ import IconStar from '../icons/IconStar.astro';
 
 <div class="relative overflow-hidden bg-forest">
 	<div
-		class="absolute -top-35 -right-25 h-130 w-130 rounded-full bg-[radial-gradient(circle,rgba(76,166,126,0.55),rgba(76,166,126,0)_70%)]"
+		class="absolute -top-35 -right-25 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(76,166,126,0.55),rgba(76,166,126,0)_70%)] lg:h-130 lg:w-130"
 	>
 	</div>
 	<div class="mx-auto max-w-310">
 		<SiteNav />
-		<div class="relative flex flex-wrap items-end gap-10 px-14 pt-12 pb-0">
-			<div class="min-w-85 flex-[1_1_480px] pb-21">
+		<div class="relative flex flex-wrap items-end gap-10 px-5 pt-8 pb-0 sm:px-8 lg:px-14 lg:pt-12">
+			<div class="min-w-0 flex-[1_1_480px] pb-0 lg:min-w-85 lg:pb-21">
 				<div class="mb-5.5 inline-flex h-8 items-center gap-2 rounded-full bg-white/14 px-3.5">
 					<div class="h-1.75 w-1.75 rounded-full bg-gold"></div>
 					<span class="text-[13px] font-semibold text-white/92">Fresh from the stall, no queues</span>
 				</div>
-				<h1 class="mb-5 font-display text-[66px] font-bold leading-[0.98] tracking-[-0.03em] text-white">
-					Your market,<br />pre-ordered.
+				<h1 class="mb-5 font-display text-[40px] font-bold leading-[0.98] tracking-[-0.03em] text-white sm:text-[52px] lg:text-[66px]">
+					Your market,<br class="hidden sm:inline" />{' '}pre-ordered.
 				</h1>
-				<p class="mb-7.5 max-w-110 text-pretty text-[18px] leading-[1.55] text-white/82">
+				<p class="mb-7.5 max-w-110 text-pretty text-[16px] leading-[1.55] text-white/82 sm:text-[18px]">
 					Reserve produce from local stalls in two minutes, pick a collection time, and pay when
 					you arrive. All the good stuff, none of the waiting.
 				</p>
