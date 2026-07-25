@@ -1,5 +1,7 @@
 ---
 import { brand, footerColumns, legalLinks } from '../../data/site';
+
+const currentPath = Astro.url.pathname;
 ---
 
 <div class="bg-ink">
@@ -22,7 +24,7 @@ import { brand, footerColumns, legalLinks } from '../../data/site';
 						<div class="flex flex-col gap-3">
 							<span class="text-xs font-bold tracking-widest text-white/40 uppercase">{column.title}</span>
 							{column.links.map((link) => (
-								<a href={link.href} class="text-[14.5px] text-white/75">
+								<a href={link.href} class:list={['text-[14.5px]', link.href === currentPath ? 'text-white' : 'text-white/75']}>
 									{link.label}
 								</a>
 							))}

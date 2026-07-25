@@ -9,9 +9,9 @@ export const brand = {
 };
 
 export const primaryNavLinks: NavLink[] = [
-	{ label: 'Markets', href: '#why-marketday' },
-	{ label: 'How it works', href: '#how-it-works' },
-	{ label: 'For vendors', href: '#for-vendors' },
+	{ label: 'Markets', href: '/#why-marketday' },
+	{ label: 'How it works', href: '/#how-it-works' },
+	{ label: 'For vendors', href: '/#for-vendors' },
 ];
 
 export interface FooterColumn {
@@ -24,14 +24,14 @@ export const footerColumns: FooterColumn[] = [
 		title: 'Shop',
 		links: [
 			{ label: 'Find a market', href: '#' },
-			{ label: 'How it works', href: '#how-it-works' },
-			{ label: 'Get the app', href: '#download' },
+			{ label: 'How it works', href: '/#how-it-works' },
+			{ label: 'Get the app', href: '/#download' },
 		],
 	},
 	{
 		title: 'Vendors',
 		links: [
-			{ label: 'Sell with us', href: '#for-vendors' },
+			{ label: 'Sell with us', href: '/#for-vendors' },
 			{ label: 'Pricing', href: '#' },
 			{ label: 'Vendor help', href: '#' },
 		],
@@ -40,7 +40,7 @@ export const footerColumns: FooterColumn[] = [
 		title: 'Company',
 		links: [
 			{ label: 'About', href: '#' },
-			{ label: 'Contact', href: '#' },
+			{ label: 'Contact', href: '/contact' },
 			{ label: 'Privacy', href: '#' },
 		],
 	},

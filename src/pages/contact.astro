@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteNav from '../components/sections/SiteNav.astro';
+import ContactHero from '../components/sections/ContactHero.astro';
+import ContactGrid from '../components/sections/ContactGrid.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+---
+
+<Layout
+	title="Contact — MarketDay"
+	description="Get in touch with MarketDay — general enquiries, vendor support, or find our Dublin HQ."
+>
+	<div class="w-full overflow-hidden">
+		<div class="mx-auto max-w-310">
+			<SiteNav variant="light" />
+		</div>
+		<ContactHero />
+		<ContactGrid />
+		<SiteFooter />
+	</div>
+</Layout>
