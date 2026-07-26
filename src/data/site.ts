@@ -1,3 +1,5 @@
+import logo from '../assets/marketday/logo.png';
+
 export interface NavLink {
 	label: string;
 	href: string;
@@ -5,7 +7,7 @@ export interface NavLink {
 
 export const brand = {
 	name: 'MarketDay',
-	logo: '/assets/marketday/logo.png',
+	logo,
 };
 
 export const primaryNavLinks: NavLink[] = [

@@ -1,3 +1,5 @@
+import marketImage from '../assets/marketday/market-1.png';
+
 export type StepIcon = 'pin' | 'basket' | 'clock' | 'box';
 
 export interface Step {
@@ -53,7 +55,7 @@ export const heroFeature = {
 	title: 'Skip the queue entirely',
 	description:
 		'Walk up to a bagged, ready order at your chosen time. No standing around on a busy Saturday morning.',
-	image: '/assets/marketday/market-1.png',
+	image: marketImage,
 };
 
 export const features: Feature[] = [
