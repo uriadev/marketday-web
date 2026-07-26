@@ -1,0 +1,23 @@
+---
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import FaqItem from '../ui/FaqItem.astro';
+import { vendorHelpFaqs } from '../../data/vendor-help';
+---
+
+<div class="bg-sand">
+	<div class="mx-auto flex max-w-310 flex-wrap items-start gap-10 px-5 py-16 sm:px-8 lg:gap-14 lg:px-14 lg:py-24">
+		<div class="flex-[1_1_320px] lg:flex-[0_0_320px]">
+			<SectionEyebrow>Common questions</SectionEyebrow>
+			<h2 class="mb-4 font-display text-[30px] leading-[1.05] font-bold tracking-[-0.02em] text-ink sm:text-[36px] lg:text-[40px]">
+				Straight answers for stallholders
+			</h2>
+			<p class="text-[15.5px] leading-[1.6] text-body">
+				Can't find it here? Email <a href="mailto:vendors@marketday.app">vendors@marketday.app</a> or visit our{' '}
+				<a href="/contact">Contact page</a>.
+			</p>
+		</div>
+		<div class="flex flex-[1_1_480px] flex-col gap-3">
+			{vendorHelpFaqs.map((faq) => <FaqItem {...faq} />)}
+		</div>
+	</div>
+</div>

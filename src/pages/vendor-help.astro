@@ -1,0 +1,25 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteNav from '../components/sections/SiteNav.astro';
+import VendorHelpHero from '../components/sections/VendorHelpHero.astro';
+import VendorHelpTopics from '../components/sections/VendorHelpTopics.astro';
+import VendorHelpFaq from '../components/sections/VendorHelpFaq.astro';
+import VendorHelpCta from '../components/sections/VendorHelpCta.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+---
+
+<Layout
+	title="Vendor Help — MarketDay"
+	description="Answers for MarketDay stallholders — getting started, inventory, orders and queues, and payouts."
+>
+	<div class="w-full overflow-hidden">
+		<div class="mx-auto max-w-310">
+			<SiteNav variant="light" />
+		</div>
+		<VendorHelpHero />
+		<VendorHelpTopics />
+		<VendorHelpFaq />
+		<VendorHelpCta />
+		<SiteFooter />
+	</div>
+</Layout>

@@ -1,0 +1,21 @@
+---
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import IconSearch from '../icons/IconSearch.astro';
+---
+
+<div class="mx-auto max-w-310 px-5 pt-6 pb-10 text-center sm:px-8 lg:px-14 lg:pb-14">
+	<div class="flex justify-center">
+		<SectionEyebrow>Vendor help</SectionEyebrow>
+	</div>
+	<h1 class="mx-auto mb-6 max-w-160 font-display text-[34px] leading-[1.05] font-bold tracking-[-0.025em] text-ink sm:text-[42px] lg:text-[48px]">
+		How can we help your stall today?
+	</h1>
+	<div class="mx-auto flex h-14 max-w-130 items-center gap-2.5 rounded-full bg-white px-5.5 shadow-card">
+		<IconSearch class="h-4.25 w-4.25 shrink-0" />
+		<input
+			type="text"
+			placeholder="Search for payouts, inventory, markets..."
+			class="w-full border-none bg-transparent text-[15.5px] text-ink outline-none placeholder:text-muted"
+		/>
+	</div>
+</div>

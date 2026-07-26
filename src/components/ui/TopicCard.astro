@@ -1,0 +1,33 @@
+---
+import IconCard from '../icons/IconCard.astro';
+import IconBag from '../icons/IconBag.astro';
+import IconPin from '../icons/IconPin.astro';
+import IconClock from '../icons/IconClock.astro';
+import type { VendorHelpTopic } from '../../data/vendor-help';
+
+const topicIcons = {
+	card: IconCard,
+	bag: IconBag,
+	pin: IconPin,
+	clock: IconClock,
+} as const;
+
+type Props = VendorHelpTopic;
+
+const { icon, accent, title, description } = Astro.props;
+const Icon = topicIcons[icon];
+const isClay = accent === 'clay';
+---
+
+<div class="rounded-[22px] bg-white p-6.5 shadow-card">
+	<div
+		class:list={[
+			'mb-4 flex h-11.5 w-11.5 items-center justify-center rounded-[13px]',
+			isClay ? 'bg-clay/14' : 'bg-brand/13',
+		]}
+	>
+		<Icon class={`h-5.5 w-5.5 ${isClay ? 'text-clay' : 'text-brand'}`} strokeWidth={1.9} />
+	</div>
+	<div class="mb-1.5 font-display text-lg font-bold text-ink">{title}</div>
+	<div class="text-sm leading-normal text-body">{description}</div>
+</div>
