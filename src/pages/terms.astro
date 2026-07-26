@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteNav from '../components/sections/SiteNav.astro';
+import TermsHero from '../components/sections/TermsHero.astro';
+import TermsBody from '../components/sections/TermsBody.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+---
+
+<Layout
+	title="Terms of Service — MarketDay"
+	description="The terms that govern your use of the MarketDay app and website."
+>
+	<div class="w-full overflow-hidden">
+		<div class="mx-auto max-w-310">
+			<SiteNav variant="light" />
+		</div>
+		<TermsHero />
+		<TermsBody />
+		<SiteFooter />
+	</div>
+</Layout>

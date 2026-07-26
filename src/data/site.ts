@@ -49,7 +49,7 @@ export const footerColumns: FooterColumn[] = [
 ];
 
 export const legalLinks: NavLink[] = [
-	{ label: 'Terms', href: '#' },
+	{ label: 'Terms', href: '/terms' },
 	{ label: 'Privacy', href: '/privacy' },
 	{ label: 'Cookies', href: '#' },
 ];
