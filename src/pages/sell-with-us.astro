@@ -1,0 +1,23 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SellHero from '../components/sections/SellHero.astro';
+import SellReasons from '../components/sections/SellReasons.astro';
+import SellSteps from '../components/sections/SellSteps.astro';
+import SellTestimonial from '../components/sections/SellTestimonial.astro';
+import SellCta from '../components/sections/SellCta.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+---
+
+<Layout
+	title="Sell With Us — MarketDay"
+	description="Take pre-orders across every market you trade at, manage stock per stall, and get paid straight to your account. Free to join, live in a day."
+>
+	<div class="w-full overflow-hidden">
+		<SellHero />
+		<SellReasons />
+		<SellSteps />
+		<SellTestimonial />
+		<SellCta />
+		<SiteFooter />
+	</div>
+</Layout>

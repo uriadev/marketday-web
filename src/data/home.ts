@@ -39,7 +39,7 @@ export const steps: Step[] = [
 	},
 ];
 
-export type FeatureIcon = 'receipt' | 'sparkle' | 'leaf' | 'clock';
+export type FeatureIcon = 'receipt' | 'sparkle' | 'leaf' | 'clock' | 'box';
 export type FeatureAccent = 'brand' | 'clay';
 
 export interface Feature {

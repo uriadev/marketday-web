@@ -1,0 +1,42 @@
+---
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import { vendorSteps } from '../../data/sell-with-us';
+---
+
+<div class="bg-sand">
+	<div class="mx-auto max-w-310 px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
+		<div class="mb-12 max-w-140">
+			<SectionEyebrow>Getting started</SectionEyebrow>
+			<h2 class="font-display text-[32px] leading-[1.05] font-bold tracking-[-0.02em] text-ink sm:text-[36px] lg:text-[40px]">
+				Live at your stall in a day
+			</h2>
+		</div>
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
+			{
+				vendorSteps.map((step) => (
+					<div class:list={['rounded-[22px] p-6.5 shadow-card', step.variant === 'dark' ? 'bg-ink' : 'bg-white']}>
+						<div
+							class:list={[
+								'mb-2.5 font-mono text-xs font-bold',
+								step.variant === 'dark' ? 'text-amber' : 'text-brand',
+							]}
+						>
+							{step.number}
+						</div>
+						<div
+							class:list={[
+								'mb-2 font-display text-[19px] font-bold tracking-[-0.01em]',
+								step.variant === 'dark' ? 'text-white' : 'text-ink',
+							]}
+						>
+							{step.title}
+						</div>
+						<div class:list={['text-[14.5px] leading-[1.5]', step.variant === 'dark' ? 'text-white/75' : 'text-body']}>
+							{step.description}
+						</div>
+					</div>
+				))
+			}
+		</div>
+	</div>
+</div>

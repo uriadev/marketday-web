@@ -1,0 +1,36 @@
+---
+import IconQuote from '../icons/IconQuote.astro';
+import IconBasket from '../icons/IconBasket.astro';
+import { sellTestimonial } from '../../data/sell-with-us';
+---
+
+<div class="mx-auto max-w-310 px-5 py-16 sm:px-8 lg:px-14 lg:py-24">
+	<div class="flex flex-wrap items-center gap-10 rounded-[28px] bg-brand p-7 sm:p-10 lg:gap-14 lg:p-14">
+		<div class="min-w-0 flex-[1_1_420px]">
+			<IconQuote class="mb-5 h-8.5 w-8.5" />
+			<p class="mb-6 text-[22px] leading-[1.5] tracking-[-0.01em] text-white">"{sellTestimonial.quote}"</p>
+			<div class="flex items-center gap-3">
+				<div class="flex h-11.5 w-11.5 shrink-0 items-center justify-center rounded-full bg-white text-[15px] font-bold text-forest">
+					{sellTestimonial.initials}
+				</div>
+				<div>
+					<div class="text-[15px] font-semibold text-white">{sellTestimonial.name}</div>
+					<div class="text-[13.5px] text-white/80">{sellTestimonial.role}</div>
+				</div>
+			</div>
+		</div>
+		<div class="relative hidden h-65 min-w-60 flex-[0_0_300px] overflow-hidden rounded-[20px] bg-forest/35 lg:block">
+			<div
+				class="absolute -top-10 -left-10 h-40 w-40 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.25),rgba(255,255,255,0)_70%)]"
+			>
+			</div>
+			<div
+				class="absolute -right-12 -bottom-12 h-48 w-48 rounded-full bg-[radial-gradient(circle,rgba(232,165,61,0.35),rgba(232,165,61,0)_70%)]"
+			>
+			</div>
+			<div class="absolute inset-0 flex items-center justify-center">
+				<IconBasket class="h-20 w-20 text-white opacity-90" strokeWidth={1.4} />
+			</div>
+		</div>
+	</div>
+</div>

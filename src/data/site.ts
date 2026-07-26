@@ -11,7 +11,7 @@ export const brand = {
 export const primaryNavLinks: NavLink[] = [
 	{ label: 'Markets', href: '/#why-marketday' },
 	{ label: 'How it works', href: '/#how-it-works' },
-	{ label: 'For vendors', href: '/#for-vendors' },
+	{ label: 'For vendors', href: '/sell-with-us' },
 ];
 
 export interface FooterColumn {
@@ -31,7 +31,7 @@ export const footerColumns: FooterColumn[] = [
 	{
 		title: 'Vendors',
 		links: [
-			{ label: 'Sell with us', href: '/#for-vendors' },
+			{ label: 'Sell with us', href: '/sell-with-us' },
 			{ label: 'Pricing', href: '#' },
 			{ label: 'Vendor help', href: '#' },
 		],

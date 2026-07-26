@@ -1,0 +1,32 @@
+---
+import SiteNav from './SiteNav.astro';
+---
+
+<div class="relative overflow-hidden bg-forest">
+	<div
+		class="absolute -top-35 -right-25 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(76,166,126,0.55),rgba(76,166,126,0)_70%)] lg:h-130 lg:w-130"
+	>
+	</div>
+	<div class="mx-auto max-w-310">
+		<SiteNav />
+		<div class="relative max-w-175 px-5 pt-8 pb-16 sm:px-8 lg:px-14 lg:pb-24">
+			<div class="mb-5.5 inline-flex h-8 items-center gap-2 rounded-full bg-white/14 px-3.5">
+				<div class="h-1.75 w-1.75 rounded-full bg-gold"></div>
+				<span class="text-[13px] font-semibold text-white/92">For vendors</span>
+			</div>
+			<h1 class="mb-5 font-display text-[36px] font-bold leading-[1.0] tracking-[-0.03em] text-white sm:text-[46px] lg:text-[56px]">
+				Sell more, waste less, know your day before it starts
+			</h1>
+			<p class="mb-7.5 max-w-135 text-pretty text-[16px] leading-[1.55] text-white/82 sm:text-[18px]">
+				Take pre-orders across every market you trade at, manage stock per stall, and get paid straight
+				to your account. Free to join, live in a day.
+			</p>
+			<div class="flex flex-wrap items-center gap-4">
+				<a href="#" class="flex h-13.5 items-center rounded-full bg-brand px-6.5 text-base font-semibold text-white">
+					Start selling
+				</a>
+				<span class="text-[14.5px] text-white/70">No monthly fee · no setup cost</span>
+			</div>
+		</div>
+	</div>
+</div>
