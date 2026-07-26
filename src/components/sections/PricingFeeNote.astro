@@ -1,0 +1,46 @@
+---
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import { feeExample } from '../../data/pricing';
+---
+
+<div class="bg-sand">
+	<div class="mx-auto flex max-w-310 flex-wrap items-center gap-10 px-5 py-14 sm:px-8 lg:px-14 lg:py-24">
+		<div class="flex-[1_1_380px]">
+			<SectionEyebrow>How payouts work</SectionEyebrow>
+			<h2 class="mb-4 font-display text-[32px] leading-[1.1] font-bold tracking-[-0.02em] text-ink sm:text-[36px] lg:text-[40px]">
+				You keep 100% of the stall price
+			</h2>
+			<p class="text-[15.5px] leading-[1.65] text-body">
+				Shoppers pay you directly at the stall — cash or card, however you already collect. There's no
+				commission on that transaction. Standard and Pro fees only ever cover the software; a small
+				standard card-processing fee (2.6% + €0.20) applies only if a shopper prepays through the app,
+				which stays optional.
+			</p>
+		</div>
+		<div class="min-w-70 flex-[1_1_320px] rounded-[22px] bg-white p-7 shadow-card">
+			<div class="mb-4 text-[13px] font-semibold tracking-[0.06em] text-muted uppercase">{feeExample.label}</div>
+			{
+				feeExample.rows.map((row, i) => (
+					<div
+						class:list={[
+							'flex justify-between py-2.5',
+							i < feeExample.rows.length - 1 && 'border-b border-[#EFEAE0]',
+						]}
+					>
+						<span class:list={row.emphasis ? 'text-[15.5px] font-bold text-ink' : 'text-[15px] text-body'}>
+							{row.label}
+						</span>
+						<span
+							class:list={[
+								row.emphasis ? 'text-[15.5px] font-bold' : 'text-[15px] font-semibold',
+								row.highlight ? 'text-brand' : 'text-ink',
+							]}
+						>
+							{row.value}
+						</span>
+					</div>
+				))
+			}
+		</div>
+	</div>
+</div>

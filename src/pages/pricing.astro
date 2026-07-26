@@ -1,0 +1,25 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteNav from '../components/sections/SiteNav.astro';
+import PricingHero from '../components/sections/PricingHero.astro';
+import PricingPlans from '../components/sections/PricingPlans.astro';
+import PricingFeeNote from '../components/sections/PricingFeeNote.astro';
+import PricingCta from '../components/sections/PricingCta.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+---
+
+<Layout
+	title="Pricing — MarketDay"
+	description="MarketDay is free to join and free to use every market day. Upgrade to Pro for unlimited markets, analytics, and daily payouts."
+>
+	<div class="w-full overflow-hidden">
+		<div class="mx-auto max-w-310">
+			<SiteNav variant="light" />
+		</div>
+		<PricingHero />
+		<PricingPlans />
+		<PricingFeeNote />
+		<PricingCta />
+		<SiteFooter />
+	</div>
+</Layout>

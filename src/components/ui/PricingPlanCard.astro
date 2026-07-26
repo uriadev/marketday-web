@@ -1,0 +1,57 @@
+---
+import IconCheck from '../icons/IconCheck.astro';
+import type { PricingPlan } from '../../data/pricing';
+
+type Props = PricingPlan;
+
+const { name, subtitle, price, priceSuffix, badge, features, cta, variant } = Astro.props;
+const isDark = variant === 'dark';
+---
+
+<div
+	class:list={[
+		'relative flex flex-[1_1_380px] min-w-75 flex-col rounded-[28px] p-8 sm:p-10',
+		isDark ? 'bg-ink' : 'bg-white shadow-card',
+	]}
+>
+	{
+		badge && (
+			<div class="absolute top-8 right-8 flex h-6.5 items-center rounded-full bg-amber px-3 text-xs font-bold text-ink sm:top-10 sm:right-10">
+				{badge}
+			</div>
+		)
+	}
+	<div class:list={['mb-1.5 font-display text-[22px] font-bold', isDark ? 'text-white' : 'text-ink']}>{name}</div>
+	<div class:list={['mb-6 text-[15px]', isDark ? 'text-white/60' : 'text-muted']}>{subtitle}</div>
+	<div class="mb-7 flex items-baseline gap-2">
+		<span class:list={['font-display text-5xl font-bold tracking-[-0.02em]', isDark ? 'text-white' : 'text-ink']}>
+			{price}
+		</span>
+		<span class:list={['text-[15px]', isDark ? 'text-white/60' : 'text-muted']}>{priceSuffix}</span>
+	</div>
+	<div class="mb-8 flex flex-1 flex-col gap-3.5">
+		{
+			features.map((label) => (
+				<div class="flex items-center gap-3">
+					<div
+						class:list={[
+							'flex h-5.5 w-5.5 shrink-0 items-center justify-center rounded-full',
+							isDark ? 'bg-brand-light/25' : 'bg-brand/13',
+						]}
+					>
+						<IconCheck class={isDark ? 'h-3 w-3 text-brand-light' : 'h-3 w-3 text-brand'} strokeWidth={3.2} />
+					</div>
+					<span class:list={['text-[15px]', isDark ? 'text-white' : 'text-ink']}>{label}</span>
+				</div>
+			))
+		}
+	</div>
+	<div
+		class:list={[
+			'flex h-13 items-center justify-center rounded-full text-[15.5px] font-semibold',
+			isDark ? 'bg-brand text-white' : 'border-[1.5px] border-forest text-ink',
+		]}
+	>
+		{cta}
+	</div>
+</div>
