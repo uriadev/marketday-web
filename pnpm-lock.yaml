@@ -10,19 +10,22 @@ importers:
     dependencies:
       '@astrojs/vercel':
         specifier: ^11.0.3
-        version: 11.0.3(astro@7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0))
+        version: 11.0.3(astro@7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0))
       '@lucide/astro':
         specifier: ^1.26.0
-        version: 1.26.0(astro@7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0))
+        version: 1.26.0(astro@7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0))
       '@tailwindcss/vite':
         specifier: ^4.3.3
-        version: 4.3.3(vite@8.1.5(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
+        version: 4.3.3(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
       astro:
         specifier: ^7.1.3
-        version: 7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0)
+        version: 7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0)
+      nodemailer:
+        specifier: ^9.0.3
+        version: 9.0.3
       sharp:
         specifier: ^0.35.3
-        version: 0.35.3
+        version: 0.35.3(@types/node@26.1.1)
       tailwindcss:
         specifier: ^4.3.3
         version: 4.3.3
@@ -30,6 +33,9 @@ importers:
       '@astrojs/check':
         specifier: ^0.9.9
         version: 0.9.9(prettier@3.9.6)(typescript@5.9.3)
+      '@types/nodemailer':
+        specifier: ^8.0.1
+        version: 8.0.1
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -865,6 +871,12 @@ packages:
   '@types/nlcst@2.0.3':
     resolution: {integrity: sha512-vSYNSDe6Ix3q+6Z7ri9lyWqgGhJTmzRjZRqyq15N0Z/1/UnVsno9G/N40NBijoYx2seFDIl0+B2mgAb9mezUCA==}
 
+  '@types/node@26.1.1':
+    resolution: {integrity: sha512-nxAkRSVkN1Y0JC1W8ky/fTfkGsMmcrRsbx+3XoZE+rMOX71kLYTV7fLXpqud1GpbpP5TuffXFqfX7fH2GgZREw==}
+
+  '@types/nodemailer@8.0.1':
+    resolution: {integrity: sha512-PxpaInm8V1JQDd4j0ds5HfvWQk8JupS1C0Picb96QJsrrRDjBH+DlK7L4ZdNSqNULhiZRQHc40nLVShaGxXAMw==}
+
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
 
@@ -1627,6 +1639,10 @@ packages:
   node-mock-http@1.0.4:
     resolution: {integrity: sha512-8DY+kFsDkNXy1sJglUfuODx1/opAGJGyrTuFqEoN90oRc2Vk0ZbD4K2qmKXBBEhZQzdKHIVfEJpDU8Ak2NJEvQ==}
 
+  nodemailer@9.0.3:
+    resolution: {integrity: sha512-n+YP+NKwR5zRWa60k3GiQ6Q3B4KXCoAw40dAKeCtYn020iNN74aWK2liXIC3ZEATeGql7we3tE3t8QwhY0eskw==}
+    engines: {node: '>=6.0.0'}
+
   nopt@8.1.0:
     resolution: {integrity: sha512-ieGu42u/Qsa4TFktmaKEwM6MQH0pOWnaB3htzh0JRtx84+Mebc0cbZYN5bC+6WTZ4+77xrL9Pn5m7CV6VIkV7A==}
     engines: {node: ^18.17.0 || >=20.5.0}
@@ -1916,6 +1932,9 @@ packages:
 
   uncrypto@0.1.3:
     resolution: {integrity: sha512-Ql87qFHB3s/De2ClA9e0gsnS6zXG27SkTiSJwjCc9MebbfapQfuPzumMIUMi38ezPZVNFcHI9sUIepeQfw8J8Q==}
+
+  undici-types@8.3.0:
+    resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
 
   unified@11.0.5:
     resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
@@ -2365,14 +2384,14 @@ snapshots:
       is-docker: 4.0.0
       package-manager-detector: 1.8.0
 
-  '@astrojs/vercel@11.0.3(astro@7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0))':
+  '@astrojs/vercel@11.0.3(astro@7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0))':
     dependencies:
       '@astrojs/internal-helpers': 0.10.1
       '@vercel/analytics': 1.6.1
       '@vercel/functions': 3.7.6
       '@vercel/nft': 1.10.2
       '@vercel/routing-utils': 5.3.3
-      astro: 7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0)
+      astro: 7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0)
       esbuild: 0.28.1
       tinyglobby: 0.2.17
     transitivePeerDependencies:
@@ -2704,9 +2723,9 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@lucide/astro@1.26.0(astro@7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0))':
+  '@lucide/astro@1.26.0(astro@7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0))':
     dependencies:
-      astro: 7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0)
+      astro: 7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0)
 
   '@mapbox/node-pre-gyp@2.0.3':
     dependencies:
@@ -2897,12 +2916,12 @@ snapshots:
       '@tailwindcss/oxide-win32-arm64-msvc': 4.3.3
       '@tailwindcss/oxide-win32-x64-msvc': 4.3.3
 
-  '@tailwindcss/vite@4.3.3(vite@8.1.5(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))':
+  '@tailwindcss/vite@4.3.3(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))':
     dependencies:
       '@tailwindcss/node': 4.3.3
       '@tailwindcss/oxide': 4.3.3
       tailwindcss: 4.3.3
-      vite: 8.1.5(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)
+      vite: 8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)
 
   '@tybys/wasm-util@0.10.3':
     dependencies:
@@ -2926,6 +2945,14 @@ snapshots:
   '@types/nlcst@2.0.3':
     dependencies:
       '@types/unist': 3.0.3
+
+  '@types/node@26.1.1':
+    dependencies:
+      undici-types: 8.3.0
+
+  '@types/nodemailer@8.0.1':
+    dependencies:
+      '@types/node': 26.1.1
 
   '@types/unist@3.0.3': {}
 
@@ -3080,7 +3107,7 @@ snapshots:
 
   aria-query@5.3.2: {}
 
-  astro@7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0):
+  astro@7.1.3(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)(@types/node@26.1.1)(@vercel/functions@3.7.6)(jiti@2.7.0)(yaml@2.9.0):
     dependencies:
       '@astrojs/compiler-rs': 0.3.1(@emnapi/core@1.11.1)(@emnapi/runtime@1.11.2)
       '@astrojs/internal-helpers': 0.10.1
@@ -3130,13 +3157,13 @@ snapshots:
       ultrahtml: 1.7.0
       unifont: 0.7.4
       unstorage: 1.17.5(@vercel/functions@3.7.6)
-      vite: 8.1.5(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)
-      vitefu: 1.1.3(vite@8.1.5(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
+      vite: 8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)
+      vitefu: 1.1.3(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0))
       xxhash-wasm: 1.1.0
       yargs-parser: 22.0.0
       zod: 4.4.3
     optionalDependencies:
-      sharp: 0.35.3
+      sharp: 0.35.3(@types/node@26.1.1)
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -3718,6 +3745,8 @@ snapshots:
 
   node-mock-http@1.0.4: {}
 
+  nodemailer@9.0.3: {}
+
   nopt@8.1.0:
     dependencies:
       abbrev: 3.0.1
@@ -3887,7 +3916,7 @@ snapshots:
 
   semver@7.8.5: {}
 
-  sharp@0.35.3:
+  sharp@0.35.3(@types/node@26.1.1):
     dependencies:
       '@img/colour': 1.1.0
       detect-libc: 2.1.2
@@ -3918,6 +3947,7 @@ snapshots:
       '@img/sharp-win32-arm64': 0.35.3
       '@img/sharp-win32-ia32': 0.35.3
       '@img/sharp-win32-x64': 0.35.3
+      '@types/node': 26.1.1
 
   shebang-command@2.0.0:
     dependencies:
@@ -4019,6 +4049,8 @@ snapshots:
 
   uncrypto@0.1.3: {}
 
+  undici-types@8.3.0: {}
+
   unified@11.0.5:
     dependencies:
       '@types/unist': 3.0.3
@@ -4091,7 +4123,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vite@8.1.5(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0):
+  vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0):
     dependencies:
       lightningcss: 1.33.0
       picomatch: 4.0.5
@@ -4099,14 +4131,15 @@ snapshots:
       rolldown: 1.1.5
       tinyglobby: 0.2.17
     optionalDependencies:
+      '@types/node': 26.1.1
       esbuild: 0.28.1
       fsevents: 2.3.3
       jiti: 2.7.0
       yaml: 2.9.0
 
-  vitefu@1.1.3(vite@8.1.5(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)):
+  vitefu@1.1.3(vite@8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)):
     optionalDependencies:
-      vite: 8.1.5(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)
+      vite: 8.1.5(@types/node@26.1.1)(esbuild@0.28.1)(jiti@2.7.0)(yaml@2.9.0)
 
   volar-service-css@0.0.71(@volar/language-service@2.4.28):
     dependencies:

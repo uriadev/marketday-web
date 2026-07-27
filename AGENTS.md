@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-MarketDay marketing site — a single-page Astro + Tailwind CSS 4 landing page (no backend, no client-side framework islands, no tests). The entire site is composed on `src/pages/index.astro` from a stack of section components.
+MarketDay marketing site — an Astro + Tailwind CSS 4 marketing site (no client-side framework islands, no tests). Pages are composed in `src/pages/` from a stack of section components. Every page is prerendered; the only server-side code is the contact form action (see below), which the Vercel adapter deploys as a single function.
 
 ## Commands
 
@@ -12,6 +12,7 @@ Package manager is **pnpm** (see `pnpm-workspace.yaml`, `pnpm-lock.yaml`).
 
 ```
 pnpm install          # install dependencies
+cp .env.example .env   # local config (all values have defaults; see "Contact form")
 pnpm dev               # start dev server at localhost:4321
 pnpm build             # production build to ./dist/
 pnpm preview           # preview the production build locally
@@ -62,3 +63,34 @@ Components that render one of these arrays typically map an icon-name union (e.g
 **Fonts**: Google Fonts (`Bricolage Grotesque` for display/headings, `Hanken Grotesk` for body) are loaded via `<link>` tags in `Layout.astro` and mapped to `--font-display`/`--font-sans` in `global.css`.
 
 **Path conventions**: Imports are relative (no `@/`-style aliases configured in `tsconfig.json`).
+
+## Contact form
+
+The `/contact` form is the site's only server-side path. The page itself stays prerendered — Astro injects the `/_actions/*` endpoint as on-demand, so only that becomes a Vercel function.
+
+**Flow**: `sections/ContactGrid.astro` → `actions.contact.send(FormData)` → `src/actions/index.ts` → `src/lib/mail` → the shopper or vendor inbox, with `Reply-To` set to the sender.
+
+**Mail drivers** (`src/lib/mail/`, mirroring `backend/src/mail/`): `MAIL_DRIVER` selects `resend` (production, raw `fetch` to the REST API — no SDK), `smtp` (local Mailpit, via nodemailer), or `log` (prints, sends nothing — the default so an unconfigured checkout still runs).
+
+**Environment**: variables are declared in the `env.schema` block of `astro.config.mjs` and imported from `astro:env/server`, never `process.env`. Copy `.env.example` to `.env` to get started; every variable has a default.
+
+**Local testing with Mailpit** — reuses the API's container rather than running a second one:
+
+```
+cd ../backend && docker compose up -d mailpit   # SMTP 1025, web UI http://localhost:8025
+```
+
+Set `MAIL_DRIVER=smtp` in `.env`, submit the form, and read it at http://localhost:8025. Use `127.0.0.1`, not `localhost`: `localhost` can resolve to IPv6 `::1`, which Docker Desktop's port forwarding doesn't answer, so the SMTP connection hangs rather than failing.
+
+### Security invariants
+
+Changing any of these needs care — each one is load-bearing:
+
+- **Escape at the interpolation site.** `src/lib/mail/templates/` builds HTML by concatenation, so there is no framework auto-escaping. Every user-controlled value goes through `escapeHtml()` from `src/lib/security/text.ts`. If you add a template, keep that rule.
+- **Never put raw input in a header.** `sanitizeHeaderValue()` strips CR/LF, which is the payload for email header injection. `replyTo` is a bare address with no display name, so there is no RFC 2047 encoding question to get wrong.
+- **Normalise, then re-check.** `normalizeText()` strips control, zero-width, and bidi-override characters ("Trojan Source"). Length limits are enforced *before* normalisation, and required fields are re-checked *after* — otherwise input made entirely of invisible characters passes validation and arrives empty.
+- **Spam gates fail silently.** The honeypot, fill-time, and link-count checks return the same `{ ok: true }` a real submission gets, and log the reason server-side. Returning an error would just tell a bot what to change.
+- **Never echo input back to the browser.** Status messages are static strings set via `textContent`. Provider errors are logged and replaced with a generic message.
+- **`security.checkOrigin`** is pinned `true` in `astro.config.mjs`; it is what rejects cross-site POSTs to the action.
+
+Rate limiting (`src/lib/security/rate-limit.ts`) is per-IP and in-process, so it is best-effort across serverless instances. It caps abuse from one warm instance; the honeypot and timing checks are the real bot gates. Swap in Upstash/Vercel KV if an exact limit is ever needed.

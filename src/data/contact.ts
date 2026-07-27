@@ -54,3 +54,22 @@ export const contactRoles: ContactRoleCopy[] = [
 		messagePlaceholder: 'Tell us about your stall and what you need...',
 	},
 ];
+
+/**
+ * Shared by the form markup (`minlength`/`maxlength`) and the server-side schema in
+ * src/actions/index.ts, so the two can't drift. The browser check is UX; the server check
+ * is the one that counts.
+ */
+export const contactFormLimits = {
+	name: { min: 2, max: 80 },
+	email: { max: 254 },
+	subject: { min: 3, max: 150 },
+	message: { min: 20, max: 4000 },
+} as const;
+
+/**
+ * Name of the honeypot field. Plausible enough that a form-filling bot wants to complete it,
+ * and not a field a real person can see or tab into.
+ */
+export const contactHoneypotField = 'website';
+

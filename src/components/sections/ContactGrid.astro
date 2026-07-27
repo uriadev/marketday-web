@@ -1,6 +1,16 @@
 ---
 import ContactInfoCard from '../ui/ContactInfoCard.astro';
-import { contactCards, contactHq, contactRoles } from '../../data/contact';
+import {
+	contactCards,
+	contactFormLimits,
+	contactHoneypotField,
+	contactHq,
+	contactRoles,
+} from '../../data/contact';
+
+const fieldClass =
+	'h-12 w-full rounded-xl border border-[#E4E0D5] bg-cream px-4 text-[15px] text-ink placeholder:text-[#a9a598] focus:border-brand focus:outline-none aria-[invalid=true]:border-danger';
+const errorClass = 'mt-1.5 hidden text-[13px] text-danger';
 ---
 
 <div class="mx-auto max-w-310 px-5 pb-16 sm:px-8 lg:px-14 lg:pb-24">
@@ -21,7 +31,7 @@ import { contactCards, contactHq, contactRoles } from '../../data/contact';
 		</div>
 
 		<div class="min-w-0 flex-[1_1_480px] rounded-[28px] bg-white p-6 shadow-card sm:p-10">
-			<form data-contact-form>
+			<form data-contact-form novalidate>
 				<div class="mb-2.5 text-[13px] font-semibold text-ink">I am a...</div>
 				<div class="mb-6.5 flex gap-2.5" data-role-tabs>
 					{
@@ -42,6 +52,28 @@ import { contactCards, contactHq, contactRoles } from '../../data/contact';
 						))
 					}
 				</div>
+				<input type="hidden" name="role" value={contactRoles[0].role} data-role-input />
+
+				{/*
+					Honeypot: positioned off-screen rather than `display:none`, since the more
+					capable form-fillers skip hidden inputs but still complete positioned ones.
+					`aria-hidden` and `tabindex="-1"` keep it away from assistive tech and the tab
+					order, so a real person can neither see nor reach it.
+				*/}
+				<div class="absolute left-[-9999px] h-px w-px overflow-hidden" aria-hidden="true">
+					<label for="contact-website">Website</label>
+					<input
+						id="contact-website"
+						name={contactHoneypotField}
+						type="text"
+						tabindex="-1"
+						autocomplete="off"
+					/>
+				</div>
+
+				{/* Stamped by the script below, so a CDN-cached page never ships a fixed timestamp. */}
+				<input type="hidden" name="renderedAt" value="" data-rendered-at />
+
 				<div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
 					<div>
 						<label for="contact-name" class="mb-2 block text-[13px] font-semibold text-ink">Name</label>
@@ -49,9 +81,15 @@ import { contactCards, contactHq, contactRoles } from '../../data/contact';
 							id="contact-name"
 							name="name"
 							type="text"
+							required
+							autocomplete="name"
+							minlength={contactFormLimits.name.min}
+							maxlength={contactFormLimits.name.max}
+							aria-describedby="contact-name-error"
 							placeholder="Your name"
-							class="h-12 w-full rounded-xl border border-[#E4E0D5] bg-cream px-4 text-[15px] text-ink placeholder:text-[#a9a598]"
+							class={fieldClass}
 						/>
+						<p id="contact-name-error" data-error-for="name" class={errorClass}></p>
 					</div>
 					<div>
 						<label for="contact-email" class="mb-2 block text-[13px] font-semibold text-ink">Email</label>
@@ -59,9 +97,14 @@ import { contactCards, contactHq, contactRoles } from '../../data/contact';
 							id="contact-email"
 							name="email"
 							type="email"
+							required
+							autocomplete="email"
+							maxlength={contactFormLimits.email.max}
+							aria-describedby="contact-email-error"
 							placeholder="you@example.com"
-							class="h-12 w-full rounded-xl border border-[#E4E0D5] bg-cream px-4 text-[15px] text-ink placeholder:text-[#a9a598]"
+							class={fieldClass}
 						/>
+						<p id="contact-email-error" data-error-for="email" class={errorClass}></p>
 					</div>
 				</div>
 				<div class="mb-4">
@@ -70,10 +113,15 @@ import { contactCards, contactHq, contactRoles } from '../../data/contact';
 						id="contact-subject"
 						name="subject"
 						type="text"
+						required
+						minlength={contactFormLimits.subject.min}
+						maxlength={contactFormLimits.subject.max}
 						data-subject
+						aria-describedby="contact-subject-error"
 						placeholder={contactRoles[0].subjectPlaceholder}
-						class="h-12 w-full rounded-xl border border-[#E4E0D5] bg-cream px-4 text-[15px] text-ink placeholder:text-[#a9a598]"
+						class={fieldClass}
 					/>
+					<p id="contact-subject-error" data-error-for="subject" class={errorClass}></p>
 				</div>
 				<div class="mb-6.5">
 					<label for="contact-message" class="mb-2 block text-[13px] font-semibold text-ink">Message</label>
@@ -81,45 +129,158 @@ import { contactCards, contactHq, contactRoles } from '../../data/contact';
 						id="contact-message"
 						name="message"
 						rows="5"
+						required
+						minlength={contactFormLimits.message.min}
+						maxlength={contactFormLimits.message.max}
 						data-message
+						aria-describedby="contact-message-error"
 						placeholder={contactRoles[0].messagePlaceholder}
-						class="w-full resize-y rounded-xl border border-[#E4E0D5] bg-cream px-4 py-3.5 text-[15px] text-ink placeholder:text-[#a9a598]"
+						class="w-full resize-y rounded-xl border border-[#E4E0D5] bg-cream px-4 py-3.5 text-[15px] text-ink placeholder:text-[#a9a598] focus:border-brand focus:outline-none aria-[invalid=true]:border-danger"
 					></textarea>
+					<p id="contact-message-error" data-error-for="message" class={errorClass}></p>
 				</div>
-				<button type="submit" class="flex h-13 w-full items-center justify-center rounded-full bg-brand text-base font-semibold text-white">
-					Send message
+
+				<button
+					type="submit"
+					data-submit
+					class="flex h-13 w-full items-center justify-center rounded-full bg-brand text-base font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+				>
+					<span data-submit-label>Send message</span>
 				</button>
+
+				<p
+					data-form-status
+					role="status"
+					aria-live="polite"
+					class="mt-4 hidden rounded-xl px-4 py-3 text-[14.5px]"
+				>
+				</p>
+
+				<noscript>
+					<p class="mt-4 rounded-xl bg-cream px-4 py-3 text-[14.5px] text-body">
+						This form needs JavaScript. You can email us directly at{' '}
+						<a href={`mailto:${contactCards[0].detail}`}>{contactCards[0].detail}</a>.
+					</p>
+				</noscript>
 			</form>
 		</div>
 	</div>
 </div>
 
 <script>
-	const form = document.querySelector('[data-contact-form]');
-	const tabs = document.querySelectorAll('[data-role-tabs] .role-tab');
-	const subjectInput = document.querySelector('[data-subject]');
-	const messageInput = document.querySelector('[data-message]');
+	import { actions, isInputError } from 'astro:actions';
 
-	tabs.forEach((tab) => {
-		tab.addEventListener('click', () => {
-			tabs.forEach((t) => {
-				const active = t === tab;
-				t.classList.toggle('bg-brand', active);
-				t.classList.toggle('text-white', active);
-				t.classList.toggle('bg-cream', !active);
-				t.classList.toggle('text-body', !active);
-				t.setAttribute('aria-pressed', String(active));
+	const form = document.querySelector<HTMLFormElement>('[data-contact-form]');
+
+	if (form) {
+		const tabs = form.querySelectorAll<HTMLButtonElement>('[data-role-tabs] .role-tab');
+		const roleInput = form.querySelector<HTMLInputElement>('[data-role-input]');
+		const subjectInput = form.querySelector<HTMLInputElement>('[data-subject]');
+		const messageInput = form.querySelector<HTMLTextAreaElement>('[data-message]');
+		const renderedAtInput = form.querySelector<HTMLInputElement>('[data-rendered-at]');
+		const submitButton = form.querySelector<HTMLButtonElement>('[data-submit]');
+		const submitLabel = form.querySelector<HTMLElement>('[data-submit-label]');
+		const status = form.querySelector<HTMLElement>('[data-form-status]');
+
+		// Records when the page actually reached a browser. The server treats an implausibly
+		// fast submission as a bot; see MIN_FILL_MS in src/actions/index.ts.
+		if (renderedAtInput) renderedAtInput.value = String(Date.now());
+
+		tabs.forEach((tab) => {
+			tab.addEventListener('click', () => {
+				tabs.forEach((t) => {
+					const active = t === tab;
+					t.classList.toggle('bg-brand', active);
+					t.classList.toggle('text-white', active);
+					t.classList.toggle('bg-cream', !active);
+					t.classList.toggle('text-body', !active);
+					t.setAttribute('aria-pressed', String(active));
+				});
+				if (roleInput) roleInput.value = tab.getAttribute('data-role') ?? 'shopper';
+				if (subjectInput) subjectInput.placeholder = tab.getAttribute('data-subject-placeholder') ?? '';
+				if (messageInput) messageInput.placeholder = tab.getAttribute('data-message-placeholder') ?? '';
 			});
-			if (subjectInput instanceof HTMLInputElement) {
-				subjectInput.placeholder = tab.getAttribute('data-subject-placeholder') ?? '';
+		});
+
+		const setStatus = (message: string, tone: 'success' | 'error') => {
+			if (!status) return;
+			// textContent, never innerHTML — the message is ours, but this keeps it that way
+			// even if a future error path starts echoing server text.
+			status.textContent = message;
+			status.classList.remove('hidden', 'bg-mint', 'text-forest', 'bg-danger/10', 'text-danger');
+			status.classList.add(...(tone === 'success' ? ['bg-mint', 'text-forest'] : ['bg-danger/10', 'text-danger']));
+		};
+
+		const clearStatus = () => {
+			status?.classList.add('hidden');
+			form.querySelectorAll<HTMLElement>('[data-error-for]').forEach((el) => {
+				el.textContent = '';
+				el.classList.add('hidden');
+			});
+			form.querySelectorAll<HTMLElement>('[aria-invalid]').forEach((el) => {
+				el.removeAttribute('aria-invalid');
+			});
+		};
+
+		const showFieldErrors = (fields: Record<string, string[] | undefined>) => {
+			let firstInvalid: HTMLElement | null = null;
+			for (const [field, messages] of Object.entries(fields)) {
+				if (!messages?.length) continue;
+				const slot = form.querySelector<HTMLElement>(`[data-error-for="${field}"]`);
+				const input = form.querySelector<HTMLElement>(`[name="${field}"]`);
+				if (slot) {
+					slot.textContent = messages.join(' ');
+					slot.classList.remove('hidden');
+				}
+				if (input) {
+					input.setAttribute('aria-invalid', 'true');
+					firstInvalid ??= input;
+				}
 			}
-			if (messageInput instanceof HTMLTextAreaElement) {
-				messageInput.placeholder = tab.getAttribute('data-message-placeholder') ?? '';
+			firstInvalid?.focus();
+		};
+
+		const setBusy = (busy: boolean) => {
+			if (submitButton) submitButton.disabled = busy;
+			if (submitLabel) submitLabel.textContent = busy ? 'Sending...' : 'Send message';
+		};
+
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			if (submitButton?.disabled) return;
+
+			clearStatus();
+
+			// The form carries `novalidate` so this fires at a moment we choose, after the
+			// previous round of errors has been cleared.
+			if (!form.reportValidity()) return;
+
+			setBusy(true);
+			try {
+				const { error } = await actions.contact.send(new FormData(form));
+
+				if (isInputError(error)) {
+					showFieldErrors(error.fields);
+					setStatus('Please check the highlighted fields and try again.', 'error');
+					return;
+				}
+				if (error) {
+					setStatus(error.message, 'error');
+					return;
+				}
+
+				form.reset();
+				// reset() restores the hidden inputs to their markup defaults, so re-apply the
+				// values the script owns: the role the tabs are showing, and a fresh timestamp.
+				const activeTab = form.querySelector<HTMLButtonElement>('.role-tab[aria-pressed="true"]');
+				if (roleInput && activeTab) roleInput.value = activeTab.getAttribute('data-role') ?? 'shopper';
+				if (renderedAtInput) renderedAtInput.value = String(Date.now());
+				setStatus("Thanks — your message is on its way. We'll be in touch shortly.", 'success');
+			} catch {
+				setStatus('We could not reach the server. Please check your connection and try again.', 'error');
+			} finally {
+				setBusy(false);
 			}
 		});
-	});
-
-	form?.addEventListener('submit', (event) => {
-		event.preventDefault();
-	});
+	}
 </script>
