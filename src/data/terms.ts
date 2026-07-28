@@ -34,7 +34,7 @@ export const termsSections: TermsSection[] = [
 				items: [
 					{ lead: 'Operator', text: 'Yoan Uria Rodriguez, operating MarketDay as an individual' },
 					{ lead: 'Trading as', text: 'MarketDay' },
-					{ lead: 'Email', text: 'legal@marketday.app' },
+					{ lead: 'Email', text: 'legal@marketday.ie' },
 					{ lead: 'VAT number', text: 'Not applicable — not VAT registered' },
 				],
 			},
@@ -82,8 +82,8 @@ export const termsSections: TermsSection[] = [
 			{
 				kind: 'paragraphWithLink',
 				before: 'Tell us immediately at ',
-				linkText: 'legal@marketday.app',
-				linkHref: 'mailto:legal@marketday.app',
+				linkText: 'legal@marketday.ie',
+				linkHref: 'mailto:legal@marketday.ie',
 				after: ' if you believe your account has been compromised.',
 			},
 			{
@@ -230,8 +230,8 @@ export const termsSections: TermsSection[] = [
 				kind: 'paragraphWithLink',
 				before:
 					'Reporting illegal or infringing content — anyone may notify us of content on the Service they consider illegal or infringing by emailing ',
-				linkText: 'legal@marketday.app',
-				linkHref: 'mailto:legal@marketday.app',
+				linkText: 'legal@marketday.ie',
+				linkHref: 'mailto:legal@marketday.ie',
 				after:
 					' with a description of the content, its location in the app, and the reason for the notice. We will assess notices without undue delay and inform you of our decision, in line with Article 16 of Regulation (EU) 2022/2065 (Digital Services Act).',
 			},
@@ -357,8 +357,8 @@ export const termsSections: TermsSection[] = [
 			{
 				kind: 'paragraphWithLink',
 				before: "Complaints about the Service or about a vendor's conduct — email ",
-				linkText: 'legal@marketday.app',
-				linkHref: 'mailto:legal@marketday.app',
+				linkText: 'legal@marketday.ie',
+				linkHref: 'mailto:legal@marketday.ie',
 				after: '. We aim to acknowledge within 5 working days and to respond substantively within 20 working days.',
 			},
 			{
@@ -413,5 +413,5 @@ export const termsSections: TermsSection[] = [
 ];
 
 export const termsContact = {
-	email: 'legal@marketday.app',
+	email: 'legal@marketday.ie',
 };

@@ -38,7 +38,7 @@ export const privacySections: PrivacySection[] = [
 				items: [
 					{ lead: 'Controller', text: 'Yoan Uria Rodriguez, operating MarketDay as an individual' },
 					{ lead: 'Trading as', text: 'MarketDay' },
-					{ lead: 'Email', text: 'privacy@marketday.app' },
+					{ lead: 'Email', text: 'privacy@marketday.ie' },
 				],
 			},
 			{
@@ -246,8 +246,8 @@ export const privacySections: PrivacySection[] = [
 			{
 				kind: 'paragraphWithLink',
 				before: 'You may request a copy of the relevant safeguards by contacting us at ',
-				linkText: 'privacy@marketday.app',
-				linkHref: 'mailto:privacy@marketday.app',
+				linkText: 'privacy@marketday.ie',
+				linkHref: 'mailto:privacy@marketday.ie',
 				after: '.',
 			},
 		],
@@ -335,8 +335,8 @@ export const privacySections: PrivacySection[] = [
 			{
 				kind: 'paragraphWithLink',
 				before: 'To exercise any of these rights, email ',
-				linkText: 'privacy@marketday.app',
-				linkHref: 'mailto:privacy@marketday.app',
+				linkText: 'privacy@marketday.ie',
+				linkHref: 'mailto:privacy@marketday.ie',
 				after:
 					'. We will respond within one month — this period may be extended by two further months for complex requests, in which case we will tell you within the first month. Exercising your rights is free of charge, unless a request is manifestly unfounded or excessive.',
 			},
@@ -416,5 +416,5 @@ export const privacySections: PrivacySection[] = [
 ];
 
 export const privacyContact = {
-	email: 'privacy@marketday.app',
+	email: 'privacy@marketday.ie',
 };

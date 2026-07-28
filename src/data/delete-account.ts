@@ -16,7 +16,6 @@ export const deleteAccountSections: DeleteAccountSection[] = [
 				kind: 'list',
 				items: [
 					'Your profile: name, email, phone number, saved addresses.',
-					'Saved payment methods and in-app payment history references.',
 					'Favourites, market follows, and notification preferences.',
 					'Any reviews or messages linked to your account.',
 				],
@@ -56,7 +55,7 @@ export const deleteAccountSections: DeleteAccountSection[] = [
 	},
 ];
 
-export const deleteAccountSupportEmail = 'privacy@marketday.app';
+export const deleteAccountSupportEmail = 'privacy@marketday.ie';
 
 /**
  * Shared by the form markup (`maxlength`) and the server-side schema in src/actions/index.ts,

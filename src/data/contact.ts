@@ -14,14 +14,14 @@ export const contactCards: ContactCard[] = [
 		icon: 'mail',
 		accent: 'brand',
 		title: 'General enquiries',
-		detail: 'hello@marketday.app',
+		detail: 'hello@marketday.ie',
 		meta: 'Mon–Fri, 9am–6pm',
 	},
 	{
 		icon: 'bag',
 		accent: 'clay',
 		title: 'Vendor support',
-		detail: 'vendors@marketday.app',
+		detail: 'vendors@marketday.ie',
 		meta: 'Onboarding & payouts',
 	},
 ];

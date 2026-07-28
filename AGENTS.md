@@ -76,7 +76,7 @@ The `/contact` and `/delete-account` forms are the site's only server-side paths
 
 **Authentication**: the site has no user session, so the only credential is the shared `API_KEY`, sent as `x-api-key` for the API's global `ApiKeyGuard` (`backend/src/common/guards/api-key.guard.ts`) to check. It is a server-only secret. The API leaves its gate open when it has no key configured, so local dev works with `API_KEY` empty; in production the client throws rather than sending unauthenticated.
 
-> The mutation documents in `src/lib/api/contact.ts` and `src/lib/api/delete-account.ts` are placeholders pending the API-side resolvers — operation names and input types still need confirming against `backend/src/schema.gql`. Both mutations must be `@Public()` there, since no JWT is available.
+> The mutation documents in `src/lib/api/contact.ts` (`submitContactMessage`) and `src/lib/api/delete-account.ts` (`requestAccountDeletionLink`) are confirmed against `backend/src/schema.gql` and their resolvers, both of which are `@Public()` since no JWT is available.
 
 **Environment**: variables are declared in the `env.schema` block of `astro.config.mjs` and imported from `astro:env/server`, never `process.env`. Copy `.env.example` to `.env` to get started; every variable has a default.
 
