@@ -16,7 +16,7 @@ export interface TermsSection {
 }
 
 export const termsMeta = {
-	lastUpdated: 'July 27, 2026',
+	lastUpdated: 'July 28, 2026',
 };
 
 export const termsSections: TermsSection[] = [
@@ -117,7 +117,7 @@ export const termsSections: TermsSection[] = [
 				items: [
 					{
 						lead: 'Prices',
-						text: "shown in the app are set by vendors and are indicative. Weight-based and seasonal produce may vary slightly in final price — the price payable is the one agreed at the stall. Vendors must not charge a materially higher price than the price listed without the buyer's agreement.",
+						text: "shown in the app are set by vendors. For weight-based or seasonal produce, a displayed price may be an estimate. Before a buyer purchases at the stall, the vendor must clearly state any final price that differs from the displayed price and obtain the buyer's agreement. Vendors must not charge a materially higher price than the price listed without the buyer's agreement.",
 					},
 					{
 						lead: 'Availability',
@@ -174,6 +174,10 @@ export const termsSections: TermsSection[] = [
 					{
 						lead: 'Handle buyer data lawfully',
 						text: "You receive buyers' names, email addresses, and order details solely to fulfil the order. You act as an independent data controller for that information and must comply with the GDPR — you must not use it for marketing without a lawful basis, and must not sell or share it.",
+					},
+					{
+						lead: 'Provide trader information',
+						text: 'give us accurate, complete, and current information about your identity, business, contact details, products, and any licences, registrations, or product-safety information required by law. We may verify this information and make it available to buyers where required by law.',
 					},
 					{ lead: 'Not list prohibited goods', text: 'see the Prohibited content and goods section below.' },
 				],
@@ -233,7 +237,18 @@ export const termsSections: TermsSection[] = [
 				linkText: 'legal@marketday.ie',
 				linkHref: 'mailto:legal@marketday.ie',
 				after:
-					' with a description of the content, its location in the app, and the reason for the notice. We will assess notices without undue delay and inform you of our decision, in line with Article 16 of Regulation (EU) 2022/2065 (Digital Services Act).',
+					' with: (1) a sufficiently detailed explanation of why you believe the content is illegal; (2) the exact in-app location or URL; (3) your name and email address; and (4) a statement that you believe, in good faith, that the information in your notice is accurate and complete. We will assess notices without undue delay and inform the notifier of our decision, in line with Article 16 of Regulation (EU) 2022/2065 (Digital Services Act).',
+			},
+			{
+				kind: 'paragraph',
+				text: 'Content moderation — we enforce these Terms and applicable law by reviewing reports and, where necessary, restricting or removing content, listings, or accounts. At present, these decisions are made following human review; we do not use automated decision-making to impose those restrictions. We may act on our own initiative or in response to a report. Where we restrict content or an account, we will give the affected user a clear statement of reasons unless doing so would be unlawful or would create a safety, fraud, or security risk.',
+			},
+			{
+				kind: 'paragraphWithLink',
+				before: 'If you believe we made an incorrect content-moderation decision, you may challenge it free of charge within six months by emailing ',
+				linkText: 'legal@marketday.ie',
+				linkHref: 'mailto:legal@marketday.ie',
+				after: '. Include the decision and the reasons for your challenge. We will review it promptly and tell you the outcome in plain language.',
 			},
 		],
 	},
@@ -267,6 +282,21 @@ export const termsSections: TermsSection[] = [
 			{
 				kind: 'paragraph',
 				text: "Vendors and products are ranked primarily by relevance to the buyer's search terms, the market selected, product availability, and proximity to the buyer's location where location permission is granted. We do not accept payment for higher placement. If we introduce paid promotion in future, it will be clearly labelled as such and this section will be updated in advance.",
+			},
+		],
+	},
+	{
+		id: 'data-access',
+		navLabel: 'Data access',
+		title: 'Access to data for vendors',
+		blocks: [
+			{
+				kind: 'paragraph',
+				text: 'While a vendor uses the Service, the vendor can access its own business profile, listings, order details, and the buyer name, email address, and order notes needed to fulfil each order. MarketDay can access this information to operate, secure, support, and improve the Service, as described in the Privacy Policy. Buyers can access their own account and order information, and public vendor and product information.',
+			},
+			{
+				kind: 'paragraph',
+				text: 'After a vendor account ends, the vendor will no longer have access through the Service. We retain or anonymise information in line with the Privacy Policy and applicable law. We do not provide other vendors with a vendor’s non-public business or order data, and we do not sell personal data.',
 			},
 		],
 	},
@@ -363,7 +393,7 @@ export const termsSections: TermsSection[] = [
 			},
 			{
 				kind: 'paragraph',
-				text: 'We are not currently required to operate a formal internal complaint-handling system under Article 11 of Regulation (EU) 2019/1150, as we fall below the small enterprise threshold, but we handle all complaints in good faith.',
+				text: 'MarketDay currently qualifies as a small enterprise for the purposes of Articles 11 and 12 of Regulation (EU) 2019/1150, so it is not required to operate the Regulation’s formal complaint-handling system or identify mediators. We nevertheless handle complaints in good faith. If that status changes, we will update these Terms and put the required arrangements in place.',
 			},
 			{
 				kind: 'paragraphWithLink',
@@ -388,7 +418,7 @@ export const termsSections: TermsSection[] = [
 					},
 					{
 						lead: 'Jurisdiction',
-						text: 'The courts of Ireland have jurisdiction. If you are a consumer resident in Ireland, you may bring proceedings in the Irish courts.',
+						text: 'The courts of Ireland have jurisdiction. Nothing in these Terms limits any mandatory right you have as a consumer to bring proceedings in the courts of your habitual residence or to rely on mandatory consumer protections that apply there.',
 					},
 					{ lead: 'Severability', text: 'If any provision is found unenforceable, the rest remains in effect.' },
 					{ lead: 'No waiver', text: 'If we do not enforce a right, we do not waive it.' },
