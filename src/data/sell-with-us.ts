@@ -67,6 +67,6 @@ export const sellTestimonial: SellTestimonial = {
 	quote:
 		"Pre-orders mean I pick to order and go home nearly sold out. Half the waste, steadier income — it's changed how we trade.",
 	name: 'McNally Family Farm',
-	role: 'Vendor · Temple Bar',
+	role: 'Vendor · Cork',
 	initials: 'MF',
 };

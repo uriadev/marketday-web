@@ -21,46 +21,31 @@ export default defineConfig({
 
   env: {
     schema: {
-      // 'resend' in production, 'smtp' for local Mailpit, 'log' to print instead of sending.
-      MAIL_DRIVER: envField.enum({
+      // The MarketDay API's GraphQL endpoint — the local API listens on 3000. Use 127.0.0.1
+      // rather than localhost: localhost can resolve to IPv6 ::1, which Docker Desktop's port
+      // forwarding doesn't answer, and the request hangs instead of failing.
+      API_URL: envField.string({
         context: 'server',
         access: 'public',
-        values: ['resend', 'smtp', 'log'],
-        default: 'log'
+        default: 'http://127.0.0.1:3000/graphql'
       }),
 
-      // Must be on a Resend-verified domain, or Resend rejects the send.
-      MAIL_FROM: envField.string({
-        context: 'server',
-        access: 'public',
-        default: 'MarketDay <noreply@marketday.app>'
-      }),
+      // Sent as `x-api-key`. Secret, so it stays server-side and never reaches the browser.
+      // Optional here so an unconfigured checkout still runs against a local API that has no
+      // key set; the client throws instead of sending unauthenticated in production.
+      API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
 
-      CONTACT_INBOX_SHOPPER: envField.string({
-        context: 'server',
-        access: 'public',
-        default: 'hello@marketday.app'
-      }),
-
-      CONTACT_INBOX_VENDOR: envField.string({
-        context: 'server',
-        access: 'public',
-        default: 'vendors@marketday.app'
-      }),
-
-      RESEND_API_KEY: envField.string({ context: 'server', access: 'secret', optional: true }),
-
-      // Mailpit defaults. Use 127.0.0.1 rather than localhost: localhost can resolve to IPv6 ::1,
-      // which Docker Desktop's port forwarding doesn't answer, and the SMTP connection hangs
-      // instead of failing.
-      MAIL_SMTP_HOST: envField.string({ context: 'server', access: 'public', default: '127.0.0.1' }),
-      MAIL_SMTP_PORT: envField.number({ context: 'server', access: 'public', default: 1025 }),
-      MAIL_SMTP_SECURE: envField.boolean({ context: 'server', access: 'public', default: false }),
-      MAIL_SMTP_USER: envField.string({ context: 'server', access: 'secret', optional: true }),
-      MAIL_SMTP_PASS: envField.string({ context: 'server', access: 'secret', optional: true }),
+      API_TIMEOUT_MS: envField.number({ context: 'server', access: 'public', default: 10000 }),
 
       CONTACT_RATE_LIMIT_MAX: envField.number({ context: 'server', access: 'public', default: 5 }),
       CONTACT_RATE_LIMIT_WINDOW_MS: envField.number({
+        context: 'server',
+        access: 'public',
+        default: 3600000
+      }),
+
+      DELETE_ACCOUNT_RATE_LIMIT_MAX: envField.number({ context: 'server', access: 'public', default: 5 }),
+      DELETE_ACCOUNT_RATE_LIMIT_WINDOW_MS: envField.number({
         context: 'server',
         access: 'public',
         default: 3600000

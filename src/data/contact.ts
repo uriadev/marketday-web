@@ -27,8 +27,8 @@ export const contactCards: ContactCard[] = [
 ];
 
 export const contactHq = {
-	name: 'MarketDay HQ',
-	lines: ['14 Dame Street', 'Dublin 2, D02 X285', 'Ireland'],
+	name: 'Our launch',
+	lines: ['Cork, Ireland', 'Expanding nationwide'],
 };
 
 export type ContactRole = 'shopper' | 'vendor';
@@ -72,4 +72,3 @@ export const contactFormLimits = {
  * and not a field a real person can see or tab into.
  */
 export const contactHoneypotField = 'website';
-

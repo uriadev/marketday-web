@@ -1,0 +1,21 @@
+---
+import Layout from '../layouts/Layout.astro';
+import SiteNav from '../components/sections/SiteNav.astro';
+import DeleteAccountHero from '../components/sections/DeleteAccountHero.astro';
+import DeleteAccountGrid from '../components/sections/DeleteAccountGrid.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+---
+
+<Layout
+	title="Delete Your Account — MarketDay"
+	description="Request deletion of your MarketDay account and the personal data linked to it — no app install required."
+>
+	<div class="w-full overflow-hidden">
+		<div class="mx-auto max-w-310">
+			<SiteNav variant="light" />
+		</div>
+		<DeleteAccountHero />
+		<DeleteAccountGrid />
+		<SiteFooter />
+	</div>
+</Layout>

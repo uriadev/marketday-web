@@ -2,7 +2,6 @@
 import SiteNav from './SiteNav.astro';
 import PhonePreview from './PhonePreview.astro';
 import StoreBadge from '../ui/StoreBadge.astro';
-import IconStar from '../icons/IconStar.astro';
 ---
 
 <div class="relative overflow-hidden bg-forest">
@@ -16,7 +15,7 @@ import IconStar from '../icons/IconStar.astro';
 			<div class="min-w-0 flex-[1_1_480px] pb-0 lg:min-w-85 lg:pb-21">
 				<div class="mb-5.5 inline-flex h-8 items-center gap-2 rounded-full bg-white/14 px-3.5">
 					<div class="h-1.75 w-1.75 rounded-full bg-gold"></div>
-					<span class="text-[13px] font-semibold text-white/92">Fresh from the stall, no queues</span>
+					<span class="text-[13px] font-semibold text-white/92">Launching in Cork</span>
 				</div>
 				<h1 class="mb-5 font-display text-[40px] font-bold leading-[0.98] tracking-[-0.03em] text-white sm:text-[52px] lg:text-[66px]">
 					Your market,<br class="hidden sm:inline" />{' '}pre-ordered.
@@ -29,15 +28,10 @@ import IconStar from '../icons/IconStar.astro';
 					<StoreBadge store="apple" href="#" />
 					<StoreBadge store="google" href="#" />
 				</div>
-				<div class="flex flex-wrap items-center gap-5">
-					<div class="flex items-center gap-1.75">
-						<IconStar class="h-3.75 w-3.75" />
-						<span class="text-[14px] text-white/85"><strong class="text-white">4.9</strong> rating</span>
-					</div>
+				<div class="flex flex-wrap items-center gap-3 text-[14px] text-white/85">
+					<span>Starting in Cork</span>
 					<div class="h-1 w-1 rounded-full bg-white/40"></div>
-					<span class="text-[14px] text-white/85"><strong class="text-white">12k+</strong> shoppers</span>
-					<div class="h-1 w-1 rounded-full bg-white/40"></div>
-					<span class="text-[14px] text-white/85"><strong class="text-white">40+</strong> markets</span>
+					<span>Growing across Ireland</span>
 				</div>
 			</div>
 			<PhonePreview />

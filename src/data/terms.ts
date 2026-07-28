@@ -32,9 +32,8 @@ export const termsSections: TermsSection[] = [
 			{
 				kind: 'list',
 				items: [
-					{ lead: 'Operator', text: 'MarketDay (sole trader)' },
+					{ lead: 'Operator', text: 'Yoan Uria Rodriguez, operating MarketDay as an individual' },
 					{ lead: 'Trading as', text: 'MarketDay' },
-					{ lead: 'Address', text: '14 Dame Street, Dublin 2, D02 X285, Ireland' },
 					{ lead: 'Email', text: 'legal@marketday.app' },
 					{ lead: 'VAT number', text: 'Not applicable — not VAT registered' },
 				],
@@ -278,7 +277,7 @@ export const termsSections: TermsSection[] = [
 		blocks: [
 			{
 				kind: 'paragraph',
-				text: 'The Service is provided free of charge and on an "as is" and "as available" basis. It is operated by one person and may be unavailable for maintenance, updates, or reasons beyond our control. We do not guarantee uninterrupted or error-free operation, and we may change or discontinue any feature — or the Service itself — at any time. Where we intend to discontinue the Service entirely, we will give at least 30 days\' notice by email where reasonably possible.',
+				text: 'The Service is currently provided free of charge as a personal, non-profit project, on an "as is" and "as available" basis. It is operated by Yoan Uria Rodriguez and may be unavailable for maintenance, updates, or reasons beyond our control. We do not guarantee uninterrupted or error-free operation, and we may change or discontinue any feature — or the Service itself — at any time. Where we intend to discontinue the Service entirely, we will give at least 30 days\' notice by email where reasonably possible.',
 			},
 		],
 	},
@@ -415,5 +414,4 @@ export const termsSections: TermsSection[] = [
 
 export const termsContact = {
 	email: 'legal@marketday.app',
-	postalAddress: 'MarketDay, 14 Dame Street, Dublin 2, D02 X285, Ireland',
 };

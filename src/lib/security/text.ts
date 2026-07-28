@@ -1,6 +1,6 @@
 /**
- * Text hardening helpers for anything that crosses a trust boundary — the outbound email
- * body (HTML injection) and SMTP/API headers (header injection).
+ * Text hardening helpers for anything that crosses a trust boundary — here, form input on
+ * its way to the API, which turns it into an email downstream.
  *
  * Nothing here tries to "clean" input into something safe to interpolate raw. The rule is
  * the opposite: normalise first, then escape at the point of use.
@@ -44,25 +44,6 @@ function stripUnsafeCodePoints(value: string): string {
 	return result;
 }
 
-const HTML_ESCAPES: Record<string, string> = {
-	'&': '&amp;',
-	'<': '&lt;',
-	'>': '&gt;',
-	'"': '&quot;',
-	"'": '&#39;',
-};
-
-/**
- * Escape a string for interpolation into HTML text content or a double-quoted attribute.
- *
- * Every user-controlled value in the email template must go through this. The templates
- * build HTML by concatenation, so unlike an Astro or React tree there is no automatic
- * escaping to fall back on.
- */
-export function escapeHtml(value: string): string {
-	return value.replace(/[&<>"']/g, (char) => HTML_ESCAPES[char] ?? char);
-}
-
 /**
  * Normalise free text: canonical Unicode form, no control or invisible characters,
  * consistent newlines, no runaway blank-line padding.
@@ -82,8 +63,9 @@ export function normalizeText(value: string): string {
  * Collapse a value to a single safe header line.
  *
  * Newlines are the payload in email header injection — a subject containing
- * "\nBcc: victim@example.com" turns one message into a relay. Both senders encode headers
- * for us, but stripping here means a bug in either one can't become a vulnerability.
+ * "\nBcc: victim@example.com" turns one message into a relay. The subject leaves here as a
+ * JSON string and only becomes a header inside the API, but stripping at the edge means a
+ * bug down there can't become a vulnerability.
  */
 export function sanitizeHeaderValue(value: string, maxLength = 200): string {
 	const collapsed = stripUnsafeCodePoints(value.normalize('NFC').replace(/[\r\n]+/g, ' '));

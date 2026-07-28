@@ -100,7 +100,7 @@ export const testimonials: Testimonial[] = [
 	{
 		quote: "I order Friday night and my veg is bagged and waiting at 10. I've got my Saturday mornings back.",
 		name: 'Sofia R.',
-		role: 'Shopper · Dublin 8',
+		role: 'Shopper · Cork City',
 		initials: 'SR',
 		variant: 'light',
 		avatarTone: 'mint',
@@ -109,14 +109,14 @@ export const testimonials: Testimonial[] = [
 		quote:
 			"Pre-orders mean I pick to order and go home nearly sold out. Half the waste, steadier income — it's changed how we trade.",
 		name: 'McNally Family Farm',
-		role: 'Vendor · Temple Bar',
+		role: 'Vendor · Cork',
 		initials: 'MF',
 		variant: 'dark',
 	},
 	{
 		quote: "Found three stalls near me I never knew existed. Now it's our weekend ritual — the kids pick the fruit.",
 		name: "Liam O'Brien",
-		role: 'Shopper · Rathmines',
+		role: 'Shopper · Cork',
 		initials: 'LO',
 		variant: 'light',
 		avatarTone: 'peach',
@@ -157,6 +157,6 @@ export const faqs: FaqEntry[] = [
 	},
 	{
 		q: 'Which markets and cities are covered?',
-		a: "We're live at 40+ markets across Dublin today and adding new ones every week. Search your area in the app to see what's nearby.",
+		a: "We're starting in Cork and plan to expand to markets across Ireland. Search the app to see where MarketDay is available as we grow.",
 	},
 ];

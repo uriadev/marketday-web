@@ -16,7 +16,7 @@ export interface PrivacySection {
 }
 
 export const privacyMeta = {
-	lastUpdated: 'July 27, 2026',
+	lastUpdated: 'July 28, 2026',
 };
 
 export const privacySections: PrivacySection[] = [
@@ -36,15 +36,14 @@ export const privacySections: PrivacySection[] = [
 			{
 				kind: 'list',
 				items: [
-					{ lead: 'Controller', text: 'MarketDay (sole trader)' },
+					{ lead: 'Controller', text: 'Yoan Uria Rodriguez, operating MarketDay as an individual' },
 					{ lead: 'Trading as', text: 'MarketDay' },
-					{ lead: 'Address', text: '14 Dame Street, Dublin 2, D02 X285, Ireland' },
 					{ lead: 'Email', text: 'privacy@marketday.app' },
 				],
 			},
 			{
 				kind: 'paragraph',
-				text: 'MarketDay is operated by a single individual. We have not appointed a Data Protection Officer, as we are not required to do so under Article 37 GDPR — all privacy queries should be sent to the email address above.',
+				text: 'MarketDay is currently a personal, non-profit project operated by Yoan Uria Rodriguez. We have not appointed a Data Protection Officer, as we are not required to do so under Article 37 GDPR — all privacy queries should be sent to the email address above.',
 			},
 		],
 	},
@@ -418,5 +417,4 @@ export const privacySections: PrivacySection[] = [
 
 export const privacyContact = {
 	email: 'privacy@marketday.app',
-	postalAddress: 'MarketDay, 14 Dame Street, Dublin 2, D02 X285, Ireland',
 };

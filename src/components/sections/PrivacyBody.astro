@@ -20,11 +20,10 @@ import { privacySections, privacyContact } from '../../data/privacy';
 					<div id={section.id} class="flex flex-col gap-3.5 rounded-[22px] bg-sand p-8">
 						<h2 class="font-display text-[20px] font-bold tracking-[-0.01em] text-ink sm:text-[22px]">{section.title}</h2>
 						<p class="text-[15.5px] leading-[1.65] text-body">
-							Questions about this policy or your data? Reach our privacy team directly, or visit our <a href="/contact">Contact page</a>.
+							Questions about this policy or your data? Contact Yoan directly, or visit our <a href="/contact">Contact page</a>.
 						</p>
 						<div class="-mt-1.5 flex flex-col gap-0.5 text-[15px] text-ink">
 							<div><strong>Email:</strong> {privacyContact.email}</div>
-							<div><strong>Post:</strong> {privacyContact.postalAddress}</div>
 						</div>
 					</div>
 				) : (

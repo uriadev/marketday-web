@@ -4,10 +4,10 @@ export interface AboutStat {
 }
 
 export const aboutStats: AboutStat[] = [
-	{ value: '40+', label: 'Markets across Dublin and beyond' },
-	{ value: '12k+', label: 'Shoppers pre-ordering weekly' },
-	{ value: '600+', label: 'Independent vendors on the app' },
-	{ value: '9.2t', label: 'Produce saved from going unsold in 2025' },
+	{ value: 'Cork', label: 'Our launch city' },
+	{ value: 'Ireland', label: 'Where we’re growing next' },
+	{ value: 'Local', label: 'Independent vendors first' },
+	{ value: 'Less waste', label: 'Picked to order' },
 ];
 
 export type AboutValueIcon = 'leaf' | 'bag' | 'card';
