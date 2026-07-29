@@ -50,18 +50,20 @@ const fieldClass =
 				<div class="mb-4.5 flex h-12 w-12 items-center justify-center rounded-full bg-mint">
 					<IconCheck class="h-5.5 w-5.5 text-forest" strokeWidth={2.4} />
 				</div>
-				<h3 class="mb-2.5 font-display text-[20px] font-bold text-ink">Request received</h3>
+				<h3 class="mb-2.5 font-display text-[20px] font-bold text-ink">Check your email</h3>
 				<p class="text-[15px] leading-[1.65] text-body">
-					Thanks — we've received your account deletion request. A member of the team will verify
-					it's really you and follow up by email at the address you provided, usually within a few
-					business days. Nothing is deleted until we've confirmed with you directly.
+					Thanks — if that address matches a MarketDay account, we've sent it a confirmation
+					link. Open the email and click the link, then confirm on the page it takes you to —
+					that's what actually deletes your account and its data. Nothing happens until you do.
+					The link is single-use and expires in an hour.
 				</p>
 			</div>
 
 			<div data-form-panel>
 				<h3 class="mb-1.5 font-display text-[20px] font-bold text-ink">Request account deletion</h3>
 				<p class="mb-5.5 text-[14px] leading-[1.6] text-muted">
-					We'll verify it's you and follow up by email before anything is deleted.
+					If that email matches an account, we'll send it a confirmation link. Nothing is
+					deleted until you open it and confirm.
 				</p>
 
 				<form data-delete-account-form novalidate class="flex flex-col gap-4">
@@ -122,7 +124,8 @@ const fieldClass =
 				</form>
 
 				<p class="mt-4 text-[12.5px] leading-normal text-muted">
-					A real person reviews every request — we'll never ask for your password by email.
+					This process is fully automated — we'll never ask for your password by email. Any
+					link we send expires within an hour and can only be used once.
 				</p>
 
 				<noscript>

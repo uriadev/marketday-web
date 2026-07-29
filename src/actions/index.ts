@@ -8,9 +8,18 @@ import {
 } from 'astro:env/server';
 
 import { contactFormLimits, contactHoneypotField, type ContactRole } from '../data/contact';
-import { deleteAccountFormLimits, deleteAccountHoneypotField } from '../data/delete-account';
+import {
+	deleteAccountFormLimits,
+	deleteAccountHoneypotField,
+	deleteAccountSupportEmail,
+} from '../data/delete-account';
 import { submitContactMessage } from '../lib/api/contact';
-import { requestAccountDeletion } from '../lib/api/delete-account';
+import {
+	checkAccountDeletionLink,
+	confirmAccountDeletion,
+	requestAccountDeletion,
+} from '../lib/api/delete-account';
+import { GraphQLBusinessError } from '../lib/api/client';
 import { checkRateLimit, getClientIp } from '../lib/security/rate-limit';
 import { countLinks, normalizeText, sanitizeHeaderValue } from '../lib/security/text';
 
@@ -105,6 +114,16 @@ function isObviousDeleteAccountSpam(input: z.infer<typeof deleteAccountInput>): 
 	return null;
 }
 
+/**
+ * 128 matches the backend DTO's `@MaxLength` (`AccountDeletionLinkInput`, deliberately not
+ * pinned to the exact token length — see that file). Not a form field, so no honeypot/timing
+ * signals: the only abuse surface is guessing a 256-bit token, which entropy and the rate
+ * limits below already cover.
+ */
+const deletionLinkTokenInput = z.object({
+	token: z.string().trim().min(1).max(128),
+});
+
 export const server = {
 	contact: {
 		send: defineAction({
@@ -177,11 +196,17 @@ export const server = {
 
 	deleteAccount: {
 		/**
-		 * Manual-review request, not a self-serve deletion: it forwards the submitted address
-		 * to the API and does not look up or touch any account. A person verifies the requester
-		 * and processes the deletion by hand. There is no automated account lookup here to keep
-		 * silent — the "always return ok" pattern below exists to keep spam-gate behaviour
-		 * opaque to bots, same as the contact form.
+		 * Request step of the self-serve web deletion flow: forwards the submitted address to
+		 * the API, which emails a one-time confirmation link to it if the address matches an
+		 * account (`requestAccountDeletionLink` — see `AccountDeletionLinkService.requestLink`
+		 * in the backend). This action never looks up or touches any account itself; the API
+		 * resolver always resolves `true` regardless of whether the email matches anyone, which
+		 * is also why this handler always returns `{ ok: true }` — the "always return ok"
+		 * pattern below exists to keep spam-gate behaviour opaque to bots, same as the contact
+		 * form, and happens to match the no-enumeration behaviour the API already guarantees.
+		 *
+		 * Deletion itself is not manual and is not handled here: opening the emailed link lands
+		 * on `/delete-account?token=...`, which `checkLink`/`confirm` below drive.
 		 */
 		request: defineAction({
 			accept: 'form',
@@ -221,6 +246,91 @@ export const server = {
 					throw new ActionError({
 						code: 'INTERNAL_SERVER_ERROR',
 						message: 'We could not send your request right now. Please email us directly.',
+					});
+				}
+
+				return { ok: true as const };
+			},
+		}),
+
+		/**
+		 * Checks a deletion link's token without spending it, so the confirm page can render
+		 * "this link has expired" instead of a button that fails on click. Any failure — rate
+		 * limit or an API error — is treated the same by the caller: "we couldn't check this,"
+		 * which is deliberately distinct from a clean `{ valid: false }` answer ("this link
+		 * really is expired/used"). See `checkAccountDeletionLink` in
+		 * `src/lib/api/delete-account.ts`.
+		 */
+		checkLink: defineAction({
+			input: deletionLinkTokenInput,
+			handler: async (input, context) => {
+				const ip = getClientIp(context.request);
+				const rateLimit = checkRateLimit(
+					`delete-account-check:${ip}`,
+					DELETE_ACCOUNT_RATE_LIMIT_MAX,
+					DELETE_ACCOUNT_RATE_LIMIT_WINDOW_MS,
+				);
+				if (!rateLimit.allowed) {
+					throw new ActionError({
+						code: 'TOO_MANY_REQUESTS',
+						message: 'Please wait a little while before trying again.',
+					});
+				}
+
+				try {
+					const valid = await checkAccountDeletionLink(input.token);
+					return { valid };
+				} catch (error) {
+					console.error('[delete-account] failed to check link', error);
+					throw new ActionError({
+						code: 'INTERNAL_SERVER_ERROR',
+						message: 'We could not check this link right now. Please try again shortly.',
+					});
+				}
+			},
+		}),
+
+		/**
+		 * Spends the token and deletes the account, instantly and irreversibly
+		 * (`AccountDeletionService.run` → `purge`, one DB transaction). Called only from an
+		 * explicit button click on the confirm page — never automatically — so a mail
+		 * scanner's GET prefetch of the emailed link can never trigger it; see
+		 * `AccountDeletionLinkService`'s doc comment in the backend for why that split exists.
+		 *
+		 * Unlike every other action in this file, a thrown `GraphQLBusinessError` here is
+		 * forwarded to the browser near-verbatim instead of replaced with a generic message —
+		 * every throw in this mutation's backend call chain is a deliberately-authored,
+		 * user-safe sentence (expired/invalid link, open orders, remaining team members), never
+		 * a stack trace. See `confirmAccountDeletion` in `src/lib/api/delete-account.ts` for the
+		 * full reasoning. Every other failure mode still follows the "log and replace" rule.
+		 */
+		confirm: defineAction({
+			input: deletionLinkTokenInput,
+			handler: async (input, context) => {
+				const ip = getClientIp(context.request);
+				const rateLimit = checkRateLimit(
+					`delete-account-confirm:${ip}`,
+					DELETE_ACCOUNT_RATE_LIMIT_MAX,
+					DELETE_ACCOUNT_RATE_LIMIT_WINDOW_MS,
+				);
+				if (!rateLimit.allowed) {
+					throw new ActionError({
+						code: 'TOO_MANY_REQUESTS',
+						message: 'Please wait a little while before trying again.',
+					});
+				}
+
+				try {
+					await confirmAccountDeletion(input.token);
+				} catch (error) {
+					if (error instanceof GraphQLBusinessError) {
+						console.warn('[delete-account] confirmAccountDeletion rejected:', error.detail);
+						throw new ActionError({ code: 'BAD_REQUEST', message: error.detail });
+					}
+					console.error('[delete-account] failed to confirm deletion', error);
+					throw new ActionError({
+						code: 'INTERNAL_SERVER_ERROR',
+						message: `We could not delete your account right now. Please email us at ${deleteAccountSupportEmail} and we'll take care of it.`,
 					});
 				}
 

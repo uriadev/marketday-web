@@ -3,6 +3,7 @@ import Layout from '../layouts/Layout.astro';
 import SiteNav from '../components/sections/SiteNav.astro';
 import DeleteAccountHero from '../components/sections/DeleteAccountHero.astro';
 import DeleteAccountGrid from '../components/sections/DeleteAccountGrid.astro';
+import DeleteAccountConfirm from '../components/sections/DeleteAccountConfirm.astro';
 import SiteFooter from '../components/layout/SiteFooter.astro';
 ---
 
@@ -14,8 +15,32 @@ import SiteFooter from '../components/layout/SiteFooter.astro';
 		<div class="mx-auto max-w-310">
 			<SiteNav variant="light" />
 		</div>
-		<DeleteAccountHero />
-		<DeleteAccountGrid />
+
+		{
+			/*
+				This page is fully prerendered — there is no per-request server branch — so which
+				flow shows is decided client-side, by presence of the `?token=` a deletion-link
+				email points at (see AccountDeletionLinkService.buildUrl in the backend). The
+				script below only picks a flow; DeleteAccountConfirm's own script re-reads the
+				token to run its check/confirm/success state machine.
+			*/
+		}
+		<div data-request-flow>
+			<DeleteAccountHero />
+			<DeleteAccountGrid />
+		</div>
+
+		<div data-confirm-flow class="hidden">
+			<DeleteAccountConfirm />
+		</div>
+
 		<SiteFooter />
 	</div>
 </Layout>
+
+<script>
+	if (new URLSearchParams(window.location.search).has('token')) {
+		document.querySelector('[data-request-flow]')?.classList.add('hidden');
+		document.querySelector('[data-confirm-flow]')?.classList.remove('hidden');
+	}
+</script>

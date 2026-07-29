@@ -35,6 +35,26 @@ export class ApiError extends Error {
 	}
 }
 
+/**
+ * Thrown specifically when the API's GraphQL response carried an `errors[]` array — as
+ * opposed to a transport failure, a non-2xx status, or a malformed body. The distinction
+ * matters to exactly one caller (`confirmAccountDeletion`'s action handler): a GraphQL
+ * business error is application text a resolver deliberately threw, never a stack trace,
+ * an HTML error page, or infrastructure detail, so it is the one `ApiError` variant safe to
+ * show a user almost verbatim. Every other variant must still be treated as opaque.
+ */
+export class GraphQLBusinessError extends ApiError {
+	constructor(
+		message: string,
+		/** The GraphQL error text alone, with no `${operation}: ` prefix — this is what's safe to show. */
+		readonly detail: string,
+		status?: number,
+	) {
+		super(message, status);
+		this.name = 'GraphQLBusinessError';
+	}
+}
+
 interface GraphQLResponse<T> {
 	data?: T | null;
 	errors?: { message?: string }[];
@@ -100,8 +120,8 @@ export async function graphqlRequest<T>({ query, variables, operation }: GraphQL
 	}
 
 	if (payload.errors?.length) {
-		const detail = payload.errors.map((error) => error.message ?? 'unknown error').join('; ');
-		throw new ApiError(`${operation}: ${truncate(detail)}`, response.status);
+		const detail = truncate(payload.errors.map((error) => error.message ?? 'unknown error').join('; '));
+		throw new GraphQLBusinessError(`${operation}: ${detail}`, detail, response.status);
 	}
 
 	const data = payload.data?.[operation];

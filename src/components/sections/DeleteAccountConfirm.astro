@@ -1,0 +1,161 @@
+---
+import IconCheck from '../icons/IconCheck.astro';
+import { deleteAccountConfirmCopy, deleteAccountSupportEmail } from '../../data/delete-account';
+---
+
+<div class="mx-auto flex max-w-135 flex-col items-center px-5 pt-10 pb-20 sm:px-8 sm:pt-14 lg:px-14">
+	<div class="w-full rounded-[22px] border border-[#ECE7DA] bg-white p-7 sm:p-9">
+		<div data-checking-panel>
+			<h1 class="mb-2.5 font-display text-[20px] font-bold text-ink">{deleteAccountConfirmCopy.checkingTitle}</h1>
+			<p class="text-[15px] leading-[1.65] text-body">{deleteAccountConfirmCopy.checkingBody}</p>
+		</div>
+
+		<div data-check-error-panel class="hidden">
+			<h1 class="mb-2.5 font-display text-[20px] font-bold text-ink">{deleteAccountConfirmCopy.checkErrorTitle}</h1>
+			<p class="mb-5 text-[15px] leading-[1.65] text-body">{deleteAccountConfirmCopy.checkErrorBody}</p>
+			<button
+				type="button"
+				data-retry-button
+				class="h-11 rounded-full bg-forest px-6 text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
+			>
+				Try again
+			</button>
+		</div>
+
+		<div data-invalid-panel class="hidden">
+			<h1 class="mb-2.5 font-display text-[20px] font-bold text-ink">{deleteAccountConfirmCopy.invalidTitle}</h1>
+			<p class="mb-5 text-[15px] leading-[1.65] text-body">{deleteAccountConfirmCopy.invalidBody}</p>
+			<a
+				href="/delete-account"
+				class="inline-flex h-11 items-center rounded-full bg-forest px-6 text-[15px] font-semibold text-white transition-opacity hover:opacity-90"
+			>
+				Request a new link
+			</a>
+		</div>
+
+		<div data-confirm-panel class="hidden">
+			<h1 class="mb-2.5 font-display text-[20px] font-bold text-ink">{deleteAccountConfirmCopy.confirmTitle}</h1>
+			<p class="mb-5.5 text-[15px] leading-[1.65] text-body">{deleteAccountConfirmCopy.confirmBody}</p>
+
+			<p data-confirm-error class="mb-4 hidden text-[13.5px] text-danger"></p>
+
+			<button
+				type="button"
+				data-confirm-button
+				class="h-12 w-full rounded-full bg-danger text-[15px] font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+			>
+				<span data-confirm-button-label>{deleteAccountConfirmCopy.confirmButtonLabel}</span>
+			</button>
+
+			<p class="mt-4 text-[12.5px] leading-normal text-muted">
+				Changed your mind? Just close this page — nothing happens unless you click the button above.
+			</p>
+		</div>
+
+		<div data-success-panel class="hidden">
+			<div class="mb-4.5 flex h-12 w-12 items-center justify-center rounded-full bg-mint">
+				<IconCheck class="h-5.5 w-5.5 text-forest" strokeWidth={2.4} />
+			</div>
+			<h1 class="mb-2.5 font-display text-[20px] font-bold text-ink">{deleteAccountConfirmCopy.successTitle}</h1>
+			<p class="text-[15px] leading-[1.65] text-body">{deleteAccountConfirmCopy.successBody}</p>
+		</div>
+	</div>
+
+	<p class="mt-4 text-[13.5px] leading-[1.6] text-muted">
+		Trouble with this page? Email <a href={`mailto:${deleteAccountSupportEmail}`}>{deleteAccountSupportEmail}</a>.
+	</p>
+
+	<noscript>
+		<p class="mt-4 rounded-xl bg-cream px-4 py-3 text-[14.5px] text-body">
+			This page needs JavaScript to confirm account deletion. You can email us directly at{' '}
+			<a href={`mailto:${deleteAccountSupportEmail}`}>{deleteAccountSupportEmail}</a>.
+		</p>
+	</noscript>
+</div>
+
+<script>
+	import { actions, isInputError } from 'astro:actions';
+
+	const panels = {
+		checking: document.querySelector<HTMLElement>('[data-checking-panel]'),
+		checkError: document.querySelector<HTMLElement>('[data-check-error-panel]'),
+		invalid: document.querySelector<HTMLElement>('[data-invalid-panel]'),
+		confirm: document.querySelector<HTMLElement>('[data-confirm-panel]'),
+		success: document.querySelector<HTMLElement>('[data-success-panel]'),
+	} as const;
+
+	function showPanel(name: keyof typeof panels) {
+		for (const [key, panel] of Object.entries(panels)) {
+			panel?.classList.toggle('hidden', key !== name);
+		}
+	}
+
+	// No token at all: nothing to check. The page-level script in delete-account.astro already
+	// keeps this component's container hidden in that case — this is just a defensive fallback.
+	const token = new URLSearchParams(window.location.search).get('token');
+
+	if (!token) {
+		showPanel('invalid');
+	} else {
+		const confirmButton = panels.confirm?.querySelector<HTMLButtonElement>('[data-confirm-button]');
+		const confirmButtonLabel = panels.confirm?.querySelector<HTMLElement>('[data-confirm-button-label]');
+		const confirmError = panels.confirm?.querySelector<HTMLElement>('[data-confirm-error]');
+		const retryButton = panels.checkError?.querySelector<HTMLButtonElement>('[data-retry-button]');
+
+		const setConfirmError = (message: string | null) => {
+			if (!confirmError) return;
+			confirmError.textContent = message ?? '';
+			confirmError.classList.toggle('hidden', !message);
+		};
+
+		const setConfirmBusy = (busy: boolean) => {
+			if (confirmButton) confirmButton.disabled = busy;
+			if (confirmButtonLabel) {
+				confirmButtonLabel.textContent = busy ? 'Deleting your account…' : 'Yes, delete my account';
+			}
+		};
+
+		const checkLink = async () => {
+			showPanel('checking');
+			try {
+				const { data, error } = await actions.deleteAccount.checkLink({ token });
+				if (error) {
+					showPanel('checkError');
+					return;
+				}
+				showPanel(data.valid ? 'confirm' : 'invalid');
+			} catch {
+				showPanel('checkError');
+			}
+		};
+
+		confirmButton?.addEventListener('click', async () => {
+			if (confirmButton.disabled) return;
+
+			setConfirmError(null);
+			setConfirmBusy(true);
+			try {
+				const { error } = await actions.deleteAccount.confirm({ token });
+
+				if (isInputError(error)) {
+					setConfirmError("This link doesn't look right — please copy the full link from your email.");
+					return;
+				}
+				if (error) {
+					setConfirmError(error.message);
+					return;
+				}
+
+				showPanel('success');
+			} catch {
+				setConfirmError('We could not reach the server. Please check your connection and try again.');
+			} finally {
+				setConfirmBusy(false);
+			}
+		});
+
+		retryButton?.addEventListener('click', checkLink);
+
+		checkLink();
+	}
+</script>

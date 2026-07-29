@@ -47,8 +47,8 @@ export const deleteAccountSections: DeleteAccountSection[] = [
 				ordered: true,
 				items: [
 					'Submit the form with your account email.',
-					"We reply from a real person to verify it's you, usually within a few business days.",
-					'Once confirmed, we begin deleting your data — usually within 30 days.',
+					"If that address matches an account, we'll email it a confirmation link — usable once, and only for one hour.",
+					'Open the link and confirm on the page it takes you to. Your account and its personal data are deleted immediately — this step is instant and cannot be undone.',
 				],
 			},
 		],
@@ -67,3 +67,41 @@ export const deleteAccountFormLimits = {
 
 /** Name of the honeypot field. See contactHoneypotField for the same rationale. */
 export const deleteAccountHoneypotField = 'company';
+
+export interface DeleteAccountConfirmCopy {
+	checkingTitle: string;
+	checkingBody: string;
+	checkErrorTitle: string;
+	checkErrorBody: string;
+	invalidTitle: string;
+	invalidBody: string;
+	confirmTitle: string;
+	confirmBody: string;
+	confirmButtonLabel: string;
+	confirmButtonBusyLabel: string;
+	successTitle: string;
+	successBody: string;
+}
+
+/** Copy for `DeleteAccountConfirm.astro` — the landing page for the emailed `?token=` link. */
+export const deleteAccountConfirmCopy: DeleteAccountConfirmCopy = {
+	checkingTitle: 'Checking your link…',
+	checkingBody: "Hang on while we check this link — it'll only take a moment.",
+
+	checkErrorTitle: "We couldn't check this link",
+	checkErrorBody: 'Something went wrong reaching the server. Check your connection and try again.',
+
+	invalidTitle: 'This link is invalid or has expired',
+	invalidBody:
+		'Deletion links are single-use and expire after an hour. If you still want to delete your account, request a new one below.',
+
+	confirmTitle: 'Confirm account deletion',
+	confirmBody:
+		"This is the last step. Clicking the button below deletes your MarketDay account and the personal data linked to it immediately — this can't be undone.",
+	confirmButtonLabel: 'Yes, delete my account',
+	confirmButtonBusyLabel: 'Deleting your account…',
+
+	successTitle: 'Your account has been deleted',
+	successBody:
+		"Your MarketDay account and the personal data linked to it have been deleted. We've sent a confirmation to your email.",
+};
