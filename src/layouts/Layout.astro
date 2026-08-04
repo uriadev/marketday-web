@@ -1,23 +1,68 @@
 ---
 import { getImage } from 'astro:assets';
 import '../styles/global.css';
-import { brand } from '../data/site';
+import { brand, seo } from '../data/site';
 
 interface Props {
 	title?: string;
 	description?: string;
+	/** Share-card image, as a path under `public/`. Resolved against the site origin. */
+	image?: string;
+	imageAlt?: string;
+	ogType?: 'website' | 'article';
+	/** Keeps the page out of search results — for anything transactional or link-gated. */
+	noindex?: boolean;
 }
 
 const {
-	title = 'MarketDay — Your market, pre-ordered.',
-	description = 'Reserve produce from local stalls in two minutes, pick a collection time, and pay when you arrive. No queues, no booking fees.',
+	title = seo.title,
+	description = seo.description,
+	image = seo.ogImage.src,
+	imageAlt = seo.ogImage.alt,
+	ogType = 'website',
+	noindex = false,
 } = Astro.props as Props;
 
 const favicon = await getImage({ src: brand.logo, width: 64, height: 64, format: 'png' });
+const appleTouchIcon = await getImage({ src: brand.logo, width: 180, height: 180, format: 'png' });
+const schemaLogo = await getImage({ src: brand.logo, width: 512, height: 512, format: 'png' });
+
+// Canonicals drop the trailing slash (bar the root) so one page can't be advertised under two
+// spellings depending on how it happened to be linked. `Astro.site` is pinned in astro.config.mjs.
+const canonical = new URL(Astro.url.pathname.replace(/\/+$/, '') || '/', Astro.site);
+const ogImage = new URL(image, Astro.site);
+const home = new URL('/', Astro.site).href;
+
+// One Organization + WebSite graph, shared by every page via the `@id` refs. Search engines use
+// it to tie the name, logo and site together rather than inferring them from the markup.
+const structuredData = {
+	'@context': 'https://schema.org',
+	'@graph': [
+		{
+			'@type': 'Organization',
+			'@id': `${home}#organization`,
+			name: brand.name,
+			url: home,
+			logo: new URL(schemaLogo.src, Astro.site).href,
+			image: ogImage.href,
+			email: brand.email,
+			areaServed: 'IE',
+		},
+		{
+			'@type': 'WebSite',
+			'@id': `${home}#website`,
+			name: brand.name,
+			url: home,
+			description: seo.description,
+			inLanguage: seo.language,
+			publisher: { '@id': `${home}#organization` },
+		},
+	],
+};
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={seo.language}>
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -28,9 +73,42 @@ const favicon = await getImage({ src: brand.logo, width: 64, height: 64, format:
 			rel="stylesheet"
 		/>
 		<link rel="icon" type="image/png" href={favicon.src} />
-		<meta name="description" content={description} />
-		<meta name="generator" content={Astro.generator} />
+		<link rel="apple-touch-icon" href={appleTouchIcon.src} />
+
 		<title>{title}</title>
+		<meta name="description" content={description} />
+		<link rel="canonical" href={canonical} />
+		<meta
+			name="robots"
+			content={noindex
+				? 'noindex, nofollow'
+				: 'index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1'}
+		/>
+		<meta name="generator" content={Astro.generator} />
+		<meta name="theme-color" content={seo.themeColor} />
+		<meta name="color-scheme" content="light" />
+
+		<!-- Open Graph — Facebook, LinkedIn, WhatsApp, Slack, iMessage. -->
+		<meta property="og:type" content={ogType} />
+		<meta property="og:site_name" content={brand.name} />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:locale" content={seo.locale} />
+		<meta property="og:image" content={ogImage} />
+		<meta property="og:image:type" content={seo.ogImage.type} />
+		<meta property="og:image:width" content={String(seo.ogImage.width)} />
+		<meta property="og:image:height" content={String(seo.ogImage.height)} />
+		<meta property="og:image:alt" content={imageAlt} />
+
+		<!-- Twitter/X reads og:* as a fallback, but wants its own card type and image alt. -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={ogImage} />
+		<meta name="twitter:image:alt" content={imageAlt} />
+
+		<script type="application/ld+json" set:html={JSON.stringify(structuredData)} is:inline />
 	</head>
 	<body class="m-0 w-full">
 		<slot />

@@ -8,7 +8,33 @@ export interface NavLink {
 export const brand = {
 	name: 'MarketDay',
 	logo,
+	email: 'hello@marketday.ie',
 };
+
+/**
+ * Defaults for the tags in `Layout.astro`'s head. Pages override title/description via the
+ * Layout props; everything else here is site-wide.
+ *
+ * `ogImage.src` is a path under `public/`, not an imported asset — social crawlers need a
+ * stable, absolute URL, and they don't run the JS that would resolve a hashed build asset.
+ * Its dimensions are declared so a crawler can lay the card out before the file downloads;
+ * keep them in step with the actual file.
+ */
+export const seo = {
+	title: 'MarketDay — Your market, pre-ordered.',
+	description:
+		'Reserve produce from local stalls in two minutes, pick a collection time, and pay when you arrive. No queues, no booking fees.',
+	locale: 'en_IE',
+	language: 'en-IE',
+	themeColor: '#2f5a45',
+	ogImage: {
+		src: '/og.jpg',
+		type: 'image/jpeg',
+		width: 1424,
+		height: 752,
+		alt: 'MarketDay — pre-order from local market stalls and collect at a time you choose.',
+	},
+} as const;
 
 export const primaryNavLinks: NavLink[] = [
 	{ label: 'Markets', href: '/#why-marketday' },

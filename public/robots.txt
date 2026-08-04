@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+
+# The form endpoint is on-demand and POST-only — nothing to crawl there.
+Disallow: /_actions/
+
+Sitemap: https://marketday.ie/sitemap-index.xml

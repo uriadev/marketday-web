@@ -5,8 +5,14 @@ import tailwindcss from '@tailwindcss/vite';
 
 import vercel from '@astrojs/vercel';
 
+import sitemap from '@astrojs/sitemap';
+
 // https://astro.build/config
 export default defineConfig({
+  // Production origin. Required for the absolute URLs social crawlers and search engines
+  // need — canonical, og:url and og:image are all resolved against it in Layout.astro.
+  site: 'https://marketday.ie',
+
   vite: {
     plugins: [tailwindcss()]
   },
@@ -51,5 +57,18 @@ export default defineConfig({
         default: 3600000
       })
     }
-  }
+  },
+
+  integrations: [
+    sitemap({
+      // Build format is 'directory', so the integration would list every page with a trailing
+      // slash — but Layout.astro canonicalises without one. Listing a URL that then points its
+      // canonical elsewhere makes the sitemap disagree with the pages it advertises, so strip
+      // the slash here (bar the root) to keep the two spellings identical.
+      serialize(item) {
+        item.url = item.url.replace(/(?<!\/\/)\/$/, '');
+        return item;
+      }
+    })
+  ]
 });
