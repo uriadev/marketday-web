@@ -11,8 +11,10 @@ import StoreBadge from '../ui/StoreBadge.astro';
 			Free to download. No booking fees, ever. Just fresher food and shorter queues.
 		</p>
 		<div class="flex flex-wrap items-center justify-center gap-3">
-			<StoreBadge store="apple" theme="dark" href="#" />
-			<StoreBadge store="google" theme="dark" href="#" />
+			{/* No href while the app is unlisted — the badges open the invite dialog
+				(`ui/AppInviteModal.astro`, rendered once by the page). */}
+			<StoreBadge store="apple" theme="dark" />
+			<StoreBadge store="google" theme="dark" />
 		</div>
 	</div>
 </div>

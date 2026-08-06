@@ -55,6 +55,15 @@ export default defineConfig({
         context: 'server',
         access: 'public',
         default: 3600000
+      }),
+
+      // Test-build invite dialog, opened by the store badges. Roomier than the other two: a
+      // household behind one NAT address can plausibly ask for invites on several devices.
+      APP_INVITE_RATE_LIMIT_MAX: envField.number({ context: 'server', access: 'public', default: 8 }),
+      APP_INVITE_RATE_LIMIT_WINDOW_MS: envField.number({
+        context: 'server',
+        access: 'public',
+        default: 3600000
       })
     }
   },

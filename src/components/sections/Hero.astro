@@ -25,8 +25,10 @@ import StoreBadge from '../ui/StoreBadge.astro';
 					you arrive. All the good stuff, none of the waiting.
 				</p>
 				<div class="mb-5.5 flex flex-wrap items-center gap-3">
-					<StoreBadge store="apple" href="#" />
-					<StoreBadge store="google" href="#" />
+					{/* No href while the app is unlisted — the badges open the invite dialog
+						(`ui/AppInviteModal.astro`, rendered once by the page). */}
+					<StoreBadge store="apple" />
+					<StoreBadge store="google" />
 				</div>
 				<div class="flex flex-wrap items-center gap-3 text-[14px] text-white/85">
 					<span>Starting in Cork</span>

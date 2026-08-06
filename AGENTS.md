@@ -64,13 +64,15 @@ Components that render one of these arrays typically map an icon-name union (e.g
 
 **Path conventions**: Imports are relative (no `@/`-style aliases configured in `tsconfig.json`).
 
-## Forms (contact, delete-account)
+## Forms (contact, delete-account, app invite)
 
-The `/contact` and `/delete-account` forms are the site's only server-side paths. The pages themselves stay prerendered — Astro injects the `/_actions/*` endpoint as on-demand, so only that becomes a Vercel function.
+The `/contact` and `/delete-account` forms and the test-build invite dialog are the site's only server-side paths. The pages themselves stay prerendered — Astro injects the `/_actions/*` endpoint as on-demand, so only that becomes a Vercel function.
 
 **This site sends no email.** It validates, filters spam, and forwards to the MarketDay API, which owns the templating, the inbox routing and the actual send.
 
 **Flow**: `sections/ContactGrid.astro` → `actions.contact.send(FormData)` → `src/actions/index.ts` → `src/lib/api/contact.ts` → GraphQL mutation on the API. The delete-account form follows the same path through `src/lib/api/delete-account.ts`.
+
+**App invite dialog**: the app isn't listed publicly yet, so a `ui/StoreBadge.astro` rendered without an `href` becomes a button that opens `ui/AppInviteModal.astro` — a native `<dialog>`, rendered once per page, collecting a name and address for the iOS/Android test build. It has no mutation of its own: `src/lib/api/app-invite.ts` composes a fixed message and rides `submitContactMessage`, so requests land in the team inbox with the requester as Reply-To. When the app ships, give the badges real `href`s and the dialog stops being reachable.
 
 **API client** (`src/lib/api/client.ts`): raw `fetch` POST to `API_URL`, no SDK, one operation per document, `AbortSignal.timeout(API_TIMEOUT_MS)` so a slow API can't outlive the function. Every failure — transport, HTTP status, or a `200` carrying GraphQL `errors` — surfaces as `ApiError`.
 

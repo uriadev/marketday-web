@@ -5,7 +5,12 @@ import IconPlayLogo from '../icons/IconPlayLogo.astro';
 interface Props {
 	store: 'apple' | 'google';
 	theme?: 'light' | 'dark';
-	href: string;
+	/**
+	 * Store listing to link to. Omit while the app is unreleased: the badge then renders as a
+	 * button that announces itself with `data-store-badge`, which `ui/AppInviteModal.astro`
+	 * binds to so a click opens the testing-programme dialog instead.
+	 */
+	href?: string;
 	class?: string;
 }
 
@@ -18,13 +23,18 @@ const copy =
 
 const iconColor =
 	store === 'apple' ? (theme === 'light' ? 'text-ink' : 'text-white') : theme === 'light' ? 'text-brand' : 'text-brand-light';
+
+const Tag = href ? 'a' : 'button';
+const tagProps = href
+	? { href }
+	: { type: 'button' as const, 'data-store-badge': store, 'aria-haspopup': 'dialog' as const };
 ---
 
-<a
-	href={href}
+<Tag
+	{...tagProps}
 	aria-label={copy.label}
 	class:list={[
-		'flex items-center gap-2.75 rounded-[13px] px-5',
+		'flex items-center gap-2.75 rounded-[13px] px-5 text-left transition-opacity hover:opacity-90',
 		theme === 'light' ? 'h-13.5 bg-white' : 'h-14 bg-ink',
 		className,
 	]}
@@ -34,4 +44,4 @@ const iconColor =
 		<span class:list={['text-[10px]', theme === 'light' ? 'text-ink/60' : 'text-white/75']}>{copy.small}</span>
 		<span class:list={['text-[17px] font-semibold', theme === 'light' ? 'text-ink' : 'text-white']}>{copy.big}</span>
 	</div>
-</a>
+</Tag>

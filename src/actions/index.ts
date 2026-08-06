@@ -1,18 +1,22 @@
 import { ActionError, defineAction } from 'astro:actions';
 import { z } from 'astro/zod';
 import {
+	APP_INVITE_RATE_LIMIT_MAX,
+	APP_INVITE_RATE_LIMIT_WINDOW_MS,
 	CONTACT_RATE_LIMIT_MAX,
 	CONTACT_RATE_LIMIT_WINDOW_MS,
 	DELETE_ACCOUNT_RATE_LIMIT_MAX,
 	DELETE_ACCOUNT_RATE_LIMIT_WINDOW_MS,
 } from 'astro:env/server';
 
+import { appInviteFormLimits, appInviteHoneypotField } from '../data/app-access';
 import { contactFormLimits, contactHoneypotField, type ContactRole } from '../data/contact';
 import {
 	deleteAccountFormLimits,
 	deleteAccountHoneypotField,
 	deleteAccountSupportEmail,
 } from '../data/delete-account';
+import { submitAppInviteRequest } from '../lib/api/app-invite';
 import { submitContactMessage } from '../lib/api/contact';
 import {
 	checkAccountDeletionLink,
@@ -25,10 +29,31 @@ import { countLinks, normalizeText, sanitizeHeaderValue } from '../lib/security/
 
 /** Nobody fills in a four-field form in under three seconds. Bots routinely do. */
 const MIN_FILL_MS = 3_000;
+/**
+ * The invite dialog is one field, opened by a click and often autofilled, so a real person can
+ * clear it far quicker than the contact form — anything above a second would start dropping
+ * genuine signups silently. It still costs a bot the round trip of rendering the page.
+ */
+const MIN_INVITE_FILL_MS = 800;
 /** A page left open longer than this has almost certainly been served from cache to a bot. */
 const MAX_PAGE_AGE_MS = 12 * 60 * 60 * 1_000;
 /** Beyond this many links, the message is link-spam rather than an enquiry. */
 const MAX_LINKS = 5;
+
+/**
+ * Shared by all three forms: the timestamp is stamped client-side, so its absence means the
+ * form was never rendered in a browser, and an implausible elapsed time means it was not
+ * filled in by hand.
+ */
+function timingSpamReason(renderedAt: number | null | undefined, minFillMs: number): string | null {
+	if (typeof renderedAt !== 'number' || !Number.isFinite(renderedAt)) return 'missing timing token';
+
+	const elapsed = Date.now() - renderedAt;
+	if (elapsed < minFillMs) return `submitted after ${elapsed}ms`;
+	if (elapsed > MAX_PAGE_AGE_MS) return 'stale page';
+
+	return null;
+}
 
 const { name, email, subject, message } = contactFormLimits;
 
@@ -69,16 +94,8 @@ const contactInput = z.object({
 function isObviousSpam(input: z.infer<typeof contactInput>, body: string): string | null {
 	if (input[contactHoneypotField]) return 'honeypot filled';
 
-	const renderedAt = input.renderedAt;
-	if (typeof renderedAt === 'number' && Number.isFinite(renderedAt)) {
-		const elapsed = Date.now() - renderedAt;
-		if (elapsed < MIN_FILL_MS) return `submitted after ${elapsed}ms`;
-		if (elapsed > MAX_PAGE_AGE_MS) return 'stale page';
-	} else {
-		// The field is stamped by the page's own script; its absence means the form was not
-		// rendered in a browser.
-		return 'missing timing token';
-	}
+	const timingReason = timingSpamReason(input.renderedAt, MIN_FILL_MS);
+	if (timingReason) return timingReason;
 
 	if (countLinks(body) > MAX_LINKS) return 'link spam';
 
@@ -102,16 +119,37 @@ const deleteAccountInput = z.object({
 function isObviousDeleteAccountSpam(input: z.infer<typeof deleteAccountInput>): string | null {
 	if (input[deleteAccountHoneypotField]) return 'honeypot filled';
 
-	const renderedAt = input.renderedAt;
-	if (typeof renderedAt === 'number' && Number.isFinite(renderedAt)) {
-		const elapsed = Date.now() - renderedAt;
-		if (elapsed < MIN_FILL_MS) return `submitted after ${elapsed}ms`;
-		if (elapsed > MAX_PAGE_AGE_MS) return 'stale page';
-	} else {
-		return 'missing timing token';
-	}
+	return timingSpamReason(input.renderedAt, MIN_FILL_MS);
+}
 
-	return null;
+/**
+ * Request for a test-build invite from the store-badge dialog — a name, an email address and a
+ * platform. The platform is a closed union, so the only free-form values are the two the
+ * requester typed, and neither reaches the subject line.
+ */
+const appInviteInput = z.object({
+	platform: z.enum(['ios', 'android']),
+	name: z
+		.string()
+		.trim()
+		.min(appInviteFormLimits.name.min, 'Please enter your name.')
+		.max(appInviteFormLimits.name.max, 'That name is too long.'),
+	email: z
+		.string()
+		.trim()
+		.max(appInviteFormLimits.email.max)
+		.pipe(z.email('Please enter a valid email address.')),
+
+	// Spam signals — same heuristics as the contact form, see isObviousSpam above.
+	[appInviteHoneypotField]: z.string().nullish(),
+	renderedAt: z.coerce.number().nullish(),
+});
+
+/** Same reasoning as isObviousSpam: discarded silently, never surfaced to the caller. */
+function isObviousAppInviteSpam(input: z.infer<typeof appInviteInput>): string | null {
+	if (input[appInviteHoneypotField]) return 'honeypot filled';
+
+	return timingSpamReason(input.renderedAt, MIN_INVITE_FILL_MS);
 }
 
 /**
@@ -186,6 +224,78 @@ export const server = {
 					throw new ActionError({
 						code: 'INTERNAL_SERVER_ERROR',
 						message: 'We could not send your message right now. Please email us directly.',
+					});
+				}
+
+				return { ok: true as const };
+			},
+		}),
+	},
+
+	appAccess: {
+		/**
+		 * The app is not listed publicly yet, so the store badges open a dialog that collects an
+		 * address for the test build instead of linking out. This forwards it to the API, which
+		 * mails it to the team inbox with the requester as Reply-To — see
+		 * `src/lib/api/app-invite.ts` for why it rides the contact channel.
+		 *
+		 * Its own rate-limit key, deliberately: the dialog is reachable from every store badge
+		 * on the site, and a shared counter would let one form lock the other out.
+		 */
+		requestInvite: defineAction({
+			accept: 'form',
+			input: appInviteInput,
+			handler: async (input, context) => {
+				const ip = getClientIp(context.request);
+				const rateLimit = checkRateLimit(
+					`app-invite:${ip}`,
+					APP_INVITE_RATE_LIMIT_MAX,
+					APP_INVITE_RATE_LIMIT_WINDOW_MS,
+				);
+				if (!rateLimit.allowed) {
+					throw new ActionError({
+						code: 'TOO_MANY_REQUESTS',
+						message: 'You have asked for an invite already. Please try again a little later.',
+					});
+				}
+
+				// Normalise before use, same order as the contact form: length was checked
+				// pre-normalisation, so a name padded with 80 zero-width characters is rejected as
+				// too long rather than quietly shrinking to nothing.
+				//
+				// sanitizeHeaderValue rather than normalizeText, because a name is one line:
+				// normalizeText deliberately keeps newlines (it is built for message bodies), and
+				// a name arriving as "Bob\nBcc: ..." should read as one line in the inbox, not two.
+				const requesterName = sanitizeHeaderValue(input.name, appInviteFormLimits.name.max);
+
+				// Re-check after normalisation: a name made entirely of stripped characters passes
+				// the length rule above but is empty by the time it reaches the template.
+				if (requesterName.length < appInviteFormLimits.name.min) {
+					throw new ActionError({
+						code: 'BAD_REQUEST',
+						message: 'Please check your details and try again.',
+					});
+				}
+
+				const spamReason = isObviousAppInviteSpam(input);
+				if (spamReason) {
+					console.warn(`[app-invite] dropped submission (${spamReason})`);
+					return { ok: true as const };
+				}
+
+				try {
+					await submitAppInviteRequest({
+						name: requesterName,
+						email: input.email.trim().toLowerCase(),
+						platform: input.platform,
+					});
+				} catch (error) {
+					// Log the cause, return a generic message: API errors can carry configuration
+					// detail that shouldn't reach the browser.
+					console.error('[app-invite] failed to submit request', error);
+					throw new ActionError({
+						code: 'INTERNAL_SERVER_ERROR',
+						message: 'We could not send your request right now. Please try again shortly.',
 					});
 				}
 

@@ -8,6 +8,7 @@ import ForVendors from '../components/sections/ForVendors.astro';
 import Faq from '../components/sections/Faq.astro';
 import FinalCta from '../components/sections/FinalCta.astro';
 import SiteFooter from '../components/layout/SiteFooter.astro';
+import AppInviteModal from '../components/ui/AppInviteModal.astro';
 ---
 
 <Layout>
@@ -21,4 +22,7 @@ import SiteFooter from '../components/layout/SiteFooter.astro';
 		<FinalCta />
 		<SiteFooter />
 	</div>
+	{/* Shared by the store badges in Hero and FinalCta, so it belongs to the page rather than
+		to either section. Outside the wrapper above: nothing should clip a modal. */}
+	<AppInviteModal />
 </Layout>

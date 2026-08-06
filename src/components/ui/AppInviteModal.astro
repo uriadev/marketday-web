@@ -1,0 +1,351 @@
+---
+import { X } from '@lucide/astro';
+import IconAppleLogo from '../icons/IconAppleLogo.astro';
+import IconCheck from '../icons/IconCheck.astro';
+import IconPlayLogo from '../icons/IconPlayLogo.astro';
+import {
+	appInviteFormLimits,
+	appInviteHoneypotField,
+	appPlatforms,
+	defaultAppPlatform,
+} from '../../data/app-access';
+
+/**
+ * Testing-programme dialog, opened by every `StoreBadge` on the page that was rendered without
+ * an `href` (i.e. every one of them, until the app is actually listed). Rendered once per page
+ * rather than per badge — the script binds all the badges it finds.
+ *
+ * The submit goes through `actions.appAccess.requestInvite`, which forwards to the API's
+ * contact mutation; see `src/lib/api/app-invite.ts` for why that's the channel.
+ */
+
+const selectedToggle = 'border-brand bg-white text-[#2f6a4d]';
+const unselectedToggle = 'border-ink/15 bg-transparent text-body';
+
+const fieldClass =
+	'mb-2.5 h-12.5 w-full rounded-[13px] border-[1.5px] border-ink/15 bg-white px-4 text-[15.5px] text-ink placeholder:text-[#a9a598] focus:border-brand focus:outline-none aria-[invalid=true]:border-danger';
+---
+
+{/*
+	Sizing has to be spelled out rather than left to the UA stylesheet: Tailwind's preflight
+	zeroes `margin` on every element, and `margin: auto` is exactly what centres a modal
+	`<dialog>` inside its `inset: 0` box. Hence `sm:m-auto`.
+
+	Below `sm` the dialog is the screen — full bleed, square corners, no visible backdrop.
+	`dvh` rather than `vh` so mobile browser chrome doesn't push the footer copy out of view.
+*/}
+<dialog
+	data-app-invite-dialog
+	aria-labelledby="app-invite-title"
+	class="m-0 h-dvh max-h-dvh w-full max-w-none rounded-none bg-cream p-0 shadow-[0_30px_80px_-20px_rgba(31,42,37,0.5)] backdrop:bg-ink/55 backdrop:backdrop-blur-[3px] sm:m-auto sm:h-fit sm:max-h-[calc(100dvh-3rem)] sm:max-w-115 sm:rounded-[26px]"
+>
+	<div class="relative flex min-h-full flex-col px-6 py-16 sm:block sm:min-h-0 sm:px-8.5 sm:pt-8.5 sm:pb-7.5">
+		{/* `my-auto` rather than `justify-center`: an overflowing flex item centred with
+			`justify-*` has its top clipped and can't be scrolled back to. */}
+		<div class="my-auto w-full sm:my-0">
+			<div data-form-panel>
+				<div class="mb-4.5 inline-flex h-7.5 items-center gap-2 rounded-full bg-gold/16 px-3.25">
+					<div class="h-1.75 w-1.75 rounded-full bg-gold"></div>
+					<span class="text-[12.5px] font-semibold text-[#9a6516]">
+						Early access · <span data-platform-label>{appPlatforms[0].label}</span>
+					</span>
+				</div>
+
+				<h2
+					id="app-invite-title"
+					class="mb-3 font-display text-[24px] leading-[1.08] font-bold tracking-[-0.02em] text-ink sm:text-[28px]"
+				>
+					Want to join the testing programme?
+				</h2>
+				<p class="mb-5.5 text-pretty text-[15.5px] leading-[1.55] text-body">
+					MarketDay isn't in the public stores yet. Leave your email and we'll send you a test
+					build invite for <span data-platform-label>{appPlatforms[0].label}</span>, plus a short
+					guide to getting started.
+				</p>
+
+				<form data-app-invite-form novalidate>
+					<div class="mb-4.5 flex gap-2" data-platform-tabs>
+						{
+							appPlatforms.map((option) => (
+								<button
+									type="button"
+									data-platform={option.platform}
+									data-platform-label-value={option.label}
+									aria-pressed={option.platform === defaultAppPlatform ? 'true' : 'false'}
+									class:list={[
+										'platform-tab flex h-11 flex-1 items-center justify-center gap-2 rounded-xl border-[1.5px] text-[14.5px] font-semibold transition-colors',
+										option.platform === defaultAppPlatform ? selectedToggle : unselectedToggle,
+									]}
+								>
+									{option.platform === 'ios' ? <IconAppleLogo class="h-4 w-4" /> : <IconPlayLogo class="h-3.75 w-3.75" />}
+									{option.optionLabel}
+								</button>
+							))
+						}
+					</div>
+					<input type="hidden" name="platform" value={defaultAppPlatform} data-platform-input />
+
+					{/*
+						Honeypot: positioned off-screen rather than `display:none`, since the more capable
+						form-fillers skip hidden inputs but still complete positioned ones. `aria-hidden`
+						and `tabindex="-1"` keep it away from assistive tech and the tab order.
+					*/}
+					<div class="absolute left-[-9999px] h-px w-px overflow-hidden" aria-hidden="true">
+						<label for="app-invite-website">Website</label>
+						<input
+							id="app-invite-website"
+							name={appInviteHoneypotField}
+							type="text"
+							tabindex="-1"
+							autocomplete="off"
+						/>
+					</div>
+
+					{/* Stamped when the dialog opens, so the server measures the fill, not the page age. */}
+					<input type="hidden" name="renderedAt" value="" data-rendered-at />
+
+					<label for="app-invite-name" class="sr-only">Your name</label>
+					<input
+						id="app-invite-name"
+						name="name"
+						type="text"
+						required
+						data-field
+						autocomplete="name"
+						minlength={appInviteFormLimits.name.min}
+						maxlength={appInviteFormLimits.name.max}
+						aria-describedby="app-invite-error"
+						placeholder="Your name"
+						class={fieldClass}
+					/>
+
+					<label for="app-invite-email" class="sr-only">Email address</label>
+					<input
+						id="app-invite-email"
+						name="email"
+						type="email"
+						required
+						data-field
+						autocomplete="email"
+						maxlength={appInviteFormLimits.email.max}
+						aria-describedby="app-invite-error"
+						placeholder="you@example.com"
+						class={fieldClass}
+					/>
+
+					<p
+						id="app-invite-error"
+						data-form-error
+						aria-live="polite"
+						class="mb-2.5 hidden text-[13.5px] text-danger"
+					>
+					</p>
+
+					<button
+						type="submit"
+						data-submit
+						class="mb-3.5 flex h-13 w-full items-center justify-center rounded-[13px] bg-brand text-base font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+					>
+						<span data-submit-label>Request a test invite</span>
+					</button>
+
+					<p class="text-center text-[12.5px] leading-normal text-muted">
+						We'll only email you about the test build. Unsubscribe any time.
+					</p>
+
+					<noscript>
+						<p class="mt-3.5 rounded-xl bg-sand px-4 py-3 text-center text-[13.5px] text-body">
+							This form needs JavaScript. Email us at <a href="mailto:hello@marketday.ie">hello@marketday.ie</a> instead.
+						</p>
+					</noscript>
+				</form>
+			</div>
+
+			<div data-sent-panel class="hidden pt-3 pb-1 text-center">
+				<div class="mx-auto mb-5 flex h-15.5 w-15.5 items-center justify-center rounded-full bg-brand/15">
+					<IconCheck class="h-7.5 w-7.5 text-brand" strokeWidth={2.8} />
+				</div>
+				<h2
+					data-sent-title
+					tabindex="-1"
+					class="mb-2.5 font-display text-[24px] leading-[1.1] font-bold tracking-[-0.02em] text-ink outline-none sm:text-[26px]"
+				>
+					You're on the list
+				</h2>
+				<p class="mb-6 text-[15.5px] leading-[1.55] text-body">
+					We've noted <span data-sent-email class="font-semibold text-ink">your address</span> for the
+					<span data-platform-label>{appPlatforms[0].label}</span> test build. Watch your inbox for the
+					invite — usually within a day or two.
+				</p>
+				<button
+					type="button"
+					data-close-dialog
+					class="flex h-12.5 w-full items-center justify-center rounded-[13px] bg-ink text-[15.5px] font-semibold text-white transition-opacity hover:opacity-90"
+				>
+					Back to the site
+				</button>
+			</div>
+		</div>
+
+		{/* Last in the DOM so opening the dialog lands focus on the first real control, not "close". */}
+		<button
+			type="button"
+			data-close-dialog
+			aria-label="Close"
+			class="absolute top-4.5 right-4.5 flex h-8 w-8 items-center justify-center rounded-full bg-ink/7 text-ink transition-colors hover:bg-ink/14"
+		>
+			<X class="h-3.5 w-3.5" stroke-width={2.4} />
+		</button>
+	</div>
+</dialog>
+
+<script>
+	import { actions, isInputError } from 'astro:actions';
+
+	const dialog = document.querySelector<HTMLDialogElement>('[data-app-invite-dialog]');
+	const form = document.querySelector<HTMLFormElement>('[data-app-invite-form]');
+
+	if (dialog && form) {
+		const formPanel = dialog.querySelector<HTMLElement>('[data-form-panel]');
+		const sentPanel = dialog.querySelector<HTMLElement>('[data-sent-panel]');
+		const sentTitle = dialog.querySelector<HTMLElement>('[data-sent-title]');
+		const sentEmail = dialog.querySelector<HTMLElement>('[data-sent-email]');
+		const tabs = dialog.querySelectorAll<HTMLButtonElement>('[data-platform-tabs] .platform-tab');
+		const platformInput = form.querySelector<HTMLInputElement>('[data-platform-input]');
+		const platformLabels = dialog.querySelectorAll<HTMLElement>('[data-platform-label]');
+		const emailInput = form.querySelector<HTMLInputElement>('[name="email"]');
+		const fields = form.querySelectorAll<HTMLInputElement>('[data-field]');
+		const renderedAtInput = form.querySelector<HTMLInputElement>('[data-rendered-at]');
+		const submitButton = form.querySelector<HTMLButtonElement>('[data-submit]');
+		const submitLabel = form.querySelector<HTMLElement>('[data-submit-label]');
+		const errorSlot = form.querySelector<HTMLElement>('[data-form-error]');
+
+		/** `invalid` names the fields to flag — the whole form shares one message slot. */
+		const setError = (message: string | null, invalid: string[] = []) => {
+			if (!errorSlot) return;
+			// textContent, never innerHTML: the strings are ours, and this keeps it that way even
+			// if a future error path starts carrying server text.
+			errorSlot.textContent = message ?? '';
+			errorSlot.classList.toggle('hidden', !message);
+			fields.forEach((field) => {
+				// The literal "true", not merely present: the error styling keys off
+				// `aria-[invalid=true]`, matching the other two forms.
+				if (message && invalid.includes(field.name)) field.setAttribute('aria-invalid', 'true');
+				else field.removeAttribute('aria-invalid');
+			});
+		};
+
+		/** Static strings, chosen by which fields the server rejected — never its own text. */
+		const inputErrorMessage = (invalid: string[]): string => {
+			if (invalid.length === 1 && invalid[0] === 'name') return 'Please enter your name.';
+			if (invalid.length === 1 && invalid[0] === 'email') return 'Please enter a valid email address.';
+			return 'Please check your details and try again.';
+		};
+
+		const setBusy = (busy: boolean) => {
+			if (submitButton) submitButton.disabled = busy;
+			if (submitLabel) submitLabel.textContent = busy ? 'Sending...' : 'Request a test invite';
+		};
+
+		const selectPlatform = (platform: string) => {
+			tabs.forEach((tab) => {
+				const active = tab.dataset.platform === platform;
+				tab.classList.toggle('border-brand', active);
+				tab.classList.toggle('bg-white', active);
+				tab.classList.toggle('text-[#2f6a4d]', active);
+				tab.classList.toggle('border-ink/15', !active);
+				tab.classList.toggle('bg-transparent', !active);
+				tab.classList.toggle('text-body', !active);
+				tab.setAttribute('aria-pressed', String(active));
+				if (!active) return;
+				if (platformInput) platformInput.value = platform;
+				const label = tab.dataset.platformLabelValue ?? platform;
+				platformLabels.forEach((slot) => (slot.textContent = label));
+			});
+		};
+
+		tabs.forEach((tab) => {
+			tab.addEventListener('click', () => {
+				setError(null);
+				selectPlatform(tab.dataset.platform ?? '');
+			});
+		});
+
+		const open = (platform: string) => {
+			form.reset();
+			// reset() restores the markup defaults, so re-apply what the script owns.
+			selectPlatform(platform);
+			setError(null);
+			setBusy(false);
+			formPanel?.classList.remove('hidden');
+			sentPanel?.classList.add('hidden');
+
+			// Records when the dialog actually reached a browser. The server treats an
+			// implausibly fast submission as a bot; see MIN_INVITE_FILL_MS in src/actions/index.ts.
+			if (renderedAtInput) renderedAtInput.value = String(Date.now());
+
+			// showModal() gives the focus trap, Esc handling and inert background for free; it
+			// does not stop the page behind from scrolling, hence the lock.
+			dialog.showModal();
+			document.documentElement.classList.add('overflow-hidden');
+		};
+
+		const close = () => dialog.close();
+
+		document.querySelectorAll<HTMLElement>('[data-store-badge]').forEach((badge) => {
+			badge.addEventListener('click', () => open(badge.dataset.storeBadge === 'google' ? 'android' : 'ios'));
+		});
+
+		dialog.querySelectorAll<HTMLElement>('[data-close-dialog]').forEach((button) => {
+			button.addEventListener('click', close);
+		});
+
+		// A click that lands on the dialog element itself came from the backdrop — everything
+		// inside is covered by the padded content wrapper.
+		dialog.addEventListener('click', (event) => {
+			if (event.target === dialog) close();
+		});
+
+		// Fires for the close button, the backdrop and Esc alike.
+		dialog.addEventListener('close', () => {
+			document.documentElement.classList.remove('overflow-hidden');
+		});
+
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			if (submitButton?.disabled) return;
+
+			setError(null);
+			// The form carries `novalidate` so this fires at a moment we choose, after the
+			// previous error has been cleared.
+			if (!form.reportValidity()) return;
+
+			setBusy(true);
+			try {
+				const { error } = await actions.appAccess.requestInvite(new FormData(form));
+
+				if (isInputError(error)) {
+					const invalid = Object.keys(error.fields);
+					setError(inputErrorMessage(invalid), invalid);
+					return;
+				}
+				if (error) {
+					setError(error.message);
+					return;
+				}
+
+				// The visitor's own address, straight from the field and set as text — it never
+				// makes the round trip through the server.
+				if (sentEmail && emailInput?.value) sentEmail.textContent = emailInput.value.trim();
+				formPanel?.classList.add('hidden');
+				sentPanel?.classList.remove('hidden');
+				// The heading is what announces the change; the panel swap alone is silent.
+				sentTitle?.focus();
+			} catch {
+				setError('We could not reach the server. Please check your connection and try again.');
+			} finally {
+				setBusy(false);
+			}
+		});
+	}
+</script>
