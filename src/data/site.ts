@@ -60,7 +60,7 @@ export const footerColumns: FooterColumn[] = [
 		title: 'Vendors',
 		links: [
 			{ label: 'Sell with us', href: '/sell-with-us' },
-			{ label: 'Pricing', href: '/pricing' },
+			// { label: 'Pricing', href: '/pricing' },
 			{ label: 'Vendor help', href: '/vendor-help' },
 		],
 	},
