@@ -1,0 +1,28 @@
+---
+// On-demand rather than prerendered: this catches every path under /app/ (order, market, vendor,
+// invite, and reset-password links), which a prerendered route can't enumerate ahead of time. It
+// is the site's second on-demand route, alongside the /_actions/* endpoints — see CLAUDE.md.
+export const prerender = false;
+
+import Layout from '../../layouts/Layout.astro';
+import SiteNav from '../../components/sections/SiteNav.astro';
+import AppLinkGrid from '../../components/sections/AppLinkGrid.astro';
+import AppInviteModal from '../../components/ui/AppInviteModal.astro';
+import SiteFooter from '../../components/layout/SiteFooter.astro';
+---
+
+<Layout
+	title="Open in MarketDay"
+	description="This link opens in the MarketDay app. Get MarketDay to pre-order fresh produce from local markets."
+	noindex
+>
+	<div class="w-full overflow-hidden">
+		<div class="mx-auto max-w-310">
+			<SiteNav variant="light" />
+		</div>
+		<AppLinkGrid />
+		<SiteFooter />
+	</div>
+	{/* Shared by the two badges in AppLinkGrid — outside the wrapper above so nothing clips it. */}
+	<AppInviteModal />
+</Layout>

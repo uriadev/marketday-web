@@ -1,0 +1,15 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["GZT5M3ZHML.com.uriadev.MarketDay"],
+        "components": [
+          {
+            "/": "/app/*",
+            "comment": "Every MarketDay deep link lives under /app/, so the marketing pages are never intercepted."
+          }
+        ]
+      }
+    ]
+  }
+}

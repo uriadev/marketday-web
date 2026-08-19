@@ -4,4 +4,7 @@ Allow: /
 # The form endpoint is on-demand and POST-only — nothing to crawl there.
 Disallow: /_actions/
 
+# Deep-link landing pages — transactional, nothing to crawl.
+Disallow: /app/
+
 Sitemap: https://marketday.ie/sitemap-index.xml

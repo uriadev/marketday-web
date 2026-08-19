@@ -1,0 +1,13 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.uriadev.marketday",
+      "sha256_cert_fingerprints": [
+        "B8:5A:C5:19:D9:D5:D4:3C:C7:01:0E:68:A4:67:DF:05:C6:EB:38:80:85:87:11:12:00:BD:2B:30:FA:C4:EC:0A",
+        "A7:5D:8A:AB:6A:7C:AB:A1:62:C5:FB:33:B0:0E:72:27:77:F0:7A:33:58:0E:C1:9F:F7:A0:BB:ED:54:3F:84:05"
+      ]
+    }
+  }
+]

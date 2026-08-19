@@ -1,0 +1,26 @@
+---
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import StoreBadge from '../ui/StoreBadge.astro';
+
+/**
+ * Landing content for the /app/* catch-all — reached when a universal/app link can't open the
+ * app (desktop browser, app not installed, or link opened before the app's store listing goes
+ * live). Badges render without `href` while the app is unlisted, so they open the existing
+ * testing-programme dialog (`ui/AppInviteModal.astro`) rather than a store page — same pairing
+ * `sections/FinalCta.astro` and `sections/Hero.astro` already use.
+ */
+---
+
+<div class="mx-auto max-w-310 px-5 pt-6 pb-16 sm:px-8 lg:px-14 lg:pb-24">
+	<SectionEyebrow>MarketDay</SectionEyebrow>
+	<h1 class="mb-4 max-w-170 font-display text-[34px] leading-[1.05] font-bold tracking-[-0.025em] text-ink sm:text-[42px] lg:text-[46px]">
+		This link opens in the MarketDay app
+	</h1>
+	<p class="mb-8 max-w-160 text-[15.5px] leading-[1.6] text-body sm:text-[16.5px]">
+		If nothing happened automatically, open the MarketDay app to continue — or get it below.
+	</p>
+	<div class="flex flex-wrap items-center gap-3">
+		<StoreBadge store="apple" />
+		<StoreBadge store="google" />
+	</div>
+</div>
