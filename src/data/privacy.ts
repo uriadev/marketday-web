@@ -16,7 +16,7 @@ export interface PrivacySection {
 }
 
 export const privacyMeta = {
-	lastUpdated: 'July 28, 2026',
+	lastUpdated: 'September 2, 2026',
 };
 
 export const privacySections: PrivacySection[] = [
@@ -58,6 +58,10 @@ export const privacySections: PrivacySection[] = [
 			},
 			{
 				kind: 'paragraph',
+				text: 'You do not need an account to use the Service. You can browse markets and vendors and place a pre-order as a guest, without registering. An account is optional, and mainly exists to keep your order history in one place. This policy describes both paths, because the personal data we collect differs between them.',
+			},
+			{
+				kind: 'paragraph',
 				text: 'We do not process payments. All payment for pre-ordered goods takes place directly between you and the vendor at the point of collection. We do not collect or store card details, bank details, or any financial information.',
 			},
 		],
@@ -75,12 +79,20 @@ export const privacySections: PrivacySection[] = [
 				kind: 'list',
 				items: [
 					{
-						lead: 'Account (all users)',
-						text: 'email address; password, stored only as a cryptographic hash — we never store your password in readable form; your Google account identifier, email, and name, if you choose to sign in with Google; and an optional display name.',
+						lead: 'Account (optional)',
+						text: 'email address; password, stored only as a cryptographic hash — we never store your password in readable form; your Google account identifier, email, and name, if you choose to sign in with Google; your Apple account identifier, and the email and name Apple releases, if you choose to sign in with Apple; an optional display name; and an optional phone number.',
+					},
+					{
+						lead: 'Sign in with Apple',
+						text: 'Apple gives us a stable account identifier on every sign-in, but releases your name on the first sign-in only. If you choose "Hide My Email", we receive a private relay address instead of your own, and we treat that relay address as your email address throughout the Service.',
+					},
+					{
+						lead: 'Guest orders (no account)',
+						text: 'you can place a pre-order without creating an account. We then collect the name and phone number you enter at checkout — both required, so the vendor can identify you at the stall and reach you about the order — together with the order contents, any notes, your chosen pickup time, and a secret tracking token generated for that order, which is the only credential that lets you view it afterwards.',
 					},
 					{
 						lead: 'Buyers',
-						text: 'order contents (products, quantities, prices), optional notes attached to an order, and your order history.',
+						text: 'order contents (products, quantities, prices), optional notes attached to an order, your chosen pickup time, and your order history.',
 					},
 					{
 						lead: 'Vendors',
@@ -97,7 +109,7 @@ export const privacySections: PrivacySection[] = [
 				items: [
 					{
 						lead: 'Push notification token',
-						text: 'an anonymous identifier issued by Expo/Apple/Google, used solely to send you notifications about your orders.',
+						text: 'an anonymous identifier issued by Expo/Apple/Google, used solely to send you notifications about your orders. If you allow notifications, it is collected on guest orders as well, where it is stored against the order rather than against an account.',
 					},
 					{
 						lead: 'Location',
@@ -129,11 +141,15 @@ export const privacySections: PrivacySection[] = [
 				items: [
 					{
 						lead: 'Creating and managing your account',
-						text: 'email, password hash, Google ID, and role — necessary to perform our contract with you (Art. 6(1)(b)).',
+						text: 'email, password hash, Google ID, Apple ID, and role — necessary to perform our contract with you (Art. 6(1)(b)).',
 					},
 					{
 						lead: 'Processing and fulfilling pre-orders',
 						text: 'order details and buyer/vendor details — necessary to perform our contract with you (Art. 6(1)(b)).',
+					},
+					{
+						lead: 'Processing a guest pre-order placed without an account',
+						text: 'the name, phone number, notes, pickup time, and tracking token attached to that order — necessary to perform our contract with you (Art. 6(1)(b)). We ask for a phone number rather than an email address because, with no account behind the order, it is the only way the vendor can reach you about the collection.',
 					},
 					{
 						lead: 'Sending transactional notifications about your order status',
@@ -178,7 +194,7 @@ export const privacySections: PrivacySection[] = [
 		blocks: [
 			{
 				kind: 'paragraph',
-				text: 'Important for buyers: when you place a pre-order, the vendor receives your display name, email address, order contents, and any notes you include. This is necessary so the vendor can prepare and hand over your order. Vendors act as independent data controllers in respect of the order information they receive, and are responsible for their own use of that information.',
+				text: 'Important for buyers: when you place a pre-order from an account, the vendor receives your display name, email address, order contents, pickup time, and any notes you include. When you order as a guest, the vendor instead receives the name and phone number you entered at checkout, along with the same order contents, pickup time, and notes — the phone number is how the vendor reaches you, because a guest order carries no email address. In both cases this is necessary so the vendor can prepare and hand over your order. Vendors act as independent data controllers in respect of the order information they receive, and are responsible for their own use of that information.',
 			},
 			{
 				kind: 'paragraph',
@@ -206,6 +222,10 @@ export const privacySections: PrivacySection[] = [
 					{
 						lead: 'Google Ireland Ltd. / Google LLC',
 						text: '"Sign in with Google" authentication — email, name, Google account ID — EU / USA.',
+					},
+					{
+						lead: 'Apple Distribution International Ltd. / Apple Inc.',
+						text: '"Sign in with Apple" authentication — Apple account identifier, and the email and name you choose to release — Ireland / USA.',
 					},
 					{
 						lead: 'Vercel Inc.',
@@ -266,6 +286,14 @@ export const privacySections: PrivacySection[] = [
 						lead: 'Order records',
 						text: '6 years from the date of the order, in anonymised form after account deletion.',
 					},
+					{
+						lead: 'Guest order details (name, phone, notes, push token)',
+						text: 'kept with the order while it is live and for the 6-year record period, unless you ask us to erase them sooner — see Your rights.',
+					},
+					{
+						lead: 'Guest order tracking token',
+						text: 'kept for the life of the order record. Anyone holding it can view that order, so treat your tracking link as private.',
+					},
 					{ lead: 'Password reset codes', text: '15 minutes, then deleted.' },
 					{ lead: 'Refresh tokens', text: 'until logout, password reset, or expiry (7 days).' },
 					{ lead: 'Server and security logs', text: '30 days.' },
@@ -274,7 +302,7 @@ export const privacySections: PrivacySection[] = [
 			},
 			{
 				kind: 'paragraph',
-				text: "Anonymisation instead of deletion: when you request deletion of your account, we replace your identifying data (email, name, Google ID, password hash, push token) with irreversible placeholder values. Your order records remain in the system in a form that can no longer be linked to you, because vendors need accurate historical records of transactions and we may need them for tax and accounting purposes. Once anonymised, the data is no longer personal data under the GDPR.",
+				text: "Anonymisation instead of deletion: when you request deletion of your account, we replace your identifying data (email, name, Google ID, Apple ID, password hash, phone number, push token) with irreversible placeholder values. Your order records remain in the system in a form that can no longer be linked to you, because vendors need accurate historical records of transactions and we may need them for tax and accounting purposes. Once anonymised, the data is no longer personal data under the GDPR. The same applies to a guest order we erase at your request: the name, phone number, notes, and push token on that order are replaced with the same placeholders, and what remains is an anonymous sales record.",
 			},
 		],
 	},
@@ -344,6 +372,13 @@ export const privacySections: PrivacySection[] = [
 				kind: 'paragraph',
 				text: 'Account deletion can also be carried out directly in the app under Profile → Settings → Delete account.',
 			},
+			{
+				kind: 'paragraphWithLink',
+				before: 'If you ordered as a guest you have the same rights, but there is no account to sign into and no password we can check. Quote your order number, or the tracking link you were given at checkout, when you email ',
+				linkText: 'privacy@marketday.ie',
+				linkHref: 'mailto:privacy@marketday.ie',
+				after: ' — that is what lets us find the order and satisfy ourselves that it is yours, and we ask for nothing further to identify you.',
+			},
 		],
 	},
 	{
@@ -353,7 +388,7 @@ export const privacySections: PrivacySection[] = [
 		blocks: [
 			{
 				kind: 'paragraph',
-				text: 'The Service is not intended for children. Under section 31 of the Data Protection Act 2018, the digital age of consent in Ireland is 16 — you must be at least 16 years old to create an account. If we become aware that we hold personal data relating to a person under 16, we will delete it without undue delay.',
+				text: 'The Service is not intended for children. Under section 31 of the Data Protection Act 2018, the digital age of consent in Ireland is 16 — you must be at least 16 years old to create an account or to place a guest order. If we become aware that we hold personal data relating to a person under 16, whether held against an account or against a guest order, we will delete it without undue delay.',
 			},
 		],
 	},
