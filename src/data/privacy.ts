@@ -370,7 +370,7 @@ export const privacySections: PrivacySection[] = [
 			},
 			{
 				kind: 'paragraph',
-				text: 'Account deletion can also be carried out directly in the app under Profile → Settings → Delete account.',
+				text: 'Account deletion can also be carried out directly in the app under Profile → Legal → Delete account.',
 			},
 			{
 				kind: 'paragraphWithLink',
