@@ -186,21 +186,28 @@ const errorClass = 'mt-1.5 hidden text-[13px] text-danger';
 		// fast submission as a bot; see MIN_FILL_MS in src/actions/index.ts.
 		if (renderedAtInput) renderedAtInput.value = String(Date.now());
 
-		tabs.forEach((tab) => {
-			tab.addEventListener('click', () => {
-				tabs.forEach((t) => {
-					const active = t === tab;
-					t.classList.toggle('bg-brand', active);
-					t.classList.toggle('text-white', active);
-					t.classList.toggle('bg-cream', !active);
-					t.classList.toggle('text-body', !active);
-					t.setAttribute('aria-pressed', String(active));
-				});
-				if (roleInput) roleInput.value = tab.getAttribute('data-role') ?? 'shopper';
-				if (subjectInput) subjectInput.placeholder = tab.getAttribute('data-subject-placeholder') ?? '';
-				if (messageInput) messageInput.placeholder = tab.getAttribute('data-message-placeholder') ?? '';
+		const selectRole = (tab: HTMLButtonElement) => {
+			tabs.forEach((t) => {
+				const active = t === tab;
+				t.classList.toggle('bg-brand', active);
+				t.classList.toggle('text-white', active);
+				t.classList.toggle('bg-cream', !active);
+				t.classList.toggle('text-body', !active);
+				t.setAttribute('aria-pressed', String(active));
 			});
-		});
+			if (roleInput) roleInput.value = tab.getAttribute('data-role') ?? 'shopper';
+			if (subjectInput) subjectInput.placeholder = tab.getAttribute('data-subject-placeholder') ?? '';
+			if (messageInput) messageInput.placeholder = tab.getAttribute('data-message-placeholder') ?? '';
+		};
+
+		tabs.forEach((tab) => tab.addEventListener('click', () => selectRole(tab)));
+
+		// `/contact?role=vendor` preselects a tab (e.g. from "Start selling"). The page is
+		// prerendered, so this has to happen here. Matched against the tabs' own roles, so an
+		// unknown value is ignored rather than written into the form.
+		const requestedRole = new URLSearchParams(window.location.search).get('role');
+		const requestedTab = Array.from(tabs).find((t) => t.getAttribute('data-role') === requestedRole);
+		if (requestedTab) selectRole(requestedTab);
 
 		const setStatus = (message: string, tone: 'success' | 'error') => {
 			if (!status) return;
