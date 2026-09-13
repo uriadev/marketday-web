@@ -14,7 +14,19 @@ export default defineConfig({
   site: 'https://marketday.ie',
 
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    ssr: {
+      // rrule (used server-side by /markets) ships CommonJS as `main` and ESM as `module`. Left
+      // external, Node loads the CommonJS build and the named imports fail; bundled, Vite picks
+      // the ESM build and they resolve.
+      noExternal: ['rrule']
+    }
+  },
+
+  // Market photos from the API are served from the catalog bucket. Listing the host lets
+  // <Image> optimise them; a URL on any other host still renders, just unoptimised.
+  image: {
+    domains: ['catalog.marketday.ie']
   },
 
   adapter: vercel(),

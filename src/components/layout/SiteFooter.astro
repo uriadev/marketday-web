@@ -2,7 +2,8 @@
 import { Image } from 'astro:assets';
 import { brand, footerColumns, legalLinks } from '../../data/site';
 
-const currentPath = Astro.url.pathname;
+// Trailing slash stripped so the match holds however the page was linked.
+const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
 ---
 
 <div class="bg-ink">

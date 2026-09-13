@@ -1,0 +1,45 @@
+---
+// On-demand rather than prerendered: the market list is read from the MarketDay API, so a market
+// published in the admin console appears without a redeploy. The CDN caches the page (headers
+// below), so the API sees one request per cache window rather than one per visitor. Alongside
+// /_actions/* and /app/*, this is one of the site's on-demand routes — see CLAUDE.md.
+export const prerender = false;
+
+import Layout from '../layouts/Layout.astro';
+import MarketsHero from '../components/sections/MarketsHero.astro';
+import MarketsFilters from '../components/sections/MarketsFilters.astro';
+import MarketsDirectory from '../components/sections/MarketsDirectory.astro';
+import MarketsCta from '../components/sections/MarketsCta.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+import type { Market } from '../data/markets';
+import { fetchMarkets } from '../lib/api/markets';
+
+let markets: Market[] = [];
+let unavailable = false;
+
+try {
+	markets = await fetchMarkets();
+	Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=300, stale-while-revalidate=600');
+} catch (error) {
+	// The error can carry API detail, so it is logged and never rendered; the page shows a static
+	// "couldn't load" state instead. Cached only briefly, so an outage clears from the edge quickly.
+	console.error('[markets] failed to load markets', error);
+	unavailable = true;
+	Astro.response.headers.set('Cache-Control', 'public, max-age=0, s-maxage=30');
+}
+---
+
+<Layout
+	title="Find a market — MarketDay"
+	description="Find a farmers market near you in County Cork. Search by town, trading day or produce and see who's trading this week."
+>
+	{/* No overflow-hidden wrapper here, unlike the other pages: it would stop the map column
+		in MarketsDirectory from sticking. The hero clips its own glow instead. */}
+	<div class="w-full">
+		<MarketsHero />
+		<MarketsFilters markets={markets} />
+		<MarketsDirectory markets={markets} unavailable={unavailable} />
+		<MarketsCta />
+		<SiteFooter />
+	</div>
+</Layout>

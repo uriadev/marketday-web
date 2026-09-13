@@ -1,7 +1,7 @@
 ---
 // On-demand rather than prerendered: this catches every path under /app/ (order, market, vendor,
 // invite, and reset-password links), which a prerendered route can't enumerate ahead of time. It
-// is the site's second on-demand route, alongside the /_actions/* endpoints — see CLAUDE.md.
+// is one of the site's on-demand routes, alongside /_actions/* and /markets — see CLAUDE.md.
 export const prerender = false;
 
 import Layout from '../../layouts/Layout.astro';

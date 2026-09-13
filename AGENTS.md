@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-MarketDay marketing site — an Astro + Tailwind CSS 4 marketing site (no client-side framework islands, no tests). Pages are composed in `src/pages/` from a stack of section components. Almost every page is prerendered; the two exceptions are on-demand routes the Vercel adapter deploys as functions — the form actions (`/_actions/*`, see "Forms" below) and the `/app/*` catch-all (see "Universal links" below).
+MarketDay marketing site — an Astro + Tailwind CSS 4 marketing site (no client-side framework islands, no tests). Pages are composed in `src/pages/` from a stack of section components. Almost every page is prerendered; the exceptions are on-demand routes the Vercel adapter deploys as functions — the form actions (`/_actions/*`, see "Forms" below), the `/app/*` catch-all (see "Universal links" below), and `/markets`, which reads its list from the API (see "Market finder" below).
 
 ## Commands
 
@@ -44,7 +44,7 @@ Consult these guides before working on related tasks:
 
 ## Architecture
 
-**Page composition**: every route in `src/pages/` (`index`, `about`, `contact`, `delete-account`, `pricing`, `privacy`, `sell-with-us`, `terms`, `vendor-help`, `app/[...path]`) is a thin shell that renders `Layout.astro` wrapping a fixed, page-specific sequence of section components — typically `<Page>Hero` → two or three content sections → `<Page>Cta` → `SiteFooter`. The home page is the one exception where `SiteNav` lives inside `Hero`; every other page renders `SiteNav` directly above its `Hero`. To add or reorder a page's content, edit that page file's stack directly — there's no CMS or content collection layer. `Layout.astro` also takes per-page `title`/`description`/`image`/`ogType`/`noindex` props (falling back to `seo` in `src/data/site.ts`) that drive the `<title>`, meta description, canonical, and Open Graph/Twitter tags; pass `noindex` for transactional or link-gated pages (see `app/[...path].astro`).
+**Page composition**: every route in `src/pages/` (`index`, `about`, `contact`, `delete-account`, `markets`, `pricing`, `privacy`, `sell-with-us`, `terms`, `vendor-help`, `app/[...path]`) is a thin shell that renders `Layout.astro` wrapping a fixed, page-specific sequence of section components — typically `<Page>Hero` → two or three content sections → `<Page>Cta` → `SiteFooter`. The home page is the one exception where `SiteNav` lives inside `Hero`; every other page renders `SiteNav` directly above its `Hero`. To add or reorder a page's content, edit that page file's stack directly — there's no CMS or content collection layer. `Layout.astro` also takes per-page `title`/`description`/`image`/`ogType`/`noindex` props (falling back to `seo` in `src/data/site.ts`) that drive the `<title>`, meta description, canonical, and Open Graph/Twitter tags; pass `noindex` for transactional or link-gated pages (see `app/[...path].astro`).
 
 **Component layers** (`src/components/`):
 - `sections/` — full-width page sections, one per page block, grouped by a `<Page>` prefix (e.g. `AboutHero`, `AboutStory`, `AboutCta`); each is self-contained and imports the `ui/` and `icons/` pieces it needs.
@@ -52,11 +52,23 @@ Consult these guides before working on related tasks:
 - `icons/` — one `.astro` file per SVG icon, each accepting a `class` prop (and sometimes `strokeWidth`) for styling from the caller.
 - `layout/` — page chrome (currently `SiteFooter.astro`; nav lives in `sections/SiteNav.astro` since on the home page it's part of the Hero).
 
-**Content/data separation**: Copy and structured content live in `src/data/` as typed TS modules, not hardcoded in components — generally one module per page (`about.ts`, `contact.ts`, `pricing.ts`, `privacy.ts`, `sell-with-us.ts`, `terms.ts`, `vendor-help.ts`, `app-access.ts`) plus:
+**Content/data separation**: Copy and structured content live in `src/data/` as typed TS modules, not hardcoded in components — generally one module per page (`about.ts`, `contact.ts`, `markets.ts`, `pricing.ts`, `privacy.ts`, `sell-with-us.ts`, `terms.ts`, `vendor-help.ts`, `app-access.ts`) plus:
 - `src/data/site.ts` — brand info, nav links, footer columns, legal links, and the site-wide `seo` defaults `Layout.astro` falls back to.
 - `src/data/home.ts` — per-section content arrays (steps, features, testimonials, FAQs, vendor benefits), each with a matching `interface`/`type` export.
 
 Components that render one of these arrays typically map an icon-name union (e.g. `StepIcon`, `FeatureIcon`) to an actual icon component via a local lookup object (see `FeatureCard.astro`), rather than importing icons dynamically.
+
+**Market finder** (`/markets`): the market list comes from the API's public `markets(isActive: true)` query, which only ever returns published markets. The page is on-demand (`prerender = false`), so a market published in the admin console shows up without a redeploy.
+- **Caching:** it sets `Cache-Control: s-maxage=300, stale-while-revalidate=600`, so Vercel's CDN serves it and the API sees about one request per cache window. If the API fails, the page logs the `ApiError`, renders a static "couldn't load" state, and is cached for only 30s.
+- **Mapping:** `src/lib/api/markets.ts` fetches and maps the API shape onto `Market` (`src/data/markets.ts`, which now holds only the type, the reference point, and the summary helper). It reads GeoJSON `[lng, lat]`, and uses `rrule` to turn the iCal `schedule` + `duration` into days, cadence, hours and upcoming dates.
+- **Schedule times:** the API stores Irish wall-clock numerals as UTC, so dates are read with UTC accessors and never converted. A row the page can't place is skipped and logged.
+- **rrule is server-only**, and `vite.ssr.noExternal` bundles it because its CommonJS `main` breaks named imports under Node.
+- **Client script:** the `<script>` in `sections/MarketsDirectory.astro` only filters, reorders and relabels the server-rendered cards. It reads the search field and day buttons in `MarketsHero`/`MarketsFilters`, and card data, through `data-*` attributes. Helpers it needs (distance, Dublin date, weekday names) live in `src/lib/markets.ts`, which must not import `rrule` or images.
+- **Day tags** (Today / Tomorrow / Trading now) are computed in the browser against Europe/Dublin time from each card's `data-dates`, not its weekday, so fortnightly and monthly markets tag correctly.
+- **Location:** "Use my location" uses the browser Geolocation API only and sends nothing anywhere.
+- **Map:** `ui/MarketMap.astro` is an SVG schematic plotted from each market's coordinates, not a tile map.
+- **Photos:** market photos are remote (`catalog.marketday.ie`, allowlisted in `image.domains`), with `assets/marketday/market-1.png` as the fallback.
+- **`API_URL`** is a public server variable, so it is inlined at build time. Set it before building, not only at runtime.
 
 **Styling**: Tailwind CSS 4 via the Vite plugin (`@tailwindcss/vite`), configured in `astro.config.mjs`. There is no `tailwind.config.js` — theme tokens (fonts, brand colors, custom shadows) are defined with `@theme` in `src/styles/global.css`, which also sets `@layer base` defaults for `body` and `a`. Prefer the existing custom tokens (`bg-forest`, `text-clay`, `shadow-card`, etc.) over introducing new ad hoc colors. Tailwind utility classes are used directly in markup; `class:list` is used for conditional classes (see `FeatureCard.astro`).
 
@@ -66,7 +78,7 @@ Components that render one of these arrays typically map an icon-name union (e.g
 
 ## Forms (contact, delete-account, app invite)
 
-The `/contact` and `/delete-account` forms and the test-build invite dialog are the site's only server-side paths. The pages themselves stay prerendered — Astro injects the `/_actions/*` endpoint as on-demand, so only that becomes a Vercel function.
+The `/contact` and `/delete-account` forms and the test-build invite dialog are the site's only server-side writes. The pages themselves stay prerendered — Astro injects the `/_actions/*` endpoint as on-demand, so only that becomes a Vercel function.
 
 **This site sends no email.** It validates, filters spam, and forwards to the MarketDay API, which owns the templating, the inbox routing and the actual send.
 
@@ -88,7 +100,7 @@ The `/contact` and `/delete-account` forms and the test-build invite dialog are 
 
 Everything under `/app/*` is reserved for links meant to open the MarketDay app (order, market, vendor, invite, and reset-password links). No other route may start with `/app/` — that namespace is what `public/.well-known/apple-app-site-association` and `public/.well-known/assetlinks.json` advertise to iOS and Android, and the mobile app's `associatedDomains`/`intentFilters` (in the sibling `mobile-app` repo's `app.json`) claim the same prefix. If you change the prefix here, it must change in both repos together.
 
-`src/pages/app/[...path].astro` is the fallback for when the link doesn't open the app — desktop browsers, the app not installed, or the link opened before the app has a public store listing. It sets `export const prerender = false` (the site's second on-demand route, after `/_actions/*`) since it has to answer every path under `/app/` without enumerating them. It reuses the existing `StoreBadge`/`AppInviteModal` pairing from the homepage rather than introducing new download UI.
+`src/pages/app/[...path].astro` is the fallback for when the link doesn't open the app — desktop browsers, the app not installed, or the link opened before the app has a public store listing. It sets `export const prerender = false` (like `/_actions/*` and `/markets`) since it has to answer every path under `/app/` without enumerating them. It reuses the existing `StoreBadge`/`AppInviteModal` pairing from the homepage rather than introducing new download UI.
 
 Only `marketday.ie` is claimed, not `www.marketday.ie` — `www` 308-redirects to the apex, and Apple's AASA fetcher refuses a file served through a redirect. The root `vercel.json` exists solely to set `Content-Type: application/json` on the extensionless AASA file; Vercel can't infer a type for a file with no extension, and both Apple's validator and Android's verifier expect JSON. Don't add other config to it without checking it doesn't conflict with `@astrojs/vercel`'s generated `.vercel/output/config.json` (e.g. a `trailingSlash` mismatch fails the build).
 

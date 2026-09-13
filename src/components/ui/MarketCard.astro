@@ -1,0 +1,102 @@
+---
+import { Image } from 'astro:assets';
+import IconClock from '../icons/IconClock.astro';
+import { fallbackMarketImage, referencePoint, type Market } from '../../data/markets';
+import { distanceKm, formatDistance, tradingDayNames } from '../../lib/markets';
+
+interface Props {
+	market: Market;
+}
+
+const { market } = Astro.props;
+const directionsHref = `https://www.google.com/maps/dir/?api=1&destination=${market.latitude},${market.longitude}`;
+// `address` already ends with the town (see `toMarket` in src/lib/api/markets.ts).
+const searchText = [market.name, market.address, ...market.tags].join(' ').toLowerCase();
+---
+
+<article
+	id={`market-${market.slug}`}
+	class="flex scroll-mt-6 flex-col overflow-hidden rounded-[22px] bg-white shadow-card sm:flex-row"
+	data-market-card
+	data-slug={market.slug}
+	data-days={market.days.join(' ')}
+	data-dates={market.upcoming.join(' ')}
+	data-opens={market.opens}
+	data-closes={market.closes}
+	data-lat={market.latitude}
+	data-lng={market.longitude}
+	data-search={searchText}
+>
+	<div class="relative h-40 shrink-0 sm:h-auto sm:min-h-44 sm:w-47.5">
+		{
+			market.imageUrl ? (
+				// Remote photo from the API. Width and height are only the requested rendition —
+				// the frame crops it with object-cover whatever its real aspect ratio.
+				<Image
+					src={market.imageUrl}
+					alt=""
+					width={570}
+					height={440}
+					widths={[380, 570]}
+					sizes="(min-width: 640px) 190px, 100vw"
+					class="absolute inset-0 h-full w-full object-cover"
+				/>
+			) : (
+				<Image
+					src={fallbackMarketImage}
+					alt=""
+					widths={[380, 570]}
+					sizes="(min-width: 640px) 190px, 100vw"
+					class="absolute inset-0 h-full w-full object-cover"
+				/>
+			)
+		}
+		{/* The server can only name the weekday; the finder script swaps in Today / Tomorrow /
+			Trading now against the visitor's clock. */}
+		<span
+			class="absolute top-3 left-3 flex h-6 items-center rounded-full bg-white px-2.5 text-[11.5px] font-bold text-forest data-live:bg-gold data-live:text-[#3d2704]"
+			data-market-tag
+		>
+			{tradingDayNames[market.days[0]]}
+		</span>
+	</div>
+	<div class="flex flex-1 flex-col gap-2.5 px-6 py-5.5">
+		<div class="flex items-start justify-between gap-3.5">
+			<div>
+				<h2 class="mb-1 font-display text-[21px] font-bold tracking-[-0.015em] text-ink">{market.name}</h2>
+				<p class="text-[14px] text-muted">{market.address}</p>
+			</div>
+			<span class="text-[13.5px] whitespace-nowrap">
+				<span class="font-bold text-brand" data-market-distance>{formatDistance(distanceKm(referencePoint, market))}</span>{' '}
+				<span class="font-semibold text-muted" data-market-distance-suffix>from {referencePoint.label}</span>
+			</span>
+		</div>
+		<div class="flex flex-wrap items-center gap-4">
+			<div class="flex items-center gap-1.75">
+				<IconClock class="h-3.75 w-3.75 text-brand" strokeWidth={1.9} />
+				<span class="text-[14.5px] text-body-dark">
+					{market.cadence} · <time>{market.opens}</time>–<time>{market.closes}</time>
+				</span>
+			</div>
+		</div>
+		<div class="mt-auto flex flex-wrap items-center justify-between gap-3.5 pt-1.5">
+			{
+				market.tags.length > 0 && (
+					<ul class="flex flex-wrap gap-1.5">
+						{market.tags.map((tag) => (
+							<li class="rounded-full bg-brand/12 px-2.75 py-1 text-[12.5px] font-semibold text-[#2f6a4d]">{tag}</li>
+						))}
+					</ul>
+				)
+			}
+			<a
+				href={directionsHref}
+				target="_blank"
+				rel="noopener noreferrer"
+				class="ml-auto flex h-10 items-center rounded-full bg-ink px-4.5 text-[14.5px] font-semibold text-white transition-colors hover:bg-forest hover:text-white"
+			>
+				Get directions<span class="sr-only"> to {market.name} (opens Google Maps)</span>
+			</a>
+		</div>
+	</div>
+</article>

@@ -1,0 +1,34 @@
+---
+import type { Market } from '../../data/markets';
+import { countLabel, tradingDays } from '../../lib/markets';
+
+interface Props {
+	markets: Market[];
+}
+
+const { markets } = Astro.props;
+
+const dayOptions = [{ value: 'all', label: 'All days' }, ...tradingDays.map((day) => ({ value: day, label: day }))];
+---
+
+<div class="border-b border-ink/8 bg-sand">
+	<div class="mx-auto flex max-w-310 flex-wrap items-center gap-3.5 px-5 py-4.5 sm:px-8 lg:px-14">
+		<span id="market-day-filter-label" class="text-[13px] font-bold tracking-[0.08em] text-muted uppercase">Trading day</span>
+		<div class="flex flex-wrap gap-2" role="group" aria-labelledby="market-day-filter-label" data-market-days>
+			{
+				dayOptions.map((option) => (
+					<button
+						type="button"
+						aria-pressed={option.value === 'all' ? 'true' : 'false'}
+						data-day={option.value}
+						class="flex h-9 cursor-pointer items-center rounded-full border-[1.5px] border-ink/12 bg-white px-3.75 text-[14px] font-semibold text-body transition-colors hover:border-ink/30 focus-visible:ring-2 focus-visible:ring-ink/25 focus-visible:outline-none aria-pressed:border-ink aria-pressed:bg-ink aria-pressed:text-white"
+					>
+						{option.label}
+					</button>
+				))
+			}
+		</div>
+		<div class="hidden flex-1 sm:block"></div>
+		<span class="text-[14.5px] text-body" aria-live="polite" data-market-count>{countLabel(markets.length)}</span>
+	</div>
+</div>

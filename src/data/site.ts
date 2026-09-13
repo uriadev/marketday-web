@@ -37,7 +37,7 @@ export const seo = {
 } as const;
 
 export const primaryNavLinks: NavLink[] = [
-	{ label: 'Markets', href: '/#why-marketday' },
+	{ label: 'Markets', href: '/markets' },
 	{ label: 'How it works', href: '/#how-it-works' },
 	{ label: 'For vendors', href: '/sell-with-us' },
 ];
@@ -51,7 +51,7 @@ export const footerColumns: FooterColumn[] = [
 	{
 		title: 'Shop',
 		links: [
-			{ label: 'Find a market', href: '#' },
+			{ label: 'Find a market', href: '/markets' },
 			{ label: 'How it works', href: '/#how-it-works' },
 			{ label: 'Get the app', href: '/#download' },
 		],

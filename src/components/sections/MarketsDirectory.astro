@@ -1,0 +1,245 @@
+---
+import MarketCard from '../ui/MarketCard.astro';
+import MarketMap from '../ui/MarketMap.astro';
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import { summarizeMarkets, type Market } from '../../data/markets';
+
+interface Props {
+	markets: Market[];
+	/** The API couldn't be reached, so `markets` is empty for that reason rather than genuinely. */
+	unavailable?: boolean;
+}
+
+const { markets, unavailable = false } = Astro.props;
+
+// Static copy only: the reason the API failed stays in the server log.
+const emptyState = unavailable
+	? {
+			title: "We couldn't load markets right now",
+			body: 'Please try again in a few minutes.',
+		}
+	: markets.length === 0
+		? {
+				title: 'No markets listed yet',
+				body: "We're adding markets across Cork — check back soon.",
+			}
+		: {
+				title: 'No markets match that yet',
+				body: 'Try a different day or a wider search — we add new markets every week.',
+			};
+---
+
+<div class="mx-auto flex max-w-310 flex-col items-start gap-7 px-5 pt-8 pb-16 sm:px-8 lg:flex-row lg:px-14 lg:pt-10 lg:pb-20">
+	<div id="market-list" class="flex w-full min-w-0 flex-1 flex-col gap-4" data-market-list>
+		{markets.map((market) => <MarketCard market={market} />)}
+
+		<div class="rounded-[22px] bg-white px-8 py-12 text-center shadow-card" hidden={markets.length > 0} data-market-empty>
+			<h2 class="mb-2 font-display text-[22px] font-bold text-ink">{emptyState.title}</h2>
+			<p class="mx-auto max-w-95 text-[15px] leading-[1.55] text-body">{emptyState.body}</p>
+		</div>
+	</div>
+
+	<aside class="flex w-full flex-col gap-4 lg:sticky lg:top-6 lg:w-93 lg:shrink-0">
+		{markets.length > 0 && <MarketMap markets={markets} />}
+
+		<div class="rounded-[22px] bg-ink p-6.5">
+			<h2 class="mb-2 font-display text-xl font-bold tracking-[-0.01em] text-white">Can't find your market?</h2>
+			<p class="mb-4.5 text-[14.5px] leading-[1.55] text-white/72">
+				Tell us where you shop and we'll reach out to the organisers.
+			</p>
+			<a
+				href="/contact"
+				class="inline-flex h-11 items-center rounded-full bg-brand px-5 text-[14.5px] font-semibold text-white transition-colors hover:bg-[#3f8f68] hover:text-white"
+			>
+				Suggest a market
+			</a>
+		</div>
+
+		{
+			markets.length > 0 && (
+				<div class="rounded-[22px] bg-white p-6.5 shadow-card">
+					<SectionEyebrow>This week</SectionEyebrow>
+					<dl class="flex flex-col gap-3">
+						{summarizeMarkets(markets).map((stat) => (
+							<div class="flex items-baseline justify-between">
+								<dt class="text-[14.5px] text-body">{stat.label}</dt>
+								<dd class="font-display text-[19px] font-bold text-ink">{stat.value}</dd>
+							</div>
+						))}
+					</dl>
+				</div>
+			)
+		}
+	</aside>
+</div>
+
+<script>
+	import {
+		addDays,
+		countLabel,
+		distanceKm,
+		dublinDate,
+		formatDistance,
+		tradingDayNames,
+		weekdayOf,
+		type TradingDay,
+	} from '../../lib/markets';
+
+	// The search field and the day filter live in the sections above (MarketsHero,
+	// MarketsFilters); every card is rendered on the server and this only shows, hides and
+	// reorders them. All copy written here is static — nothing the visitor typed is echoed back.
+
+	type DayFilter = TradingDay | 'all';
+
+	const list = document.querySelector<HTMLElement>('[data-market-list]');
+	const cards = Array.from(document.querySelectorAll<HTMLElement>('[data-market-card]'));
+	const pins = Array.from(document.querySelectorAll<SVGElement>('[data-map-pin]'));
+	const emptyState = document.querySelector<HTMLElement>('[data-market-empty]');
+	const countLabels = document.querySelectorAll<HTMLElement>('[data-market-count]');
+	const searchForm = document.querySelector<HTMLFormElement>('[data-market-search-form]');
+	const searchInput = document.querySelector<HTMLInputElement>('[data-market-search]');
+	const dayButtons = Array.from(document.querySelectorAll<HTMLButtonElement>('[data-market-days] [data-day]'));
+	const locateButton = document.querySelector<HTMLButtonElement>('[data-market-locate]');
+	const locateLabel = document.querySelector<HTMLElement>('[data-market-locate-label]');
+	const locateStatus = document.querySelector<HTMLElement>('[data-market-locate-status]');
+
+	let day: DayFilter = 'all';
+	let query = '';
+
+	function applyFilters() {
+		const needle = query.trim().toLowerCase();
+		const visible = new Set<string>();
+
+		for (const card of cards) {
+			const dayMatches = day === 'all' || (card.dataset.days ?? '').split(' ').includes(day);
+			const queryMatches = !needle || (card.dataset.search ?? '').includes(needle);
+			const show = dayMatches && queryMatches;
+			card.hidden = !show;
+			if (show && card.dataset.slug) visible.add(card.dataset.slug);
+		}
+
+		for (const pin of pins) {
+			pin.toggleAttribute('data-inactive', !visible.has(pin.dataset.slug ?? ''));
+		}
+
+		const label = countLabel(visible.size);
+		countLabels.forEach((el) => (el.textContent = label));
+		if (emptyState) emptyState.hidden = visible.size > 0;
+	}
+
+	// Markets trade on Irish time wherever the visitor happens to be browsing from.
+	const dublinClock = new Intl.DateTimeFormat('en-GB', {
+		timeZone: 'Europe/Dublin',
+		hour: '2-digit',
+		minute: '2-digit',
+		hourCycle: 'h23',
+	});
+
+	function updateTags() {
+		const date = new Date();
+		const parts = dublinClock.formatToParts(date);
+		const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((p) => p.type === type)?.value ?? '';
+		const now = `${part('hour')}:${part('minute')}`;
+		const today = dublinDate(date);
+		const tomorrow = addDays(today, 1);
+
+		for (const card of cards) {
+			const tag = card.querySelector<HTMLElement>('[data-market-tag]');
+			// Matched by date rather than weekday: a fortnightly or monthly market isn't on
+			// "Tomorrow" just because tomorrow is its weekday.
+			const dates = (card.dataset.dates ?? '').split(' ').filter(Boolean);
+			const { opens = '', closes = '' } = card.dataset;
+			if (!tag) continue;
+
+			const next = dates.find((d) => d > today);
+			let text: string | null = null;
+			let live = false;
+			if (dates.includes(today) && now < opens) text = 'Today';
+			else if (dates.includes(today) && now < closes) [text, live] = ['Trading now', true];
+			else if (next === tomorrow) text = 'Tomorrow';
+			else if (next) text = tradingDayNames[weekdayOf(next)];
+			// No date in the window: keep the weekday the server rendered.
+			if (text === null) continue;
+
+			tag.textContent = text;
+			tag.toggleAttribute('data-live', live);
+		}
+	}
+
+	function sortByDistanceFrom(position: GeolocationPosition) {
+		const origin = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+		const byDistance = cards
+			.map((card) => {
+				const km = distanceKm(origin, {
+					latitude: Number(card.dataset.lat),
+					longitude: Number(card.dataset.lng),
+				});
+				const value = card.querySelector<HTMLElement>('[data-market-distance]');
+				const suffix = card.querySelector<HTMLElement>('[data-market-distance-suffix]');
+				if (value) value.textContent = formatDistance(km);
+				if (suffix) suffix.textContent = 'away';
+				return { card, km };
+			})
+			.sort((a, b) => a.km - b.km);
+
+		// Re-appending moves each card; the empty state goes back to the end.
+		byDistance.forEach(({ card }) => list?.append(card));
+		if (emptyState) list?.append(emptyState);
+	}
+
+	function setLocating(locating: boolean) {
+		if (locateButton) locateButton.disabled = locating;
+		if (locateLabel) locateLabel.textContent = locating ? 'Finding you…' : 'Use my location';
+	}
+
+	function setStatus(message: string) {
+		if (locateStatus) locateStatus.textContent = message;
+	}
+
+	searchForm?.addEventListener('submit', (event) => event.preventDefault());
+
+	searchInput?.addEventListener('input', () => {
+		query = searchInput.value;
+		applyFilters();
+	});
+
+	for (const button of dayButtons) {
+		button.addEventListener('click', () => {
+			day = (button.dataset.day ?? 'all') as DayFilter;
+			dayButtons.forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+			applyFilters();
+		});
+	}
+
+	locateButton?.addEventListener('click', () => {
+		if (!('geolocation' in navigator)) {
+			setStatus("Your browser can't share a location — search by town instead.");
+			return;
+		}
+
+		setLocating(true);
+		setStatus('');
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+				setLocating(false);
+				sortByDistanceFrom(position);
+				setStatus('Sorted by distance from you.');
+			},
+			(error) => {
+				setLocating(false);
+				setStatus(
+					error.code === error.PERMISSION_DENIED
+						? 'Location access is off — search by town instead.'
+						: "We couldn't find your location — search by town instead.",
+				);
+			},
+			{ timeout: 10000, maximumAge: 300000 },
+		);
+	});
+
+	// A browser restoring the page from history may have kept a typed query.
+	if (searchInput?.value) query = searchInput.value;
+	applyFilters();
+	updateTags();
+	setInterval(updateTags, 60_000);
+</script>

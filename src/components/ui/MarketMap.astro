@@ -1,0 +1,95 @@
+---
+import type { Market } from '../../data/markets';
+import { countLabel } from '../../lib/markets';
+
+interface Props {
+	/** Must be non-empty — the projection below has no bounds to fit otherwise. */
+	markets: Market[];
+}
+
+const { markets } = Astro.props;
+
+// A schematic, not a tile map: each market is plotted from its coordinates onto a flat
+// (equirectangular) projection, so relative positions are true without loading a third-party map.
+const width = 372;
+const height = 300;
+const padX = 36;
+const padTop = 36;
+/** Kept clear for the count pill overlaid at the bottom. */
+const padBottom = 76;
+
+const lats = markets.map((market) => market.latitude);
+const lngs = markets.map((market) => market.longitude);
+const [minLat, maxLat] = [Math.min(...lats), Math.max(...lats)];
+const [minLng, maxLng] = [Math.min(...lngs), Math.max(...lngs)];
+// Shrinks longitude to match latitude at this distance from the equator.
+const lngScale = Math.cos((((minLat + maxLat) / 2) * Math.PI) / 180);
+const spanX = Math.max((maxLng - minLng) * lngScale, 1e-6);
+const spanY = Math.max(maxLat - minLat, 1e-6);
+const plotHeight = height - padTop - padBottom;
+const scale = Math.min((width - 2 * padX) / spanX, plotHeight / spanY);
+const offsetX = (width - spanX * scale) / 2;
+const offsetY = padTop + (plotHeight - spanY * scale) / 2;
+
+const labelHeight = 14;
+const placedLabels: { left: number; right: number; top: number; bottom: number }[] = [];
+
+const pins = markets.map((market) => {
+	const x = (market.longitude - minLng) * lngScale * scale + offsetX;
+	const y = (maxLat - market.latitude) * scale + offsetY;
+	const label = market.name.split(' ')[0];
+
+	// Labels sit under their pin; one that would overlap an earlier label is dropped (the pin
+	// keeps its tooltip), which keeps a tight cluster like Cork city legible.
+	const halfWidth = (label.length * 6.4) / 2;
+	const box = { left: x - halfWidth, right: x + halfWidth, top: y + 11, bottom: y + 11 + labelHeight };
+	const clashes = placedLabels.some(
+		(other) => box.left < other.right && box.right > other.left && box.top < other.bottom && box.bottom > other.top,
+	);
+	if (!clashes) placedLabels.push(box);
+
+	return { market, x, y, label: clashes ? null : label };
+});
+---
+
+<div
+	class="relative h-75 overflow-hidden rounded-[22px] bg-[#e6e4da] bg-[linear-gradient(rgba(255,255,255,0.45)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.45)_1px,transparent_1px)] bg-size-[34px_34px] shadow-card"
+>
+	<svg
+		viewBox={`0 0 ${width} ${height}`}
+		class="absolute inset-0 h-full w-full"
+		role="group"
+		aria-label="Map of listed markets"
+	>
+		{
+			pins.map(({ market, x, y, label }) => (
+				<a
+					href={`#market-${market.slug}`}
+					aria-label={market.name}
+					class="transition-opacity data-inactive:opacity-25 focus-visible:outline-none [&:focus-visible_circle]:stroke-ink"
+					data-map-pin
+					data-slug={market.slug}
+				>
+					<title>{market.name}</title>
+					<circle cx={x} cy={y} r="7.5" class="fill-brand stroke-white" stroke-width="2.5" />
+					{label && (
+						<text
+							x={x}
+							y={y + 22}
+							text-anchor="middle"
+							class="fill-body-dark font-sans text-[11px] font-semibold"
+							paint-order="stroke"
+							stroke="#e6e4da"
+							stroke-width="3"
+						>
+							{label}
+						</text>
+					)}
+				</a>
+			))
+		}
+	</svg>
+	<div class="absolute right-3.5 bottom-3.5 left-3.5 rounded-[14px] bg-white/95 px-4 py-3.25 text-[14px] text-body-dark">
+		<span data-market-count>{countLabel(markets.length)}</span> on the map
+	</div>
+</div>

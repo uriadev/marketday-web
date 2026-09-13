@@ -9,6 +9,9 @@ interface Props {
 
 const { variant = 'dark' } = Astro.props;
 const isLight = variant === 'light';
+// Trailing slash stripped so the match holds however the page was linked.
+const currentPath = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const isCurrent = (href: string) => href === currentPath;
 ---
 
 <div class="group relative flex items-center justify-between px-5 py-6.5 sm:px-8 lg:px-14">
@@ -23,7 +26,16 @@ const isLight = variant === 'light';
 	<div class="flex items-center gap-4 md:gap-8.5">
 		{
 			primaryNavLinks.map((link) => (
-				<a href={link.href} class:list={['hidden text-[15px] font-medium md:inline', isLight ? 'text-body' : 'text-white/80']}>
+				<a
+					href={link.href}
+					aria-current={isCurrent(link.href) ? 'page' : undefined}
+					class:list={[
+						'hidden text-[15px] md:inline',
+						isCurrent(link.href)
+							? ['border-b-2 border-gold pb-0.5 font-semibold', isLight ? 'text-ink' : 'text-white']
+							: ['font-medium', isLight ? 'text-body' : 'text-white/80'],
+					]}
+				>
 					{link.label}
 				</a>
 			))
@@ -57,7 +69,14 @@ const isLight = variant === 'light';
 	>
 		{
 			primaryNavLinks.map((link) => (
-				<a href={link.href} class:list={['py-3 text-[17px] font-medium', isLight ? 'text-body' : 'text-white/85']}>
+				<a
+					href={link.href}
+					aria-current={isCurrent(link.href) ? 'page' : undefined}
+					class:list={[
+						'py-3 text-[17px]',
+						isCurrent(link.href) ? ['font-semibold', isLight ? 'text-ink' : 'text-white'] : ['font-medium', isLight ? 'text-body' : 'text-white/85'],
+					]}
+				>
 					{link.label}
 				</a>
 			))
