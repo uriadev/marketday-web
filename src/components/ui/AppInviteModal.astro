@@ -12,7 +12,7 @@ import {
 
 /**
  * Testing-programme dialog, opened by every `StoreBadge` on the page that was rendered without
- * an `href` (i.e. every one of them, until the app is actually listed). Rendered once per page
+ * an `href` (i.e. those for a store with no entry in `storeLinks`). Rendered once per page
  * rather than per badge — the script binds all the badges it finds.
  *
  * The submit goes through `actions.appAccess.requestInvite`, which forwards to the API's

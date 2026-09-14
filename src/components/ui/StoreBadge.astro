@@ -2,19 +2,21 @@
 import { Image } from 'astro:assets';
 import appStoreBadge from '../../assets/badges/app-store.svg';
 import googlePlayBadge from '../../assets/badges/google-play.svg';
+import { storeLinks } from '../../data/site';
 
 interface Props {
 	store: 'apple' | 'google';
 	/**
-	 * Store listing to link to. Omit while the app is unreleased: the badge then renders as a
-	 * button that announces itself with `data-store-badge`, which `ui/AppInviteModal.astro`
-	 * binds to so a click opens the testing-programme dialog instead.
+	 * Store listing to link to; defaults to the store's entry in `storeLinks`. With neither, the
+	 * app isn't listed there yet: the badge renders as a button that announces itself with
+	 * `data-store-badge`, which `ui/AppInviteModal.astro` binds to so a click opens the
+	 * testing-programme dialog instead.
 	 */
 	href?: string;
 	class?: string;
 }
 
-const { store, href, class: className } = Astro.props;
+const { store, href = storeLinks[store], class: className } = Astro.props;
 
 // Official artwork from Apple's and Google's badge kits, used unmodified. Both are the black
 // badge: it is Apple's preferred variant and the only one Google ships, so the pair always

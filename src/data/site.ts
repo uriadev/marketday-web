@@ -12,6 +12,15 @@ export const brand = {
 };
 
 /**
+ * Public store listings, read by `ui/StoreBadge.astro`. A store left `undefined` isn't listed
+ * yet, so its badges open the testing-programme dialog (`ui/AppInviteModal.astro`) instead.
+ */
+export const storeLinks: Record<'apple' | 'google', string | undefined> = {
+	apple: undefined,
+	google: 'https://play.google.com/store/apps/details?id=com.uriadev.marketday',
+};
+
+/**
  * Defaults for the tags in `Layout.astro`'s head. Pages override title/description via the
  * Layout props; everything else here is site-wide.
  *
