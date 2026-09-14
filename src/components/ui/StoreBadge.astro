@@ -1,10 +1,10 @@
 ---
-import IconAppleLogo from '../icons/IconAppleLogo.astro';
-import IconPlayLogo from '../icons/IconPlayLogo.astro';
+import { Image } from 'astro:assets';
+import appStoreBadge from '../../assets/badges/app-store.svg';
+import googlePlayBadge from '../../assets/badges/google-play.svg';
 
 interface Props {
 	store: 'apple' | 'google';
-	theme?: 'light' | 'dark';
 	/**
 	 * Store listing to link to. Omit while the app is unreleased: the badge then renders as a
 	 * button that announces itself with `data-store-badge`, which `ui/AppInviteModal.astro`
@@ -14,15 +14,16 @@ interface Props {
 	class?: string;
 }
 
-const { store, theme = 'light', href, class: className } = Astro.props;
+const { store, href, class: className } = Astro.props;
 
-const copy =
+// Official artwork from Apple's and Google's badge kits, used unmodified. Both are the black
+// badge: it is Apple's preferred variant and the only one Google ships, so the pair always
+// matches. Rendered as <img> rather than inlined — the files use generic ids and `.st*` class
+// names that would leak into the page's CSS.
+const badge =
 	store === 'apple'
-		? { small: 'Download on the', big: 'App Store', label: 'Download on the App Store' }
-		: { small: 'Get it on', big: 'Google Play', label: 'Get it on Google Play' };
-
-const iconColor =
-	store === 'apple' ? (theme === 'light' ? 'text-ink' : 'text-white') : theme === 'light' ? 'text-brand' : 'text-brand-light';
+		? { src: appStoreBadge, alt: 'Download on the App Store' }
+		: { src: googlePlayBadge, alt: 'Get it on Google Play' };
 
 const Tag = href ? 'a' : 'button';
 const tagProps = href
@@ -32,16 +33,7 @@ const tagProps = href
 
 <Tag
 	{...tagProps}
-	aria-label={copy.label}
-	class:list={[
-		'flex items-center gap-2.75 rounded-[13px] px-5 text-left transition-opacity hover:opacity-90',
-		theme === 'light' ? 'h-13.5 bg-white' : 'h-14 bg-ink',
-		className,
-	]}
+	class:list={['block shrink-0 rounded-[9px] transition-opacity hover:opacity-90', className]}
 >
-	{store === 'apple' ? <IconAppleLogo class={`h-5.5 w-5.5 ${iconColor}`} /> : <IconPlayLogo class={`h-5 w-5 ${iconColor}`} />}
-	<div class="flex flex-col text-left leading-[1.05]">
-		<span class:list={['text-[10px]', theme === 'light' ? 'text-ink/60' : 'text-white/75']}>{copy.small}</span>
-		<span class:list={['text-[17px] font-semibold', theme === 'light' ? 'text-ink' : 'text-white']}>{copy.big}</span>
-	</div>
+	<Image src={badge.src} alt={badge.alt} loading="eager" class="block h-13 w-auto" />
 </Tag>
