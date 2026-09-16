@@ -16,7 +16,7 @@ export const brand = {
  * yet, so its badges open the testing-programme dialog (`ui/AppInviteModal.astro`) instead.
  */
 export const storeLinks: Record<'apple' | 'google', string | undefined> = {
-	apple: undefined,
+	apple: 'https://apps.apple.com/app/marketday/id6795931033',
 	google: 'https://play.google.com/store/apps/details?id=com.uriadev.marketday',
 };
 
