@@ -1,0 +1,114 @@
+---
+import { PUBLIC_GOOGLE_CLIENT_ID } from 'astro:env/client';
+import GoogleSignInButton from '../ui/GoogleSignInButton.astro';
+import PortalForm from '../ui/PortalForm.astro';
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import { brand } from '../../data/site';
+import { vendorPortalFormLimits } from '../../data/vendor-portal';
+
+interface Props {
+	/** Where to go after signing in. Already passed through `safeNextPath`. */
+	next: string;
+	/** A static notice picked from `loginReasons`, never URL text. */
+	notice?: string;
+}
+
+const { next, notice } = Astro.props;
+const resetHref = `/vendor/forgot-password?next=${encodeURIComponent(next)}`;
+
+const fieldClass =
+	'h-12 w-full rounded-xl border border-[#E4E0D5] bg-cream px-4 text-[15px] text-ink placeholder:text-[#a9a598] focus:border-brand focus:outline-none aria-[invalid=true]:border-danger';
+const errorClass = 'mt-1.5 hidden text-[13px] text-danger';
+---
+
+<div class="mx-auto max-w-130 pt-6 sm:pt-10">
+	<SectionEyebrow>Vendor portal</SectionEyebrow>
+	<h1
+		class="mb-3 font-display text-[32px] leading-[1.05] font-bold tracking-[-0.025em] text-ink sm:text-[40px]"
+	>
+		Sign in to manage your stall
+	</h1>
+	<p class="mb-7 text-[15.5px] leading-[1.6] text-body">
+		Your subscription, bills and team, in one place. This is for business owners — staff keep running the stall
+		from the MarketDay app.
+	</p>
+
+	{notice && <p role="status" class="mb-5 rounded-xl bg-mint px-4 py-3 text-[14.5px] text-forest">{notice}</p>}
+
+	<div class="rounded-[28px] bg-white p-6 shadow-card sm:p-9">
+		{
+			PUBLIC_GOOGLE_CLIENT_ID && (
+				<>
+					<GoogleSignInButton next={next} />
+					<div class="my-6 flex items-center gap-3 text-[13px] font-semibold text-muted" aria-hidden="true">
+						<span class="h-px flex-1 bg-ink/10" />
+						or
+						<span class="h-px flex-1 bg-ink/10" />
+					</div>
+				</>
+			)
+		}
+
+		<PortalForm portalAction="vendor.login" aria-label="Sign in with email">
+			<input type="hidden" name="next" value={next} />
+
+			<div class="mb-4">
+				<label for="vendor-login-email" class="mb-2 block text-[13px] font-semibold text-ink">Email</label>
+				<input
+					id="vendor-login-email"
+					name="email"
+					type="email"
+					required
+					autocomplete="username"
+					maxlength={vendorPortalFormLimits.email.max}
+					aria-describedby="vendor-login-email-error"
+					placeholder="you@example.com"
+					class={fieldClass}
+				/>
+				<p id="vendor-login-email-error" data-error-for="email" class={errorClass}></p>
+			</div>
+
+			<div class="mb-2">
+				<label for="vendor-login-password" class="mb-2 block text-[13px] font-semibold text-ink">Password</label>
+				<input
+					id="vendor-login-password"
+					name="password"
+					type="password"
+					required
+					autocomplete="current-password"
+					maxlength={vendorPortalFormLimits.password.max}
+					aria-describedby="vendor-login-password-error"
+					class={fieldClass}
+				/>
+				<p id="vendor-login-password-error" data-error-for="password" class={errorClass}></p>
+			</div>
+
+			<div class="mb-6 text-right">
+				<a href={resetHref} class="text-[14px] font-semibold">Forgot or never set a password?</a>
+			</div>
+
+			<button
+				type="submit"
+				data-submit
+				data-busy-label="Signing in…"
+				class="flex h-13 w-full items-center justify-center rounded-full bg-brand text-base font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
+			>
+				<span data-submit-label>Sign in</span>
+			</button>
+
+			<p data-form-status role="status" aria-live="polite" class="mt-4 hidden rounded-xl px-4 py-3 text-[14.5px]">
+			</p>
+
+			<noscript>
+				<p class="mt-4 rounded-xl bg-cream px-4 py-3 text-[14.5px] text-body">
+					Signing in needs JavaScript. If you can't turn it on, email us at{' '}
+					<a href={`mailto:${brand.email}`}>{brand.email}</a>.
+				</p>
+			</noscript>
+		</PortalForm>
+	</div>
+
+	<p class="mt-6 text-center text-[14.5px] text-body">
+		Not selling with us yet? <a href="/sell-with-us" class="font-semibold">See how it works</a>
+	</p>
+</div>

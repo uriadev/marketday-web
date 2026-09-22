@@ -1,0 +1,7 @@
+---
+// On-demand, like every /vendor/* page — see src/middleware.ts and CLAUDE.md. The middleware
+// has already sent a signed-out visitor to sign in; everyone else lands on billing.
+export const prerender = false;
+
+return Astro.redirect('/vendor/billing');
+---

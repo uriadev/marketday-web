@@ -1,0 +1,55 @@
+---
+import PortalForm from '../ui/PortalForm.astro';
+import SectionEyebrow from '../ui/SectionEyebrow.astro';
+import { vendorPortalTabs } from '../../data/vendor-portal';
+import type { PortalOwner } from '../../lib/auth/session';
+
+interface Props {
+	owner: PortalOwner;
+}
+
+const { owner } = Astro.props;
+const currentPath = Astro.url.pathname.replace(/\/+$/, '');
+---
+
+<div class="mx-auto max-w-310 px-5 pt-2 pb-8 sm:px-8 lg:px-14">
+	<div class="flex flex-wrap items-end justify-between gap-5 border-b border-ink/10 pb-5">
+		<div class="min-w-0">
+			<SectionEyebrow>Vendor portal</SectionEyebrow>
+			<h1
+				class="font-display text-[30px] leading-[1.05] font-bold tracking-[-0.025em] break-words text-ink sm:text-[38px]"
+			>
+				{owner.vendorName}
+			</h1>
+			<p class="mt-2 text-[14.5px] break-words text-body">
+				Signed in as {owner.fullName} · {owner.email}
+			</p>
+		</div>
+		<PortalForm portalAction="vendor.logout">
+			<button
+				type="submit"
+				data-submit
+				data-busy-label="Signing out…"
+				class="h-11 rounded-full border border-ink/15 px-5 text-[14.5px] font-semibold text-ink transition-colors hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+			>
+				<span data-submit-label>Sign out</span>
+			</button>
+		</PortalForm>
+	</div>
+	<nav aria-label="Vendor portal" class="mt-4 flex gap-2">
+		{
+			vendorPortalTabs.map((tab) => (
+				<a
+					href={tab.href}
+					aria-current={tab.href === currentPath ? 'page' : undefined}
+					class:list={[
+						'flex h-10 items-center rounded-full px-4.5 text-[14.5px] font-semibold transition-colors',
+						tab.href === currentPath ? 'bg-forest text-white hover:text-white' : 'text-body hover:bg-white hover:text-ink',
+					]}
+				>
+					{tab.label}
+				</a>
+			))
+		}
+	</nav>
+</div>

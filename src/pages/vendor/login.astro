@@ -1,0 +1,20 @@
+---
+// On-demand: the middleware (src/middleware.ts) sends an already signed-in owner on to
+// `?next=`, which needs a request to read cookies from.
+export const prerender = false;
+
+import VendorPortalLayout from '../../layouts/VendorPortalLayout.astro';
+import VendorLogin from '../../components/sections/VendorLogin.astro';
+import VendorPortalUnavailable from '../../components/sections/VendorPortalUnavailable.astro';
+import { loginReasons } from '../../data/vendor-portal';
+import { safeNextPath } from '../../lib/security/redirects';
+
+const next = safeNextPath(Astro.url.searchParams.get('next'));
+const reason = Astro.url.searchParams.get('reason');
+const notice = reason && Object.hasOwn(loginReasons, reason) ? loginReasons[reason] : undefined;
+const unavailable = Astro.locals.vendorPortal?.status === 'unavailable';
+---
+
+<VendorPortalLayout title="Vendor sign in" description="Sign in to manage your MarketDay subscription, bills and team.">
+	{unavailable ? <VendorPortalUnavailable /> : <VendorLogin next={next} notice={notice} />}
+</VendorPortalLayout>

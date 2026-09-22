@@ -1,0 +1,63 @@
+---
+import PortalForm from '../ui/PortalForm.astro';
+import type { VendorInvite } from '../../lib/api/vendor-team';
+import { formatTime } from '../../lib/vendor-portal';
+
+/**
+ * Invites not yet redeemed. A code lasts 15 minutes, so most rows here are short-lived.
+ * "Resend" mints a fresh code (a new invite supersedes the old one), and "Cancel" revokes it.
+ * Renders nothing while there are none.
+ */
+interface Props {
+	invites: VendorInvite[];
+}
+
+const { invites } = Astro.props;
+const now = Date.now();
+const rows = invites.map((invite) => ({ ...invite, expired: new Date(invite.expiresAt).getTime() <= now }));
+
+const smallButton =
+	'h-10 rounded-full px-4 text-[14px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60';
+---
+
+{
+	invites.length > 0 && (
+		<section aria-labelledby="invites-title" class="mb-6 rounded-[28px] bg-white p-6 shadow-card sm:p-9">
+			<h2 id="invites-title" class="mb-4 font-mono text-xs font-semibold tracking-[0.14em] text-brand uppercase">
+				Pending invites
+			</h2>
+			<ul class="divide-y divide-ink/8">
+				{rows.map((invite) => {
+					const { expired } = invite;
+					return (
+						<li class="flex flex-wrap items-center gap-x-4 gap-y-3 py-4 first:pt-0 last:pb-0">
+							<div class="min-w-0 flex-[1_1_220px]">
+								<p class="font-semibold break-words text-ink">{invite.email}</p>
+								<p class="text-[13.5px] text-muted">
+									{invite.market?.name ?? 'A market'} ·{' '}
+									{expired ? 'Code expired' : `Code works until ${formatTime(invite.expiresAt)}`}
+								</p>
+							</div>
+							<div class="flex items-center gap-2 sm:ml-auto">
+								<PortalForm portalAction="vendorTeam.invite" done="resent">
+									<input type="hidden" name="email" value={invite.email} />
+									<input type="hidden" name="marketId" value={invite.marketId} />
+									<button type="submit" data-submit data-busy-label="Sending…" class:list={[smallButton, 'border border-ink/15 text-ink hover:bg-cream']}>
+										<span data-submit-label>{expired ? 'Send a new code' : 'Resend'}</span>
+									</button>
+								</PortalForm>
+								<PortalForm portalAction="vendorTeam.revokeInvite" done="revoked">
+									<input type="hidden" name="id" value={invite.id} />
+									<button type="submit" data-submit data-busy-label="Cancelling…" class:list={[smallButton, 'text-danger hover:bg-danger/10']}>
+										<span data-submit-label>Cancel</span>
+										<span class="sr-only"> the invite for {invite.email}</span>
+									</button>
+								</PortalForm>
+							</div>
+						</li>
+					);
+				})}
+			</ul>
+		</section>
+	)
+}

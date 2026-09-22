@@ -1,0 +1,181 @@
+---
+import PortalForm from '../ui/PortalForm.astro';
+import StatusBadge from '../ui/StatusBadge.astro';
+import { checkoutNotices, subscriptionStatusCopy } from '../../data/vendor-portal';
+import type { Invoice, VendorSubscription } from '../../lib/api/vendor-billing';
+import type { PortalRead } from '../../lib/auth/session';
+import { isStripeUrl } from '../../lib/security/redirects';
+import { daysUntil, formatDate, pluralise } from '../../lib/vendor-portal';
+
+interface Props {
+	subscription: PortalRead<VendorSubscription>;
+	/** The newest unpaid invoice, for "Pay now" while a payment is overdue. */
+	openInvoice: Invoice | null;
+	/** Whether the API has the Billing contract yet (see `src/lib/api/vendor-billing.ts`). */
+	billingLive: boolean;
+	/** `?checkout=` from Stripe's return URL. */
+	checkout: string | null;
+}
+
+const { subscription, openInvoice, billingLive, checkout } = Astro.props;
+
+const checkoutNotice = checkout && Object.hasOwn(checkoutNotices, checkout) ? checkoutNotices[checkout] : undefined;
+const noticeClass = {
+	brand: 'bg-mint text-forest',
+	gold: 'bg-gold/16 text-[#7a5212]',
+	danger: 'bg-danger/10 text-danger',
+	muted: 'bg-sand text-body',
+};
+
+const sub = subscription.status === 'ok' ? subscription.value : null;
+
+function describe(s: VendorSubscription): { headline: string; body: string } {
+	switch (s.status) {
+		case 'TRIAL': {
+			const days = daysUntil(s.trialEndsAt);
+			return {
+				headline: days > 0 ? `${pluralise(days, 'day')} left in your free trial` : 'Your free trial ends today',
+				body: `Your trial ends on ${formatDate(s.trialEndsAt)}. Subscribe before then to keep taking orders without a break.`,
+			};
+		}
+		case 'ACTIVE':
+			if (s.cancelAtPeriodEnd) {
+				return {
+					headline: 'Your subscription is ending',
+					body: s.currentPeriodEnd
+						? `It's cancelled and stops on ${formatDate(s.currentPeriodEnd)}. You can resume it any time before then.`
+						: "It's cancelled and stops at the end of this billing month.",
+				};
+			}
+			return {
+				headline: 'Your subscription is active',
+				body: s.currentPeriodEnd ? `It renews on ${formatDate(s.currentPeriodEnd)}.` : 'It renews every month.',
+			};
+		case 'PAST_DUE':
+			return {
+				headline: "Your last payment didn't go through",
+				body: "Pay the open invoice or update your card to keep trading. We'll also retry the payment automatically for a few days.",
+			};
+		case 'COMPLIMENTARY':
+			return {
+				headline: 'You have complimentary access',
+				body: `Trade at as many markets as you like, free, until ${formatDate(s.compedUntil)}.`,
+			};
+		case 'INACTIVE':
+			return {
+				headline: s.paidMarketSlots > 0 ? 'Your subscription has ended' : 'Your free trial has ended',
+				body: 'Subscribe to take orders at your markets again.',
+			};
+	}
+}
+
+const copy = sub ? subscriptionStatusCopy[sub.status] : null;
+const text = sub ? describe(sub) : null;
+const invoiceUrl = openInvoice?.hostedInvoiceUrl;
+const payHref = sub?.status === 'PAST_DUE' && isStripeUrl(invoiceUrl) ? invoiceUrl : null;
+const canManage = billingLive && !!sub && sub.paidMarketSlots > 0;
+const canSubscribe = billingLive && !!sub && (sub.status === 'TRIAL' || sub.status === 'INACTIVE');
+---
+
+<section aria-labelledby="subscription-title" class="mb-6">
+	{
+		checkoutNotice && (
+			<p role="status" class:list={['mb-5 rounded-xl px-4 py-3 text-[14.5px]', noticeClass[checkoutNotice.tone]]}>
+				{checkoutNotice.text}
+			</p>
+		)
+	}
+
+	<div class="rounded-[28px] bg-white p-6 shadow-card sm:p-9">
+		<h2 id="subscription-title" class="mb-4 font-mono text-xs font-semibold tracking-[0.14em] text-brand uppercase">
+			Subscription
+		</h2>
+
+		{
+			!sub && (
+				<p class="text-[15px] leading-[1.65] text-body">
+					{subscription.status === 'missing'
+						? 'Your subscription details will show here soon.'
+						: "We couldn't load your subscription just now. Refresh the page to try again."}
+				</p>
+			)
+		}
+
+		{
+			sub && copy && text && (
+				<>
+					<div class="mb-3 flex flex-wrap items-center gap-3">
+						<StatusBadge tone={copy.tone}>{copy.label}</StatusBadge>
+					</div>
+					<p class="mb-2 font-display text-[24px] leading-[1.15] font-bold tracking-[-0.02em] text-ink sm:text-[28px]">
+						{text.headline}
+					</p>
+					<p class="max-w-160 text-[15.5px] leading-[1.6] text-body">{text.body}</p>
+
+					<dl class="mt-6 grid max-w-160 grid-cols-2 gap-3 sm:grid-cols-3">
+						<div class="rounded-2xl bg-cream px-4 py-3.5">
+							<dt class="text-[12.5px] font-semibold text-muted">Markets you trade at</dt>
+							<dd class="mt-1 font-display text-[22px] font-bold text-ink">{sub.marketsUsed}</dd>
+						</div>
+						<div class="rounded-2xl bg-cream px-4 py-3.5">
+							<dt class="text-[12.5px] font-semibold text-muted">Markets covered</dt>
+							<dd class="mt-1 font-display text-[22px] font-bold text-ink">
+								{sub.marketSlotLimit === null ? 'All' : sub.marketSlotLimit}
+							</dd>
+						</div>
+						{sub.paidMarketSlots > 0 && (
+							<div class="rounded-2xl bg-cream px-4 py-3.5">
+								<dt class="text-[12.5px] font-semibold text-muted">Paid market slots</dt>
+								<dd class="mt-1 font-display text-[22px] font-bold text-ink">{sub.paidMarketSlots}</dd>
+							</div>
+						)}
+					</dl>
+
+					{!sub.billingEnforced && (
+						<p class="mt-5 max-w-160 rounded-xl bg-sand px-4 py-3 text-[14px] leading-normal text-body">
+							Subscriptions aren't required yet, so nothing at your stall is paused whatever this page says.
+							We'll email you well before that changes.
+						</p>
+					)}
+
+					{(payHref || canManage || canSubscribe) && (
+						<div class="mt-6 flex flex-wrap items-center gap-3">
+							{payHref && (
+								<a
+									href={payHref}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="flex h-12 items-center rounded-full bg-danger px-6 text-[15px] font-semibold text-white transition-opacity hover:text-white hover:opacity-90"
+								>
+									Pay now
+								</a>
+							)}
+							{canSubscribe && (
+								<a
+									href="#plan"
+									class="flex h-12 items-center rounded-full bg-brand px-6 text-[15px] font-semibold text-white transition-opacity hover:text-white hover:opacity-90"
+								>
+									Choose your plan
+								</a>
+							)}
+							{canManage && (
+								<PortalForm portalAction="vendorBilling.portal">
+									<button
+										type="submit"
+										data-submit
+										data-busy-label="Opening Stripe…"
+										class="h-12 rounded-full border border-ink/15 px-6 text-[15px] font-semibold text-ink transition-colors hover:bg-cream disabled:cursor-not-allowed disabled:opacity-60"
+									>
+										<span data-submit-label>
+											{sub.status === 'PAST_DUE' ? 'Update card' : 'Card, receipts & cancellation'}
+										</span>
+									</button>
+								</PortalForm>
+							)}
+						</div>
+					)}
+				</>
+			)
+		}
+	</div>
+</section>

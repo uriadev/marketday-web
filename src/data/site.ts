@@ -71,6 +71,7 @@ export const footerColumns: FooterColumn[] = [
 			{ label: 'Sell with us', href: '/sell-with-us' },
 			// { label: 'Pricing', href: '/pricing' },
 			{ label: 'Vendor help', href: '/vendor-help' },
+			{ label: 'Vendor sign in', href: '/vendor/login' },
 		],
 	},
 	{

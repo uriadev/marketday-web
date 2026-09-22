@@ -1,0 +1,116 @@
+---
+import StatusBadge from '../ui/StatusBadge.astro';
+import { invoiceStatusCopy } from '../../data/vendor-portal';
+import type { InvoicePage } from '../../lib/api/vendor-billing';
+import type { PortalRead } from '../../lib/auth/session';
+import { isStripeUrl } from '../../lib/security/redirects';
+import { formatDate, formatMoney } from '../../lib/vendor-portal';
+
+/**
+ * The vendor's bills, newest first. Each links out to Stripe's hosted invoice (where an unpaid
+ * one can be paid) and its PDF. Every link is checked against the Stripe allowlist first; one
+ * that fails is left out rather than rendered.
+ */
+interface Props {
+	invoices: PortalRead<InvoicePage>;
+	/** The cursor this page was opened at, if not the first page. */
+	after: string | null;
+}
+
+const { invoices, after } = Astro.props;
+const page = invoices.status === 'ok' ? invoices.value : null;
+
+const rows = (page?.items ?? []).map((invoice) => ({
+	...invoice,
+	hosted: isStripeUrl(invoice.hostedInvoiceUrl) ? invoice.hostedInvoiceUrl : null,
+	pdf: isStripeUrl(invoice.invoicePdf) ? invoice.invoicePdf : null,
+	period:
+		invoice.periodStart && invoice.periodEnd
+			? `${formatDate(invoice.periodStart)} – ${formatDate(invoice.periodEnd)}`
+			: null,
+}));
+const dropped = page?.items.filter((i) => (i.hostedInvoiceUrl && !isStripeUrl(i.hostedInvoiceUrl)) || (i.invoicePdf && !isStripeUrl(i.invoicePdf)));
+if (dropped?.length) console.error(`[vendor-portal] ${dropped.length} invoice link(s) outside the Stripe allowlist were not rendered`);
+
+const olderHref = page?.nextCursor ? `/vendor/billing?after=${encodeURIComponent(page.nextCursor)}#invoices` : null;
+---
+
+<section id="invoices" aria-labelledby="invoices-title" class="scroll-mt-6 rounded-[28px] bg-white p-6 shadow-card sm:p-9">
+	<h2 id="invoices-title" class="mb-4 font-mono text-xs font-semibold tracking-[0.14em] text-brand uppercase">
+		Invoices
+	</h2>
+
+	{
+		!page && (
+			<p class="text-[15px] leading-[1.65] text-body">
+				We couldn't load your invoices just now. Refresh the page to try again.
+			</p>
+		)
+	}
+
+	{
+		page && rows.length === 0 && (
+			<p class="text-[15px] leading-[1.65] text-body">
+				{after ? 'No older invoices.' : 'No invoices yet. Your first one arrives when you subscribe.'}
+			</p>
+		)
+	}
+
+	{
+		rows.length > 0 && (
+			<ul class="divide-y divide-ink/8">
+				{rows.map((invoice) => {
+					const status = invoiceStatusCopy[invoice.status];
+					const due = invoice.status === 'OPEN';
+					return (
+						<li class="flex flex-wrap items-center gap-x-6 gap-y-3 py-4 first:pt-0 last:pb-0">
+							<div class="min-w-0 flex-[1_1_220px]">
+								<p class="font-semibold text-ink">
+									{formatDate(invoice.createdAt)}
+									{invoice.number && <span class="ml-2 font-mono text-[12.5px] font-normal text-muted">{invoice.number}</span>}
+								</p>
+								{invoice.period && <p class="mt-0.5 text-[13.5px] text-muted">For {invoice.period}</p>}
+							</div>
+							<p class="w-24 font-display text-[18px] font-bold text-ink">{formatMoney(invoice.total, invoice.currency)}</p>
+							<StatusBadge tone={status.tone}>{status.label}</StatusBadge>
+							<div class="flex items-center gap-2 sm:ml-auto">
+								{invoice.hosted && (
+									<a
+										href={invoice.hosted}
+										target="_blank"
+										rel="noopener noreferrer"
+										class:list={[
+											'flex h-10 items-center rounded-full px-4.5 text-[14px] font-semibold transition-opacity hover:opacity-90',
+											due ? 'bg-danger text-white hover:text-white' : 'border border-ink/15 text-ink hover:text-ink',
+										]}
+									>
+										{due ? 'Pay now' : 'View'}
+									</a>
+								)}
+								{invoice.pdf && (
+									<a
+										href={invoice.pdf}
+										target="_blank"
+										rel="noopener noreferrer"
+										class="flex h-10 items-center rounded-full px-3.5 text-[14px] font-semibold"
+									>
+										PDF<span class="sr-only"> of the {formatDate(invoice.createdAt)} invoice</span>
+									</a>
+								)}
+							</div>
+						</li>
+					);
+				})}
+			</ul>
+		)
+	}
+
+	{
+		(olderHref || after) && (
+			<div class="mt-6 flex flex-wrap gap-4 text-[14.5px] font-semibold">
+				{after && <a href="/vendor/billing#invoices">Latest invoices</a>}
+				{olderHref && <a href={olderHref}>Older invoices</a>}
+			</div>
+		)
+	}
+</section>

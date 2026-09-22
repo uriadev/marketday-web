@@ -1,0 +1,117 @@
+---
+import { PUBLIC_GOOGLE_CLIENT_ID } from 'astro:env/client';
+
+/**
+ * "Sign in with Google" for the vendor portal, via Google Identity Services. Renders nothing
+ * while `PUBLIC_GOOGLE_CLIENT_ID` is unset.
+ *
+ * Popup mode: Google hands the ID token to the callback in this page, which posts it to
+ * `actions.vendor.googleSignIn`. The API checks the token was minted for its own
+ * `GOOGLE_CLIENT_ID` — the same web client — and the action keeps the session only for a
+ * vendor's owner. Redirect mode (`login_uri`) is not used: it is a cross-site form POST from
+ * accounts.google.com, which `security.checkOrigin` refuses.
+ */
+interface Props {
+	/** Already passed through `safeNextPath`. */
+	next: string;
+}
+
+const { next } = Astro.props;
+---
+
+{
+	PUBLIC_GOOGLE_CLIENT_ID && (
+		<div data-google-signin data-next={next}>
+			<div data-google-button class="flex min-h-11 justify-center" />
+			<p data-google-status role="status" aria-live="polite" class="mt-3 hidden rounded-xl px-4 py-3 text-[14.5px]" />
+		</div>
+	)
+}
+
+<script>
+	import { actions } from 'astro:actions';
+	import { PUBLIC_GOOGLE_CLIENT_ID } from 'astro:env/client';
+
+	interface GoogleIdentity {
+		accounts: {
+			id: {
+				initialize(config: {
+					client_id: string;
+					callback: (response: { credential?: string }) => void;
+					ux_mode: 'popup';
+					auto_select: boolean;
+					itp_support: boolean;
+				}): void;
+				renderButton(parent: HTMLElement, options: Record<string, string | number>): void;
+			};
+		};
+	}
+
+	const root = document.querySelector<HTMLElement>('[data-google-signin]');
+	const slot = root?.querySelector<HTMLElement>('[data-google-button]');
+	const status = root?.querySelector<HTMLElement>('[data-google-status]');
+
+	const show = (message: string, tone: 'pending' | 'error') => {
+		if (!status) return;
+		// textContent only: our own strings, or the API's deliberately authored refusals.
+		status.textContent = message;
+		status.classList.remove('hidden', 'bg-sand', 'text-body', 'bg-danger/10', 'text-danger');
+		status.classList.add(...(tone === 'pending' ? ['bg-sand', 'text-body'] : ['bg-danger/10', 'text-danger']));
+	};
+
+	let signingIn = false;
+
+	const onCredential = async ({ credential }: { credential?: string }) => {
+		if (!credential || signingIn) return;
+		signingIn = true;
+		let leaving = false;
+		show('Signing you in…', 'pending');
+		try {
+			const { data, error } = await actions.vendor.googleSignIn({ credential, next: root?.dataset.next });
+			if (error) {
+				show(error.message, 'error');
+				return;
+			}
+			if (data.redirect.startsWith('/') && !data.redirect.startsWith('//')) {
+				leaving = true;
+				window.location.assign(data.redirect);
+			}
+		} catch {
+			show('We could not reach the server. Please check your connection and try again.', 'error');
+		} finally {
+			// Stays "signing in" while the browser navigates away; otherwise ready to try again.
+			if (!leaving) signingIn = false;
+		}
+	};
+
+	if (root && slot && PUBLIC_GOOGLE_CLIENT_ID) {
+		const clientId = PUBLIC_GOOGLE_CLIENT_ID;
+		const script = document.createElement('script');
+		script.src = 'https://accounts.google.com/gsi/client';
+		script.async = true;
+		script.addEventListener('load', () => {
+			const google = (window as unknown as { google?: GoogleIdentity }).google;
+			if (!google) return;
+			google.accounts.id.initialize({
+				client_id: clientId,
+				callback: (response) => void onCredential(response),
+				ux_mode: 'popup',
+				auto_select: false,
+				itp_support: true,
+			});
+			google.accounts.id.renderButton(slot, {
+				type: 'standard',
+				theme: 'outline',
+				size: 'large',
+				shape: 'pill',
+				text: 'signin_with',
+				logo_alignment: 'center',
+				width: Math.min(400, Math.max(220, slot.clientWidth)),
+			});
+		});
+		script.addEventListener('error', () => {
+			show("Google sign-in couldn't load. You can still sign in with your email and password.", 'error');
+		});
+		document.head.append(script);
+	}
+</script>

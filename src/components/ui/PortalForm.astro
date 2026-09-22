@@ -1,0 +1,251 @@
+---
+/**
+ * Every vendor-portal change is one of these: a `<form>` bound to one action by name. The
+ * script below is bundled once per page, however many forms render, and binds them all.
+ *
+ * - **Success:** an action that returns `{ url }` (Stripe) or `{ redirect }` (sign-in)
+ *   navigates there. Anything else reloads the page with `?done=<done>`, so the page
+ *   re-renders the new state from the API and shows the matching notice from
+ *   `portalNotices` (`src/data/vendor-portal.ts`).
+ * - **Errors:** shown in the form's own `[data-form-status]` if it has one, otherwise in the
+ *   page's floating `[data-portal-status]` (`layouts/VendorPortalLayout.astro`). An
+ *   `UNAUTHORIZED` error means the session is gone, so the browser is sent to sign in.
+ * - **`confirm`:** asks first, in the page's `ui/ConfirmDialog.astro`.
+ *
+ * The submit button is marked `data-submit`, with an optional `data-busy-label`, and its text
+ * sits in a `data-submit-label` span.
+ */
+export type PortalAction =
+	| 'vendor.login'
+	| 'vendor.logout'
+	| 'vendorTeam.invite'
+	| 'vendorTeam.revokeInvite'
+	| 'vendorTeam.move'
+	| 'vendorTeam.remove'
+	| 'vendorBilling.checkout'
+	| 'vendorBilling.portal'
+	| 'vendorBilling.changeSlots';
+
+interface Props {
+	portalAction: PortalAction;
+	/** Key into `portalNotices`, shown after the reload a success triggers. */
+	done?: string;
+	/** Asked in the confirm dialog before submitting. */
+	confirm?: string;
+	confirmLabel?: string;
+	confirmTone?: 'brand' | 'danger';
+	class?: string;
+	id?: string;
+	'aria-label'?: string;
+	[dataAttribute: `data-${string}`]: string | number | undefined;
+}
+
+const {
+	portalAction,
+	done,
+	confirm,
+	confirmLabel,
+	confirmTone = 'brand',
+	class: className,
+	...rest
+} = Astro.props;
+---
+
+<form
+	data-portal-form
+	data-action={portalAction}
+	data-done={done}
+	data-confirm={confirm}
+	data-confirm-label={confirmLabel}
+	data-confirm-tone={confirmTone}
+	novalidate
+	class={className}
+	{...rest}
+>
+	<slot />
+</form>
+
+<script>
+	import { actions, isInputError, type SafeResult } from 'astro:actions';
+
+	type Call = (input: FormData) => Promise<SafeResult<Record<string, unknown>, unknown>>;
+
+	// Spelled out rather than looked up by path, so a form can only ever reach these.
+	const calls: Record<string, Call> = {
+		'vendor.login': (input) => actions.vendor.login(input),
+		'vendor.logout': (input) => actions.vendor.logout(input),
+		'vendorTeam.invite': (input) => actions.vendorTeam.invite(input),
+		'vendorTeam.revokeInvite': (input) => actions.vendorTeam.revokeInvite(input),
+		'vendorTeam.move': (input) => actions.vendorTeam.move(input),
+		'vendorTeam.remove': (input) => actions.vendorTeam.remove(input),
+		'vendorBilling.checkout': (input) => actions.vendorBilling.checkout(input),
+		'vendorBilling.portal': (input) => actions.vendorBilling.portal(input),
+		'vendorBilling.changeSlots': (input) => actions.vendorBilling.changeSlots(input),
+	};
+
+	const UNREACHABLE = 'We could not reach the server. Please check your connection and try again.';
+	const CHECK_FIELDS = 'Please check the highlighted fields and try again.';
+
+	const statusFor = (form: HTMLFormElement) =>
+		form.querySelector<HTMLElement>('[data-form-status]') ??
+		document.querySelector<HTMLElement>('[data-portal-status]');
+
+	const TONES = {
+		success: ['bg-mint', 'text-forest'],
+		error: ['bg-danger/10', 'text-danger'],
+	};
+	// The floating status sits over the page, so it needs solid colours.
+	const SOLID_TONES = {
+		success: ['bg-forest', 'text-white'],
+		error: ['bg-danger', 'text-white'],
+	};
+
+	let hideTimer: number | undefined;
+
+	const setStatus = (el: HTMLElement | null, message: string, tone: 'success' | 'error') => {
+		if (!el) return;
+		const solid = el.hasAttribute('data-portal-status');
+		const tones = solid ? SOLID_TONES : TONES;
+		// textContent, never innerHTML: the strings are ours or deliberately authored API
+		// refusals, and this keeps it that way.
+		el.textContent = message;
+		el.classList.remove('hidden', ...TONES.success, ...TONES.error, ...SOLID_TONES.success, ...SOLID_TONES.error);
+		el.classList.add(...tones[tone]);
+		if (solid) {
+			window.clearTimeout(hideTimer);
+			hideTimer = window.setTimeout(() => el.classList.add('hidden'), 8000);
+		}
+	};
+
+	const clearErrors = (form: HTMLFormElement) => {
+		const status = form.querySelector<HTMLElement>('[data-form-status]');
+		status?.classList.add('hidden');
+		form.querySelectorAll<HTMLElement>('[data-error-for]').forEach((el) => {
+			el.textContent = '';
+			el.classList.add('hidden');
+		});
+		form.querySelectorAll<HTMLElement>('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
+	};
+
+	/** Field messages come from our own Zod schemas, never from the visitor. */
+	const showFieldErrors = (form: HTMLFormElement, fields: Record<string, string[] | undefined>): string | null => {
+		let firstMessage: string | null = null;
+		let firstInput: HTMLElement | null = null;
+		for (const [field, messages] of Object.entries(fields)) {
+			if (!messages?.length) continue;
+			firstMessage ??= messages[0];
+			const slot = form.querySelector<HTMLElement>(`[data-error-for="${CSS.escape(field)}"]`);
+			const input = form.querySelector<HTMLElement>(`[name="${CSS.escape(field)}"]`);
+			if (slot) {
+				slot.textContent = messages.join(' ');
+				slot.classList.remove('hidden');
+			}
+			if (input && input.getAttribute('type') !== 'hidden') {
+				input.setAttribute('aria-invalid', 'true');
+				firstInput ??= input;
+			}
+		}
+		firstInput?.focus();
+		return firstMessage;
+	};
+
+	const setBusy = (form: HTMLFormElement, busy: boolean) => {
+		if (busy) form.setAttribute('aria-busy', 'true');
+		else form.removeAttribute('aria-busy');
+		form.querySelectorAll<HTMLButtonElement>('[data-submit]').forEach((button) => {
+			button.disabled = busy;
+			const label = button.querySelector<HTMLElement>('[data-submit-label]');
+			if (!label) return;
+			label.dataset.idleLabel ??= label.textContent ?? '';
+			label.textContent = busy ? (button.dataset.busyLabel ?? label.dataset.idleLabel) : label.dataset.idleLabel;
+		});
+	};
+
+	const confirmFirst = (form: HTMLFormElement): Promise<boolean> => {
+		const message = form.dataset.confirm;
+		if (!message) return Promise.resolve(true);
+
+		const dialog = document.querySelector<HTMLDialogElement>('[data-confirm-dialog]');
+		if (!dialog) return Promise.resolve(window.confirm(message));
+
+		const text = dialog.querySelector<HTMLElement>('[data-confirm-message]');
+		const accept = dialog.querySelector<HTMLButtonElement>('[data-confirm-accept]');
+		if (text) text.textContent = message;
+		if (accept) {
+			accept.textContent = form.dataset.confirmLabel ?? 'Confirm';
+			const danger = form.dataset.confirmTone === 'danger';
+			accept.classList.toggle('bg-danger', danger);
+			accept.classList.toggle('bg-forest', !danger);
+		}
+
+		dialog.returnValue = '';
+		dialog.showModal();
+		return new Promise((resolve) => {
+			dialog.addEventListener('close', () => resolve(dialog.returnValue === 'confirm'), { once: true });
+		});
+	};
+
+	const isSamePath = (value: unknown): value is string =>
+		typeof value === 'string' && value.startsWith('/') && !value.startsWith('//') && !value.includes('\\');
+
+	const goToSignIn = () => {
+		const here = `${window.location.pathname}${window.location.search}`;
+		window.location.assign(`/vendor/login?next=${encodeURIComponent(here)}`);
+	};
+
+	document.querySelectorAll<HTMLFormElement>('form[data-portal-form]').forEach((form) => {
+		const call = calls[form.dataset.action ?? ''];
+		if (!call) return;
+
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			if (form.querySelector<HTMLButtonElement>('[data-submit]')?.disabled) return;
+
+			clearErrors(form);
+			if (!form.reportValidity()) return;
+			if (!(await confirmFirst(form))) return;
+
+			const status = statusFor(form);
+			let leaving = false;
+			setBusy(form, true);
+			try {
+				const { data, error } = await call(new FormData(form));
+
+				if (error) {
+					if (error.code === 'UNAUTHORIZED') {
+						leaving = true;
+						goToSignIn();
+						return;
+					}
+					if (isInputError(error)) {
+						setStatus(status, showFieldErrors(form, error.fields) ?? CHECK_FIELDS, 'error');
+						return;
+					}
+					setStatus(status, error.message, 'error');
+					return;
+				}
+
+				const result = (data ?? {}) as { url?: unknown; redirect?: unknown };
+				leaving = true;
+				// The server has already checked this against the Stripe allowlist.
+				if (typeof result.url === 'string' && result.url.startsWith('https://')) {
+					window.location.assign(result.url);
+					return;
+				}
+				if (isSamePath(result.redirect)) {
+					window.location.assign(result.redirect);
+					return;
+				}
+				const next = new URL(window.location.href);
+				['done', 'checkout', 'after'].forEach((key) => next.searchParams.delete(key));
+				if (form.dataset.done) next.searchParams.set('done', form.dataset.done);
+				window.location.replace(next.toString());
+			} catch {
+				setStatus(status, UNREACHABLE, 'error');
+			} finally {
+				// Left disabled while the browser navigates away, so it can't be sent twice.
+				if (!leaving) setBusy(form, false);
+			}
+		});
+	});
+</script>

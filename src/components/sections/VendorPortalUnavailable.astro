@@ -1,0 +1,23 @@
+---
+/**
+ * Shown when the API can't be reached, rather than a sign-in form: the visitor may well be
+ * signed in, and nothing they could type would help.
+ */
+const retryHref = `${Astro.url.pathname}${Astro.url.search}`;
+---
+
+<div class="mx-auto max-w-135 pt-6">
+	<div class="rounded-[22px] border border-[#ECE7DA] bg-white p-7 sm:p-9">
+		<h2 class="mb-2.5 font-display text-[20px] font-bold text-ink">We can't reach MarketDay right now</h2>
+		<p class="mb-5 text-[15px] leading-[1.65] text-body">
+			Your account and your stall are fine — our servers just aren't answering at the moment. Please try again in a
+			minute.
+		</p>
+		<a
+			href={retryHref}
+			class="inline-flex h-11 items-center rounded-full bg-forest px-6 text-[15px] font-semibold text-white transition-opacity hover:text-white hover:opacity-90"
+		>
+			Try again
+		</a>
+	</div>
+</div>

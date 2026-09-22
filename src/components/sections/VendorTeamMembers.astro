@@ -1,0 +1,113 @@
+---
+import PortalForm from '../ui/PortalForm.astro';
+import StatusBadge from '../ui/StatusBadge.astro';
+import type { VendorMember, VendorStall } from '../../lib/api/vendor-team';
+
+/**
+ * The owner and their staff. The owner covers every market and can't be moved or removed.
+ * Each staff member is pinned to one market and can be moved to another (when there is one)
+ * or removed. Removing them keeps their MarketDay account, demoted to a shopper.
+ */
+interface Props {
+	members: VendorMember[];
+	markets: VendorStall[];
+}
+
+const { members, markets } = Astro.props;
+const owner = members.find((m) => m.role === 'OWNER');
+const staff = members.filter((m) => m.role === 'STAFF');
+
+const initials = (name: string) =>
+	name
+		.split(/\s+/)
+		.filter(Boolean)
+		.slice(0, 2)
+		.map((part) => part[0]?.toUpperCase() ?? '')
+		.join('') || '?';
+
+const selectClass =
+	'h-10 max-w-52 rounded-xl border border-[#E4E0D5] bg-cream px-3 text-[14px] text-ink focus:border-brand focus:outline-none';
+const smallButton =
+	'h-10 rounded-full px-4 text-[14px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60';
+---
+
+<section aria-labelledby="members-title" class="mb-6 rounded-[28px] bg-white p-6 shadow-card sm:p-9">
+	<h2 id="members-title" class="mb-4 font-mono text-xs font-semibold tracking-[0.14em] text-brand uppercase">
+		Team
+	</h2>
+
+	<ul class="divide-y divide-ink/8">
+		{
+			owner && (
+				<li class="flex flex-wrap items-center gap-x-4 gap-y-3 py-4 first:pt-0">
+					<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-forest text-[14px] font-bold text-white" aria-hidden="true">
+						{initials(owner.fullName)}
+					</span>
+					<div class="min-w-0 flex-[1_1_200px]">
+						<p class="font-semibold break-words text-ink">{owner.fullName}</p>
+						<p class="text-[13.5px] break-words text-muted">{owner.email}</p>
+					</div>
+					<StatusBadge tone="brand">Owner · all markets</StatusBadge>
+				</li>
+			)
+		}
+		{
+			staff.map((member) => (
+				<li class="flex flex-wrap items-center gap-x-4 gap-y-3 py-4 last:pb-0">
+					<span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-mint text-[14px] font-bold text-forest" aria-hidden="true">
+						{initials(member.fullName)}
+					</span>
+					<div class="min-w-0 flex-[1_1_200px]">
+						<p class="font-semibold break-words text-ink">{member.fullName}</p>
+						<p class="text-[13.5px] break-words text-muted">{member.email}</p>
+					</div>
+
+					<div class="flex flex-wrap items-center gap-2 sm:ml-auto">
+						{markets.length > 1 ? (
+							<PortalForm portalAction="vendorTeam.move" done="moved" class="flex items-center gap-2">
+								<input type="hidden" name="userId" value={member.userId} />
+								<label for={`move-${member.userId}`} class="sr-only">
+									Market for {member.fullName}
+								</label>
+								<select id={`move-${member.userId}`} name="marketId" class={selectClass}>
+									{markets.map((stall) => (
+										<option value={stall.marketId} selected={stall.marketId === member.marketId}>
+											{stall.market.name}
+										</option>
+									))}
+								</select>
+								<button type="submit" data-submit data-busy-label="Moving…" class:list={[smallButton, 'border border-ink/15 text-ink hover:bg-cream']}>
+									<span data-submit-label>Move</span>
+								</button>
+							</PortalForm>
+						) : (
+							<StatusBadge tone="muted">{member.market?.name ?? 'No market'}</StatusBadge>
+						)}
+
+						<PortalForm
+							portalAction="vendorTeam.remove"
+							done="removed"
+							confirm={`Remove ${member.fullName} from your team? They keep their MarketDay account but can no longer run your stall.`}
+							confirmLabel="Remove"
+							confirmTone="danger"
+						>
+							<input type="hidden" name="userId" value={member.userId} />
+							<button type="submit" data-submit data-busy-label="Removing…" class:list={[smallButton, 'text-danger hover:bg-danger/10']}>
+								<span data-submit-label>Remove</span>
+								<span class="sr-only"> {member.fullName}</span>
+							</button>
+						</PortalForm>
+					</div>
+				</li>
+			))
+		}
+	</ul>
+
+	{
+		staff.length === 0 && (
+			<p class="mt-4 rounded-xl bg-cream px-4 py-3 text-[14.5px] text-body">
+				No staff yet. Invite someone below to help run your stall from their own phone.
+			</p>
+		)
+	}
+</section>

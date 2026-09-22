@@ -1,0 +1,42 @@
+---
+// On-demand and private, like every /vendor/* page — see src/middleware.ts.
+export const prerender = false;
+
+import VendorPortalLayout from '../../layouts/VendorPortalLayout.astro';
+import VendorTeamMembers from '../../components/sections/VendorTeamMembers.astro';
+import VendorTeamInvites from '../../components/sections/VendorTeamInvites.astro';
+import VendorInviteForm from '../../components/sections/VendorInviteForm.astro';
+import VendorPortalUnavailable from '../../components/sections/VendorPortalUnavailable.astro';
+import { listInvites, listMembers, listMyMarkets } from '../../lib/api/vendor-team';
+import { portalRead } from '../../lib/auth/session';
+
+const portal = Astro.locals.vendorPortal;
+
+const [members, invites, markets] =
+	portal?.status === 'signed-in'
+		? await Promise.all([
+				portalRead(Astro.cookies, 'vendorMembers', listMembers),
+				portalRead(Astro.cookies, 'pendingVendorInvites', listInvites),
+				portalRead(Astro.cookies, 'myVendorMarkets', listMyMarkets),
+			])
+		: [null, null, null];
+
+if ([members, invites, markets].some((read) => read?.status === 'signed-out')) {
+	return Astro.redirect(`/vendor/login?next=${encodeURIComponent('/vendor/team')}`);
+}
+---
+
+<VendorPortalLayout title="Team">
+	{/* The team can't be managed without the roster and the markets to pin staff to. */}
+	{
+		members?.status === 'ok' && markets?.status === 'ok' ? (
+			<>
+				<VendorTeamMembers members={members.value} markets={markets.value} />
+				{invites?.status === 'ok' && <VendorTeamInvites invites={invites.value} />}
+				<VendorInviteForm markets={markets.value} />
+			</>
+		) : (
+			<VendorPortalUnavailable />
+		)
+	}
+</VendorPortalLayout>

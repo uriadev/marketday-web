@@ -1,0 +1,80 @@
+---
+import PortalForm from '../ui/PortalForm.astro';
+import { staffPerMarketLimit, vendorPortalFormLimits } from '../../data/vendor-portal';
+import type { VendorStall } from '../../lib/api/vendor-team';
+
+/**
+ * Invite a member of staff to one of the vendor's markets. The API emails them a 6-digit
+ * code, which they enter in the MarketDay app, signed in with that address, within 15 minutes.
+ */
+interface Props {
+	markets: VendorStall[];
+}
+
+const { markets } = Astro.props;
+
+const fieldClass =
+	'h-12 w-full rounded-xl border border-[#E4E0D5] bg-cream px-4 text-[15px] text-ink placeholder:text-[#a9a598] focus:border-brand focus:outline-none aria-[invalid=true]:border-danger';
+const errorClass = 'mt-1.5 hidden text-[13px] text-danger';
+---
+
+<section aria-labelledby="invite-title" class="rounded-[28px] bg-white p-6 shadow-card sm:p-9">
+	<h2 id="invite-title" class="mb-4 font-mono text-xs font-semibold tracking-[0.14em] text-brand uppercase">
+		Invite staff
+	</h2>
+	<p class="mb-6 max-w-160 text-[15px] leading-[1.6] text-body">
+		Staff help run one market's stall from their own phone, in the MarketDay app. They can't see billing or change
+		your team. Up to {staffPerMarketLimit} staff per market.
+	</p>
+
+	{
+		markets.length === 0 ? (
+			<p class="rounded-xl bg-cream px-4 py-3 text-[14.5px] text-body">
+				Join a market in the MarketDay app first. Staff are always invited to a specific market.
+			</p>
+		) : (
+			<PortalForm portalAction="vendorTeam.invite" done="invited">
+				<div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-[1fr_minmax(0,16rem)]">
+					<div>
+						<label for="invite-email" class="mb-2 block text-[13px] font-semibold text-ink">
+							Their email
+						</label>
+						<input
+							id="invite-email"
+							name="email"
+							type="email"
+							required
+							autocomplete="off"
+							maxlength={vendorPortalFormLimits.email.max}
+							aria-describedby="invite-email-error"
+							placeholder="staff@example.com"
+							class={fieldClass}
+						/>
+						<p id="invite-email-error" data-error-for="email" class={errorClass} />
+					</div>
+					<div>
+						<label for="invite-market" class="mb-2 block text-[13px] font-semibold text-ink">
+							Market
+						</label>
+						<select id="invite-market" name="marketId" required aria-describedby="invite-market-error" class={fieldClass}>
+							{markets.map((stall) => (
+								<option value={stall.marketId}>{stall.market.name}</option>
+							))}
+						</select>
+						<p id="invite-market-error" data-error-for="marketId" class={errorClass} />
+					</div>
+				</div>
+
+				<button
+					type="submit"
+					data-submit
+					data-busy-label="Sending invite…"
+					class="flex h-13 w-full items-center justify-center rounded-full bg-brand px-7 text-base font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+				>
+					<span data-submit-label>Send invite</span>
+				</button>
+				<p data-form-status role="status" aria-live="polite" class="mt-4 hidden rounded-xl px-4 py-3 text-[14.5px]" />
+			</PortalForm>
+		)
+	}
+</section>

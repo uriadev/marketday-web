@@ -26,6 +26,7 @@ import {
 import { GraphQLBusinessError } from '../lib/api/client';
 import { checkRateLimit, getClientIp } from '../lib/security/rate-limit';
 import { countLinks, normalizeText, sanitizeHeaderValue } from '../lib/security/text';
+import { vendor, vendorBilling, vendorTeam } from './vendor-portal';
 
 /** Nobody fills in a four-field form in under three seconds. Bots routinely do. */
 const MIN_FILL_MS = 3_000;
@@ -163,6 +164,11 @@ const deletionLinkTokenInput = z.object({
 });
 
 export const server = {
+	// The vendor portal's sign-in, team and billing actions — see ./vendor-portal.ts.
+	vendor,
+	vendorTeam,
+	vendorBilling,
+
 	contact: {
 		send: defineAction({
 			accept: 'form',

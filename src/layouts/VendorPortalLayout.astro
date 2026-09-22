@@ -1,0 +1,61 @@
+---
+import Layout from './Layout.astro';
+import SiteNav from '../components/sections/SiteNav.astro';
+import VendorPortalHeader from '../components/sections/VendorPortalHeader.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+import ConfirmDialog from '../components/ui/ConfirmDialog.astro';
+import { portalNotices } from '../data/vendor-portal';
+
+/**
+ * The shell every `/vendor/*` page renders inside: the site nav, the portal header (once
+ * signed in), a `?done=` notice, the page's own sections, and the footer. It also renders
+ * the page's single `ConfirmDialog` and the floating `[data-portal-status]` that
+ * `ui/PortalForm.astro` reports into.
+ *
+ * Always `noindex`. The middleware also sends `Cache-Control: private, no-store` and an
+ * `X-Robots-Tag` on every portal response.
+ */
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = 'Manage your MarketDay subscription, bills and team.' } = Astro.props;
+const portal = Astro.locals.vendorPortal;
+
+// Allowlisted: an unknown key shows nothing, so `?done=` can't put words on the page.
+const done = Astro.url.searchParams.get('done');
+const notice = done && Object.hasOwn(portalNotices, done) ? portalNotices[done] : undefined;
+---
+
+<Layout title={`${title} — MarketDay`} description={description} noindex>
+	<div class="w-full overflow-hidden">
+		<div class="mx-auto max-w-310">
+			<SiteNav variant="light" />
+		</div>
+
+		{portal?.status === 'signed-in' && <VendorPortalHeader owner={portal.owner} />}
+
+		<main class="mx-auto max-w-310 px-5 pb-16 sm:px-8 lg:px-14 lg:pb-24">
+			{
+				notice && (
+					<p role="status" class="mb-6 rounded-xl bg-mint px-4 py-3 text-[14.5px] text-forest">
+						{notice}
+					</p>
+				)
+			}
+			<slot />
+		</main>
+
+		<SiteFooter />
+	</div>
+
+	<ConfirmDialog />
+	<p
+		data-portal-status
+		role="status"
+		aria-live="polite"
+		class="fixed inset-x-4 bottom-4 z-30 mx-auto hidden max-w-120 rounded-xl px-4 py-3 text-[14.5px] shadow-card"
+	>
+	</p>
+</Layout>

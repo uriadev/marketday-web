@@ -76,12 +76,29 @@ export default defineConfig({
         context: 'server',
         access: 'public',
         default: 3600000
-      })
+      }),
+
+      // Vendor portal sign-in, Google sign-in and password reset, per IP. The API also locks
+      // an account after repeated wrong passwords; this caps one source trying many accounts.
+      VENDOR_AUTH_RATE_LIMIT_MAX: envField.number({ context: 'server', access: 'public', default: 10 }),
+      VENDOR_AUTH_RATE_LIMIT_WINDOW_MS: envField.number({
+        context: 'server',
+        access: 'public',
+        default: 900000
+      }),
+
+      // The Google OAuth *web* client ID — the same one as the API's GOOGLE_CLIENT_ID, since
+      // the API only accepts ID tokens minted for it. Public by nature (it is in the button's
+      // markup). Unset hides "Sign in with Google" on /vendor/login.
+      PUBLIC_GOOGLE_CLIENT_ID: envField.string({ context: 'client', access: 'public', optional: true })
     }
   },
 
   integrations: [
     sitemap({
+      // The vendor portal is on-demand and private; keep it out even if a page is ever
+      // prerendered by mistake. Anchored so /vendor-help stays in.
+      filter: (page) => !/^\/vendor(\/|$)/.test(new URL(page).pathname),
       // Build format is 'directory', so the integration would list every page with a trailing
       // slash — but Layout.astro canonicalises without one. Listing a URL that then points its
       // canonical elsewhere makes the sitemap disagree with the pages it advertises, so strip

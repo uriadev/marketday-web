@@ -1,0 +1,68 @@
+---
+// On-demand and private: every read here is the signed-in owner's own. The middleware
+// (src/middleware.ts) has resolved the session and sets `Cache-Control: private, no-store`.
+// The trial emails from the API link here, so the path is part of that contract.
+export const prerender = false;
+
+import VendorPortalLayout from '../../layouts/VendorPortalLayout.astro';
+import VendorSubscriptionSummary from '../../components/sections/VendorSubscriptionSummary.astro';
+import VendorPlanPicker from '../../components/sections/VendorPlanPicker.astro';
+import VendorInvoices from '../../components/sections/VendorInvoices.astro';
+import VendorBillingComingSoon from '../../components/sections/VendorBillingComingSoon.astro';
+import VendorPortalUnavailable from '../../components/sections/VendorPortalUnavailable.astro';
+import { getPlan, getSubscription, listInvoices } from '../../lib/api/vendor-billing';
+import { portalRead } from '../../lib/auth/session';
+
+const portal = Astro.locals.vendorPortal;
+
+// A Stripe pagination cursor is an opaque id; anything else is ignored rather than sent on.
+const rawAfter = Astro.url.searchParams.get('after');
+const after = rawAfter && /^[A-Za-z0-9_-]{1,128}$/.test(rawAfter) ? rawAfter : null;
+const checkout = Astro.url.searchParams.get('checkout');
+
+// Separate reads, so an API without the Billing contract still shows the subscription.
+const [subscription, plan, invoices] =
+	portal?.status === 'signed-in'
+		? await Promise.all([
+				portalRead(Astro.cookies, 'myVendorSubscription', getSubscription),
+				portalRead(Astro.cookies, 'vendorBillingPlan', getPlan),
+				portalRead(Astro.cookies, 'myVendorInvoices', (token) => listInvoices(token, after ?? undefined)),
+			])
+		: [null, null, null];
+
+if ([subscription, plan, invoices].some((read) => read?.status === 'signed-out')) {
+	return Astro.redirect(`/vendor/login?next=${encodeURIComponent('/vendor/billing')}`);
+}
+
+const billingLive = plan?.status === 'ok';
+const openInvoice =
+	invoices?.status === 'ok' ? (invoices.value.items.find((invoice) => invoice.status === 'OPEN') ?? null) : null;
+---
+
+<VendorPortalLayout title="Billing">
+	{
+		!subscription || !plan || !invoices ? (
+			<VendorPortalUnavailable />
+		) : (
+			<>
+				<VendorSubscriptionSummary
+					subscription={subscription}
+					openInvoice={openInvoice}
+					billingLive={billingLive}
+					checkout={checkout}
+				/>
+
+				{plan.status === 'ok' ? (
+					<>
+						{subscription.status === 'ok' && subscription.value.status !== 'COMPLIMENTARY' && (
+							<VendorPlanPicker plan={plan.value} subscription={subscription.value} />
+						)}
+						{invoices.status !== 'missing' && <VendorInvoices invoices={invoices} after={after} />}
+					</>
+				) : (
+					<VendorBillingComingSoon reason={plan.status === 'missing' ? 'missing' : 'failed'} />
+				)}
+			</>
+		)
+	}
+</VendorPortalLayout>
