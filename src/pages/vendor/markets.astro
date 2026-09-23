@@ -1,0 +1,73 @@
+---
+// On-demand and private, like every /vendor/* page — see src/middleware.ts.
+export const prerender = false;
+
+import VendorPortalLayout from '../../layouts/VendorPortalLayout.astro';
+import VendorMarkets from '../../components/sections/VendorMarkets.astro';
+import VendorPortalUnavailable from '../../components/sections/VendorPortalUnavailable.astro';
+import type { MarketOption } from '../../data/vendor-portal';
+import { fetchMarkets } from '../../lib/api/markets';
+import { getBillingOverview, getSubscription } from '../../lib/api/vendor-billing';
+import { listMyMarkets } from '../../lib/api/vendor-team';
+import { portalRead } from '../../lib/auth/session';
+
+const portal = Astro.locals.vendorPortal;
+
+// The published list is public and takes no token, so it isn't a `portalRead`.
+const published = fetchMarkets().catch((error) => {
+	console.error('[vendor-portal] markets failed', error);
+	return null;
+});
+
+const [stalls, subscription, overview] =
+	portal?.status === 'signed-in'
+		? await Promise.all([
+				portalRead(Astro.cookies, 'myVendorMarkets', listMyMarkets),
+				portalRead(Astro.cookies, 'myVendorSubscription', getSubscription),
+				portalRead(Astro.cookies, 'billingOverview', getBillingOverview),
+			])
+		: [null, null, null];
+
+if ([stalls, subscription, overview].some((read) => read?.status === 'signed-out')) {
+	return Astro.redirect(`/vendor/login?next=${encodeURIComponent('/vendor/markets')}`);
+}
+
+const markets = await published;
+
+// Every published market, plus any the vendor trades at that isn't listed (paused or
+// unpublished). Without those, saving would leave them, since an unrendered box is unticked.
+const options: MarketOption[] | null =
+	markets && stalls?.status === 'ok'
+		? [
+				...markets.map((market) => ({
+					id: market.id,
+					name: market.name,
+					city: market.city,
+					detail: `${market.cadence}, ${market.opens}–${market.closes}`,
+				})),
+				...stalls.value
+					.filter((stall) => !markets.some((market) => market.id === stall.marketId))
+					.map((stall) => ({
+						id: stall.marketId,
+						name: stall.market.name,
+						city: stall.market.city.trim(),
+						detail: 'Not currently listed',
+					})),
+			]
+		: null;
+---
+
+<VendorPortalLayout title="Markets" description="Choose the markets your MarketDay business trades at.">
+	{
+		options && stalls?.status === 'ok' ? (
+			<VendorMarkets
+				options={options}
+				current={stalls.value.map((stall) => stall.marketId)}
+				subscription={subscription?.status === 'ok' ? subscription.value : null}
+				overview={overview?.status === 'ok' ? overview.value : null}
+			/>
+		) : (
+			<VendorPortalUnavailable />
+		)
+	}
+</VendorPortalLayout>

@@ -44,11 +44,15 @@ export const vendorHelpFaqs: FaqEntry[] = [
 	},
 	{
 		q: 'Can I sell at more than one market?',
-		a: 'Yes — every market you trade at gets its own inventory and order queue, all reachable from one account. Standard covers one market; Pro adds unlimited markets in a single dashboard.',
+		a: 'Yes — every market you trade at gets its own inventory and order queue, all reachable from one account. Your plan is €10 a month for your first market and €5 for each one you add, so you only pay for the markets you actually trade at.',
 	},
 	{
 		q: 'When do I get paid?',
-		a: 'Standard payouts go out weekly to your linked bank account. Pro vendors can switch to daily payouts from Settings.',
+		a: 'Payouts go out weekly to your linked bank account.',
+	},
+	{
+		q: 'How much does MarketDay cost?',
+		a: 'Every new vendor gets a 30-day free trial with full access to every market, and no card is needed to start. After that it is €10 a month for your first market and €5 for each extra one, VAT included, with no commission on your sales. Manage your plan any time from the vendor portal.',
 	},
 	{
 		q: 'What happens if I run out of stock?',

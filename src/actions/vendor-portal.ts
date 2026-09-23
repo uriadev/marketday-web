@@ -13,8 +13,16 @@ import {
 	requestPasswordReset,
 	resetPassword,
 } from '../lib/api/vendor-auth';
-import { changeMarketSlots, openBillingPortal, startCheckout } from '../lib/api/vendor-billing';
-import { inviteMember, moveMember, removeMember, revokeInvite } from '../lib/api/vendor-team';
+import { openBillingPortal, startCheckout } from '../lib/api/vendor-billing';
+import {
+	inviteMember,
+	joinMarket,
+	leaveMarket,
+	listMyMarkets,
+	moveMember,
+	removeMember,
+	revokeInvite,
+} from '../lib/api/vendor-team';
 import { writeSession } from '../lib/auth/cookies';
 import { endSession, isOwner, NotSignedIn, withVendorAuth } from '../lib/auth/session';
 import { checkRateLimit, getClientIp } from '../lib/security/rate-limit';
@@ -50,12 +58,6 @@ const idField = z
 	.regex(/^[A-Za-z0-9-]+$/, 'Invalid id.');
 
 const nextField = z.string().max(512).nullish();
-
-const marketSlotsField = z.coerce
-	.number()
-	.int('Choose a whole number of markets.')
-	.min(1, 'Choose at least one market.')
-	.max(50, 'That is more markets than we can bill for.');
 
 /** Keyed per IP and per flow, so tripping one limit doesn't lock someone out of another. */
 function limitAuth(context: ActionAPIContext, flow: string): void {
@@ -313,18 +315,54 @@ export const vendorTeam = {
 	}),
 };
 
+export const vendorMarkets = {
+	/**
+	 * The whole selection, one `marketId` per ticked box. The diff is taken inside the auth
+	 * callback against the live markets, so the retry after a 401 re-reads them rather than
+	 * sending a leave twice. Joins go first: an inactive subscription refuses the first one,
+	 * and nothing destructive has happened yet.
+	 */
+	save: defineAction({
+		accept: 'form',
+		input: z.object({ marketId: z.array(idField).max(100).default([]) }),
+		handler: async (input, context) => {
+			const selected = new Set(input.marketId);
+			let label = 'myVendorMarkets';
+			try {
+				await withVendorAuth(context.cookies, async (token) => {
+					label = 'myVendorMarkets';
+					const current = new Set((await listMyMarkets(token)).map((stall) => stall.marketId));
+					for (const marketId of selected) {
+						if (current.has(marketId)) continue;
+						label = 'joinMarket';
+						await joinMarket(token, marketId);
+					}
+					for (const marketId of current) {
+						if (selected.has(marketId)) continue;
+						label = 'leaveMarket';
+						await leaveMarket(token, marketId);
+					}
+				});
+			} catch (error) {
+				portalFailure(error, label);
+			}
+			return { ok: true as const };
+		},
+	}),
+};
+
 export const vendorBilling = {
+	/** Takes no count: the API sizes Checkout from the markets MarketDay has the vendor at. */
 	checkout: defineAction({
 		accept: 'form',
-		input: z.object({ marketSlots: marketSlotsField }),
-		handler: async (input, context) => {
+		handler: async (_input, context) => {
 			let url: string;
 			try {
-				url = await withVendorAuth(context.cookies, (token) => startCheckout(token, input.marketSlots));
+				url = await withVendorAuth(context.cookies, startCheckout);
 			} catch (error) {
-				portalFailure(error, 'startVendorCheckout');
+				portalFailure(error, 'startSubscriptionCheckout');
 			}
-			return stripeRedirect(url, 'startVendorCheckout');
+			return stripeRedirect(url, 'startSubscriptionCheckout');
 		},
 	}),
 
@@ -335,22 +373,9 @@ export const vendorBilling = {
 			try {
 				url = await withVendorAuth(context.cookies, openBillingPortal);
 			} catch (error) {
-				portalFailure(error, 'openVendorBillingPortal');
+				portalFailure(error, 'openBillingPortal');
 			}
-			return stripeRedirect(url, 'openVendorBillingPortal');
-		},
-	}),
-
-	changeSlots: defineAction({
-		accept: 'form',
-		input: z.object({ marketSlots: marketSlotsField }),
-		handler: async (input, context) => {
-			try {
-				await withVendorAuth(context.cookies, (token) => changeMarketSlots(token, input.marketSlots));
-			} catch (error) {
-				portalFailure(error, 'changeVendorMarketSlots');
-			}
-			return { ok: true as const };
+			return stripeRedirect(url, 'openBillingPortal');
 		},
 	}),
 };

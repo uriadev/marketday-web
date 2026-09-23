@@ -40,17 +40,6 @@ export function daysUntil(iso: string | null | undefined, now = Date.now()): num
 	return Math.max(0, Math.ceil((at - now) / DAY_MS));
 }
 
-export interface SlotPricing {
-	firstMarketAmount: number;
-	extraMarketAmount: number;
-}
-
-/** The monthly price of `slots` market slots, in minor units — see the Billing API contract. */
-export function monthlyPrice(plan: SlotPricing, slots: number): number {
-	if (slots < 1) return 0;
-	return plan.firstMarketAmount + (slots - 1) * plan.extraMarketAmount;
-}
-
 export function pluralise(count: number, one: string, many = `${one}s`): string {
 	return `${count} ${count === 1 ? one : many}`;
 }

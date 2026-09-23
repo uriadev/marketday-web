@@ -11,6 +11,12 @@ import type { VendorMemberRole } from './vendor-auth';
  *
  * Refusals (staff limit per market, invite throttles, removing the owner) are deliberately
  * authored sentences and arrive as `GraphQLBusinessError`, safe to show the owner.
+ *
+ * `joinMarket` / `leaveMarket` are `VendorsResolver`'s
+ * (`backend/src/vendors/infrastructure/graphql/vendors.resolver.ts`), owner-only too. Each
+ * one has Billing move a live subscription to match the markets, prorated onto the next
+ * invoice. Joining is refused only when the subscription covers nothing ("This vendor's
+ * subscription isn't active"). Leaving deletes that market's listings with the stall.
  */
 
 export interface MarketRef {
@@ -39,7 +45,7 @@ export interface VendorInvite {
 
 export interface VendorStall {
 	marketId: string;
-	market: MarketRef;
+	market: MarketRef & { city: string };
 }
 
 const VENDOR_MEMBERS = /* GraphQL */ `
@@ -96,6 +102,7 @@ const MY_VENDOR_MARKETS = /* GraphQL */ `
 			market {
 				id
 				name
+				city
 			}
 		}
 	}
@@ -166,4 +173,30 @@ export async function removeMember(accessToken: string, userId: string): Promise
 		operation: 'removeVendorMember',
 		accessToken,
 	});
+}
+
+/** A no-op for a market the vendor already trades at. */
+const JOIN_MARKET = /* GraphQL */ `
+	mutation VendorPortalJoinMarket($marketId: ID!) {
+		joinMarket(marketId: $marketId) {
+			id
+		}
+	}
+`;
+
+export async function joinMarket(accessToken: string, marketId: string): Promise<void> {
+	await graphqlRequest({ query: JOIN_MARKET, variables: { marketId }, operation: 'joinMarket', accessToken });
+}
+
+/** Refused (`StallNotFound`) for a market the vendor doesn't trade at. */
+const LEAVE_MARKET = /* GraphQL */ `
+	mutation VendorPortalLeaveMarket($marketId: ID!) {
+		leaveMarket(marketId: $marketId) {
+			id
+		}
+	}
+`;
+
+export async function leaveMarket(accessToken: string, marketId: string): Promise<void> {
+	await graphqlRequest({ query: LEAVE_MARKET, variables: { marketId }, operation: 'leaveMarket', accessToken });
 }

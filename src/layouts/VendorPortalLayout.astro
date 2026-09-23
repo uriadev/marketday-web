@@ -20,7 +20,7 @@ interface Props {
 	description?: string;
 }
 
-const { title, description = 'Manage your MarketDay subscription, bills and team.' } = Astro.props;
+const { title, description = 'Manage your MarketDay subscription, bills, markets and team.' } = Astro.props;
 const portal = Astro.locals.vendorPortal;
 
 // Allowlisted: an unknown key shows nothing, so `?done=` can't put words on the page.

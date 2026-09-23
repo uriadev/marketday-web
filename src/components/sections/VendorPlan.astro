@@ -1,35 +1,40 @@
 ---
 import PortalForm from '../ui/PortalForm.astro';
-import type { BillingPlan, VendorSubscription } from '../../lib/api/vendor-billing';
-import { formatMoney, monthlyPrice, pluralise } from '../../lib/vendor-portal';
+import type { BillingOverview, VendorSubscription } from '../../lib/api/vendor-billing';
+import { formatDate, formatMoney, pluralise } from '../../lib/vendor-portal';
 
 /**
- * How many markets to pay for. One slot per market the vendor trades at. With no live
- * subscription it goes to Stripe Checkout. With one, it changes the quantity in place,
- * prorated, after a confirmation.
+ * What the vendor pays, and a way to pay it. One slot per market the vendor trades at, and at
+ * least one. **The vendor never chooses the count.** They choose markets on the Markets tab
+ * (`VendorMarkets`), and the API moves the subscription to match (`MatchMarketSlots`, prorated onto the next
+ * invoice).
+ *
+ * - **No live subscription:** a button to Stripe Checkout, which the API sizes from the
+ *   markets.
+ * - **A live one:** the price, and nothing to change here.
  */
 interface Props {
-	plan: BillingPlan;
+	overview: BillingOverview;
 	subscription: VendorSubscription;
 }
 
-const { plan, subscription } = Astro.props;
+const { overview, subscription } = Astro.props;
+const { pricing } = overview;
 
-// A live Stripe subscription, as opposed to a trial, a lapse or never having subscribed.
-const subscribed = subscription.status === 'ACTIVE' || subscription.status === 'PAST_DUE';
-const min = Math.max(1, subscription.marketsUsed);
-const max = Math.max(min, plan.maxMarketSlots);
-const current = subscribed ? subscription.paidMarketSlots : 0;
-const initial = Math.min(max, subscribed ? Math.max(current, min) : min);
+/** The API's floor for carrying a trial into Checkout (`start-subscription-checkout.use-case.ts`). */
+const MIN_CARRIED_TRIAL_MS = 48 * 60 * 60 * 1000;
 
-const first = formatMoney(plan.firstMarketAmount, plan.currency);
-const extra = formatMoney(plan.extraMarketAmount, plan.currency);
-const price = formatMoney(monthlyPrice(plan, initial), plan.currency);
-const confirmFor = (slots: number, total: string) =>
-	`Change to ${pluralise(slots, 'market slot')} for ${total} a month? The difference is prorated on your next invoice.`;
+const subscribed = overview.hasSubscription;
+const markets = subscription.marketsUsed;
 
-const stepClass =
-	'flex h-12 w-12 items-center justify-center rounded-full border border-ink/15 text-[22px] font-semibold text-ink transition-colors hover:bg-cream disabled:cursor-not-allowed disabled:opacity-40';
+const first = formatMoney(pricing.firstMarketCents, pricing.currency);
+const extra = formatMoney(pricing.additionalMarketCents, pricing.currency);
+const price = formatMoney(overview.monthlyCostCents, pricing.currency);
+
+const trialCarried =
+	subscription.status === 'TRIAL' &&
+	!!subscription.trialEndsAt &&
+	new Date(subscription.trialEndsAt).getTime() - Date.now() >= MIN_CARRIED_TRIAL_MS;
 ---
 
 <section id="plan" aria-labelledby="plan-title" class="mb-6 scroll-mt-6 rounded-[28px] bg-white p-6 shadow-card sm:p-9">
@@ -40,114 +45,46 @@ const stepClass =
 		{first} a month for your first market, {extra} for each extra one
 	</p>
 	<p class="mb-6 max-w-160 text-[15px] leading-[1.6] text-body">
-		Each market you trade at uses one slot. No commission on your sales, and you can change or cancel any time.
+		No commission on your sales. Your plan follows the markets you trade at: when you add or leave one on the
+		<a href="/vendor/markets" class="font-semibold text-brand underline">Markets tab</a>, the difference is prorated
+		on your next invoice.
 	</p>
 
-	<PortalForm
-		portalAction={subscribed ? 'vendorBilling.changeSlots' : 'vendorBilling.checkout'}
-		done={subscribed ? 'slots' : undefined}
-		confirm={subscribed ? confirmFor(initial, price) : undefined}
-		confirmLabel={subscribed ? 'Change plan' : undefined}
-		data-plan-picker=""
-		data-first={plan.firstMarketAmount}
-		data-extra={plan.extraMarketAmount}
-		data-currency={plan.currency}
-		data-current={current}
-		data-subscribed={subscribed ? 'true' : 'false'}
-	>
-		<label for="market-slots" class="mb-2 block text-[13px] font-semibold text-ink">Market slots</label>
-		<div class="flex flex-wrap items-center gap-x-5 gap-y-4">
-			<div class="flex items-center gap-2.5">
-				<button type="button" data-step="-1" aria-label="One market fewer" class={stepClass}>−</button>
-				<input
-					id="market-slots"
-					name="marketSlots"
-					type="number"
-					inputmode="numeric"
-					required
-					min={min}
-					max={max}
-					step="1"
-					value={initial}
-					aria-describedby="market-slots-hint market-slots-error"
-					class="h-12 w-20 rounded-xl border border-[#E4E0D5] bg-cream text-center font-display text-[20px] font-bold text-ink focus:border-brand focus:outline-none aria-[invalid=true]:border-danger"
-				/>
-				<button type="button" data-step="1" aria-label="One market more" class={stepClass}>+</button>
-			</div>
-			<p class="text-[15px] text-body">
-				<span data-price class="font-display text-[26px] font-bold text-ink">{price}</span> / month
-			</p>
-		</div>
-		<p id="market-slots-hint" class="mt-2.5 text-[13.5px] text-muted">
-			You trade at {pluralise(subscription.marketsUsed, 'market')}, so you need at least {pluralise(min, 'slot')}. Up
-			to {max}.
+	<div class="flex flex-wrap items-baseline gap-x-5 gap-y-2">
+		<p class="text-[15px] text-body">
+			<span class="font-display text-[26px] font-bold text-ink">{price}</span> / month
 		</p>
-		<p id="market-slots-error" data-error-for="marketSlots" class="mt-1.5 hidden text-[13px] text-danger"></p>
+		<p class="text-[14.5px] text-muted">
+			{
+				markets > 0
+					? `You trade at ${pluralise(markets, 'market')}.`
+					: "You're not at a market yet, so this covers your first one."
+			}
+		</p>
+	</div>
 
-		<button
-			type="submit"
-			data-submit
-			data-busy-label={subscribed ? 'Updating…' : 'Opening secure checkout…'}
-			class="mt-6 flex h-13 w-full items-center justify-center rounded-full bg-brand px-7 text-base font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
-		>
-			<span data-submit-label>{subscribed ? 'Update market slots' : 'Continue to secure payment'}</span>
-		</button>
-		<p data-form-status role="status" aria-live="polite" class="mt-4 hidden rounded-xl px-4 py-3 text-[14.5px]"></p>
-		{
-			!subscribed && (
+	{
+		!subscribed && (
+			<PortalForm portalAction="vendorBilling.checkout" class="mt-6">
+				<button
+					type="submit"
+					data-submit
+					data-busy-label="Opening secure checkout…"
+					class="flex h-13 w-full items-center justify-center rounded-full bg-brand px-7 text-base font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+				>
+					<span data-submit-label>Continue to secure payment</span>
+				</button>
+				<p data-form-status role="status" aria-live="polite" class="mt-4 hidden rounded-xl px-4 py-3 text-[14.5px]"></p>
 				<p class="mt-4 text-[13.5px] text-muted">
+					{trialCarried && (
+						<>
+							You won't be charged until your free trial ends on {formatDate(subscription.trialEndsAt)}.{' '}
+						</>
+					)}
 					You'll pay on Stripe's secure checkout page and come straight back here. Your card details never touch
 					MarketDay.
 				</p>
-			)
-		}
-	</PortalForm>
+			</PortalForm>
+		)
+	}
 </section>
-
-<script>
-	import { formatMoney, monthlyPrice, pluralise } from '../../lib/vendor-portal';
-
-	document.querySelectorAll<HTMLFormElement>('form[data-plan-picker]').forEach((form) => {
-		const input = form.querySelector<HTMLInputElement>('input[name="marketSlots"]');
-		const priceLabel = form.querySelector<HTMLElement>('[data-price]');
-		const submit = form.querySelector<HTMLButtonElement>('[data-submit]');
-		const fewer = form.querySelector<HTMLButtonElement>('[data-step="-1"]');
-		const more = form.querySelector<HTMLButtonElement>('[data-step="1"]');
-		if (!input) return;
-
-		const plan = {
-			firstMarketAmount: Number(form.dataset.first),
-			extraMarketAmount: Number(form.dataset.extra),
-		};
-		const currency = form.dataset.currency ?? 'eur';
-		const current = Number(form.dataset.current);
-		const subscribed = form.dataset.subscribed === 'true';
-		const min = Number(input.min);
-		const max = Number(input.max);
-
-		const update = () => {
-			const slots = Math.trunc(Number(input.value));
-			const valid = Number.isFinite(slots) && slots >= min && slots <= max;
-			const total = valid ? formatMoney(monthlyPrice(plan, slots), currency) : '—';
-			if (priceLabel) priceLabel.textContent = total;
-			if (fewer) fewer.disabled = !valid || slots <= min;
-			if (more) more.disabled = !valid || slots >= max;
-			if (subscribed) {
-				// Nothing to change until the number differs from what is paid for. Left alone
-				// while a submission is in flight (PortalForm marks the form aria-busy).
-				if (submit && !form.hasAttribute('aria-busy')) submit.disabled = !valid || slots === current;
-				form.dataset.confirm = `Change to ${pluralise(slots, 'market slot')} for ${total} a month? The difference is prorated on your next invoice.`;
-			}
-		};
-
-		form.querySelectorAll<HTMLButtonElement>('[data-step]').forEach((button) => {
-			button.addEventListener('click', () => {
-				const next = Math.trunc(Number(input.value) || min) + Number(button.dataset.step);
-				input.value = String(Math.min(max, Math.max(min, next)));
-				update();
-			});
-		});
-		input.addEventListener('input', update);
-		update();
-	});
-</script>

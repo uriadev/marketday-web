@@ -1,5 +1,5 @@
 import type { AstroCookies } from 'astro';
-import { ApiError, ApiOperationUnavailable } from '../api/client';
+import { ApiError, ApiOperationUnavailable, GraphQLBusinessError } from '../api/client';
 import { type AuthUser, getMe, logOut, refreshSession } from '../api/vendor-auth';
 import { clearSession, jwtExpiry, readAccessCookie, readRefreshCookie, writeSession } from './cookies';
 
@@ -150,8 +150,9 @@ export async function resolvePortal(cookies: AstroCookies): Promise<PortalState>
 /**
  * One read for a portal page, reduced to what the page renders:
  * - `ok`, with the value.
- * - `missing`: the running API doesn't have the operation yet (see the Billing API contract
- *   in `src/lib/api/vendor-billing.ts`).
+ * - `missing`: the running API doesn't have the operation yet (a deploy ahead of the API).
+ * - `unavailable`: the API has it but answered 503. For billing that means Stripe isn't
+ *   configured yet, or Stripe is down (see `src/lib/api/vendor-billing.ts`).
  * - `signed-out`: the session died mid-page.
  * - `failed`: anything else, logged here and never rendered.
  *
@@ -161,6 +162,7 @@ export async function resolvePortal(cookies: AstroCookies): Promise<PortalState>
 export type PortalRead<T> =
 	| { status: 'ok'; value: T }
 	| { status: 'missing' }
+	| { status: 'unavailable' }
 	| { status: 'signed-out' }
 	| { status: 'failed' };
 
@@ -174,6 +176,10 @@ export async function portalRead<T>(
 	} catch (error) {
 		if (error instanceof ApiOperationUnavailable) return { status: 'missing' };
 		if (error instanceof NotSignedIn) return { status: 'signed-out' };
+		if (error instanceof GraphQLBusinessError && error.resolverStatus === 503) {
+			console.warn(`[vendor-portal] ${label} unavailable: ${error.detail}`);
+			return { status: 'unavailable' };
+		}
 		console.error(`[vendor-portal] ${label} failed`, error);
 		return { status: 'failed' };
 	}

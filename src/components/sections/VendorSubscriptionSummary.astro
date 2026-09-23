@@ -2,22 +2,24 @@
 import PortalForm from '../ui/PortalForm.astro';
 import StatusBadge from '../ui/StatusBadge.astro';
 import { checkoutNotices, subscriptionStatusCopy } from '../../data/vendor-portal';
-import type { Invoice, VendorSubscription } from '../../lib/api/vendor-billing';
+import type { BillingOverview, Invoice, VendorSubscription } from '../../lib/api/vendor-billing';
 import type { PortalRead } from '../../lib/auth/session';
 import { isStripeUrl } from '../../lib/security/redirects';
-import { daysUntil, formatDate, pluralise } from '../../lib/vendor-portal';
+import { daysUntil, formatDate, formatMoney, pluralise } from '../../lib/vendor-portal';
 
 interface Props {
 	subscription: PortalRead<VendorSubscription>;
+	/** Null while payments aren't available (see `src/lib/api/vendor-billing.ts`). */
+	overview: BillingOverview | null;
 	/** The newest unpaid invoice, for "Pay now" while a payment is overdue. */
 	openInvoice: Invoice | null;
-	/** Whether the API has the Billing contract yet (see `src/lib/api/vendor-billing.ts`). */
-	billingLive: boolean;
 	/** `?checkout=` from Stripe's return URL. */
 	checkout: string | null;
+	/** Paid at Checkout, but the webhook hasn't landed yet: don't offer to subscribe again. */
+	awaitingWebhook: boolean;
 }
 
-const { subscription, openInvoice, billingLive, checkout } = Astro.props;
+const { subscription, overview, openInvoice, checkout, awaitingWebhook } = Astro.props;
 
 const checkoutNotice = checkout && Object.hasOwn(checkoutNotices, checkout) ? checkoutNotices[checkout] : undefined;
 const noticeClass = {
@@ -28,6 +30,7 @@ const noticeClass = {
 };
 
 const sub = subscription.status === 'ok' ? subscription.value : null;
+const monthly = overview ? formatMoney(overview.monthlyCostCents, overview.pricing.currency) : null;
 
 function describe(s: VendorSubscription): { headline: string; body: string } {
 	switch (s.status) {
@@ -49,7 +52,7 @@ function describe(s: VendorSubscription): { headline: string; body: string } {
 			}
 			return {
 				headline: 'Your subscription is active',
-				body: s.currentPeriodEnd ? `It renews on ${formatDate(s.currentPeriodEnd)}.` : 'It renews every month.',
+				body: `It renews ${s.currentPeriodEnd ? `on ${formatDate(s.currentPeriodEnd)}` : 'every month'}${monthly ? ` at ${monthly} a month` : ''}.`,
 			};
 		case 'PAST_DUE':
 			return {
@@ -73,8 +76,10 @@ const copy = sub ? subscriptionStatusCopy[sub.status] : null;
 const text = sub ? describe(sub) : null;
 const invoiceUrl = openInvoice?.hostedInvoiceUrl;
 const payHref = sub?.status === 'PAST_DUE' && isStripeUrl(invoiceUrl) ? invoiceUrl : null;
-const canManage = billingLive && !!sub && sub.paidMarketSlots > 0;
-const canSubscribe = billingLive && !!sub && (sub.status === 'TRIAL' || sub.status === 'INACTIVE');
+const canManage = !!sub && !!overview?.canManageBilling;
+// The picker renders for everyone but a comped vendor; this only points at it.
+const canSubscribe =
+	!!sub && !!overview && !overview.hasSubscription && sub.status !== 'COMPLIMENTARY' && !awaitingWebhook;
 ---
 
 <section aria-labelledby="subscription-title" class="mb-6">
@@ -112,21 +117,18 @@ const canSubscribe = billingLive && !!sub && (sub.status === 'TRIAL' || sub.stat
 					</p>
 					<p class="max-w-160 text-[15.5px] leading-[1.6] text-body">{text.body}</p>
 
-					<dl class="mt-6 grid max-w-160 grid-cols-2 gap-3 sm:grid-cols-3">
+					<dl class="mt-6 grid max-w-160 grid-cols-2 gap-3">
 						<div class="rounded-2xl bg-cream px-4 py-3.5">
 							<dt class="text-[12.5px] font-semibold text-muted">Markets you trade at</dt>
 							<dd class="mt-1 font-display text-[22px] font-bold text-ink">{sub.marketsUsed}</dd>
 						</div>
-						<div class="rounded-2xl bg-cream px-4 py-3.5">
-							<dt class="text-[12.5px] font-semibold text-muted">Markets covered</dt>
-							<dd class="mt-1 font-display text-[22px] font-bold text-ink">
-								{sub.marketSlotLimit === null ? 'All' : sub.marketSlotLimit}
-							</dd>
-						</div>
-						{sub.paidMarketSlots > 0 && (
+						{/* Priced from the markets the vendor trades at; the vendor never picks a count. */}
+						{monthly && sub.status !== 'COMPLIMENTARY' && (
 							<div class="rounded-2xl bg-cream px-4 py-3.5">
-								<dt class="text-[12.5px] font-semibold text-muted">Paid market slots</dt>
-								<dd class="mt-1 font-display text-[22px] font-bold text-ink">{sub.paidMarketSlots}</dd>
+								<dt class="text-[12.5px] font-semibold text-muted">
+									{overview?.hasSubscription ? 'Monthly price' : 'Monthly price if you subscribe'}
+								</dt>
+								<dd class="mt-1 font-display text-[22px] font-bold text-ink">{monthly}</dd>
 							</div>
 						)}
 					</dl>
@@ -167,7 +169,8 @@ const canSubscribe = billingLive && !!sub && (sub.status === 'TRIAL' || sub.stat
 										class="h-12 rounded-full border border-ink/15 px-6 text-[15px] font-semibold text-ink transition-colors hover:bg-cream disabled:cursor-not-allowed disabled:opacity-60"
 									>
 										<span data-submit-label>
-											{sub.status === 'PAST_DUE' ? 'Update card' : 'Card, receipts & cancellation'}
+											{/* "Manage billing" is the name the API's declined-card message points at. */}
+											{sub.status === 'PAST_DUE' ? 'Update card' : 'Manage billing'}
 										</span>
 									</button>
 								</PortalForm>

@@ -6,39 +6,47 @@ export interface PricingPlan {
 	badge?: string;
 	features: string[];
 	cta: string;
+	href: string;
 	variant: 'light' | 'dark';
 }
 
+// Mirrors the API's graduated price (backend/specs/vendor-subscriptions.md): €10 for the
+// first market, €5 for each further one, VAT-inclusive, after a 30-day trial. The portal
+// reads live prices from `billingOverview`; update this copy if those change.
 export const pricingPlans: PricingPlan[] = [
 	{
-		name: 'Standard',
-		subtitle: 'For any vendor, any stall',
-		price: 'Free',
-		priceSuffix: 'forever',
+		name: 'Free trial',
+		subtitle: 'Your first 30 days, on us',
+		price: '€0',
+		priceSuffix: 'for 30 days',
 		features: [
-			'Pre-orders at one market',
-			'Stock & inventory tools',
-			'Weekly payouts',
+			'Full access at every market',
+			'Pre-orders & stock tools from day one',
+			'No card needed to start',
 			'0% commission on orders',
 			'Email & chat support',
 		],
-		cta: 'Start free',
+		cta: 'Start your free trial',
+		// No self-serve sign-up: the team creates the vendor, which starts the trial.
+		href: '/contact?role=vendor',
 		variant: 'light',
 	},
 	{
-		name: 'Pro',
-		subtitle: 'For vendors trading several markets',
-		price: '€19',
-		priceSuffix: '/ month',
-		badge: 'Multi-market',
+		name: 'MarketDay',
+		subtitle: 'One plan that grows with your round',
+		price: '€10',
+		priceSuffix: '/ month, first market',
+		badge: '+€5 per extra market',
 		features: [
-			'Everything in Standard',
-			'Unlimited markets, one dashboard',
-			'Sales & waste analytics',
-			'Daily payouts instead of weekly',
-			'Priority phone support',
+			'Everything in the trial, for as long as you trade',
+			'Add a market for just €5 a month more',
+			'2 markets €15 · 3 markets €20',
+			'Plan follows your markets automatically',
+			'VAT included, cancel any time',
 		],
-		cta: 'Try Pro free for 30 days',
+		cta: 'Keep trading after your trial',
+		// Signed-out visitors are sent to /vendor/login?next=/vendor/billing by the middleware.
+		href: '/vendor/billing',
 		variant: 'dark',
 	},
 ];

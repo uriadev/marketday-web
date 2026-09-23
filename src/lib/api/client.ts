@@ -56,6 +56,13 @@ export class GraphQLBusinessError extends ApiError {
 		/** The GraphQL error text alone, with no `${operation}: ` prefix — this is what's safe to show. */
 		readonly detail: string,
 		status?: number,
+		/**
+		 * The HTTP status of the exception the resolver threw, which Nest copies onto
+		 * `extensions.originalError.statusCode`. The response itself was a 200 (see
+		 * `backend/src/common/graphql/auth-http-status.plugin.ts`), so this is the only place a
+		 * 503 "billing is switched off" can be told from a 400 refusal.
+		 */
+		readonly resolverStatus?: number,
 	) {
 		super(message, status);
 		this.name = 'GraphQLBusinessError';
@@ -98,7 +105,7 @@ export class ApiOperationUnavailable extends ApiError {
 
 interface GraphQLErrorEntry {
 	message?: string;
-	extensions?: { code?: unknown };
+	extensions?: { code?: unknown; originalError?: { statusCode?: unknown } };
 }
 
 interface GraphQLResponse<T> {
@@ -199,7 +206,13 @@ export async function graphqlRequest<T>({
 	}
 
 	if (errors.length) {
-		throw new GraphQLBusinessError(`${operation}: ${detail}`, detail, response.status);
+		const resolverStatus = errors[0].extensions?.originalError?.statusCode;
+		throw new GraphQLBusinessError(
+			`${operation}: ${detail}`,
+			detail,
+			response.status,
+			typeof resolverStatus === 'number' ? resolverStatus : undefined,
+		);
 	}
 
 	const data = payload.data?.[operation];

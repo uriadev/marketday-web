@@ -23,13 +23,15 @@ const page = invoices.status === 'ok' ? invoices.value : null;
 const rows = (page?.items ?? []).map((invoice) => ({
 	...invoice,
 	hosted: isStripeUrl(invoice.hostedInvoiceUrl) ? invoice.hostedInvoiceUrl : null,
-	pdf: isStripeUrl(invoice.invoicePdf) ? invoice.invoicePdf : null,
+	pdf: isStripeUrl(invoice.invoicePdfUrl) ? invoice.invoicePdfUrl : null,
 	period:
 		invoice.periodStart && invoice.periodEnd
 			? `${formatDate(invoice.periodStart)} – ${formatDate(invoice.periodEnd)}`
 			: null,
 }));
-const dropped = page?.items.filter((i) => (i.hostedInvoiceUrl && !isStripeUrl(i.hostedInvoiceUrl)) || (i.invoicePdf && !isStripeUrl(i.invoicePdf)));
+const dropped = page?.items.filter(
+	(i) => (i.hostedInvoiceUrl && !isStripeUrl(i.hostedInvoiceUrl)) || (i.invoicePdfUrl && !isStripeUrl(i.invoicePdfUrl)),
+);
 if (dropped?.length) console.error(`[vendor-portal] ${dropped.length} invoice link(s) outside the Stripe allowlist were not rendered`);
 
 const olderHref = page?.nextCursor ? `/vendor/billing?after=${encodeURIComponent(page.nextCursor)}#invoices` : null;
@@ -71,7 +73,7 @@ const olderHref = page?.nextCursor ? `/vendor/billing?after=${encodeURIComponent
 								</p>
 								{invoice.period && <p class="mt-0.5 text-[13.5px] text-muted">For {invoice.period}</p>}
 							</div>
-							<p class="w-24 font-display text-[18px] font-bold text-ink">{formatMoney(invoice.total, invoice.currency)}</p>
+							<p class="w-24 font-display text-[18px] font-bold text-ink">{formatMoney(invoice.totalCents, invoice.currency)}</p>
 							<StatusBadge tone={status.tone}>{status.label}</StatusBadge>
 							<div class="flex items-center gap-2 sm:ml-auto">
 								{invoice.hosted && (

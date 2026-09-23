@@ -9,6 +9,7 @@ import type { NavLink } from './site';
 
 export const vendorPortalTabs: NavLink[] = [
 	{ label: 'Billing', href: '/vendor/billing' },
+	{ label: 'Markets', href: '/vendor/markets' },
 	{ label: 'Team', href: '/vendor/team' },
 ];
 
@@ -58,8 +59,42 @@ export const portalNotices: Record<string, string> = {
 	revoked: 'Invite cancelled. The code no longer works.',
 	moved: 'Staff member moved to their new market.',
 	removed: "Staff member removed. They keep their MarketDay account but can no longer run your stall.",
-	slots: 'Your market slots are updated. Any difference is prorated on your next invoice.',
+	markets: 'Your markets are updated. Your plan follows them, and any difference is prorated on your next invoice.',
 };
+
+/** One row on the Markets tab. */
+export interface MarketOption {
+	id: string;
+	name: string;
+	/** What the search matches on, with the name. */
+	city: string;
+	/** When it trades, e.g. `Sat, 09:00–14:00`. */
+	detail: string;
+}
+
+/**
+ * What the Markets tab (`sections/VendorMarkets.astro`) warns before a change is saved. Its
+ * script fills `{from}`, `{to}` (monthly prices) and `{markets}` (market names, which are
+ * published data, not visitor input), and sets the result with `textContent`.
+ */
+export const marketChangeCopy = {
+	adding: 'Adding: {markets}.',
+	removing: 'Leaving: {markets}.',
+	/** A live subscription (ACTIVE or PAST_DUE). */
+	paid: 'Your plan goes from {from} to {to} a month. The difference is prorated on your next invoice.',
+	/** A live subscription whose price doesn't move, e.g. from no market to one. */
+	unchanged: 'Your plan stays at {to} a month.',
+	trial: "You're on a free trial, so nothing changes today. After it, your plan is {to} a month.",
+	complimentary: 'Your access is complimentary, so nothing changes today. Afterwards your plan is {to} a month.',
+	unsubscribed: 'When you subscribe, your plan will be {to} a month.',
+	/** The billing overview couldn't be read, so there are no prices to quote. */
+	unpriced: 'Your subscription follows your markets, so this changes what you are billed.',
+	/** Every box unticked: the API still bills one market. */
+	noMarkets: 'With no markets, your plan still covers one.',
+	leaving:
+		'Leaving a market removes the products you list there, and your order settings for it. Staff pinned to it should be moved on the Team tab.',
+	inactive: "Your subscription isn't active, so you can't add a market until you subscribe.",
+} as const;
 
 export type NoticeTone = 'brand' | 'gold' | 'danger' | 'muted';
 

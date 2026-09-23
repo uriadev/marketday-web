@@ -1,33 +1,39 @@
 ---
 /**
- * Stands in for the plan picker and invoices while the API doesn't have the Billing contract
- * yet (`src/lib/api/vendor-billing.ts`), or while its plan read is failing. No prices here:
- * the API owns them, and a hardcoded figure would drift.
+ * Stands in for the plan picker when the billing overview can't be had. No prices here: the
+ * API owns them, and a hardcoded figure would drift.
+ *
+ * - `unavailable`: the API answered 503. Stripe isn't configured yet, or it is down.
+ * - `missing`: this site is ahead of the API it talks to.
+ * - `failed`: anything else. Logged by `portalRead`.
  */
 interface Props {
-	reason: 'missing' | 'failed';
+	reason: 'missing' | 'unavailable' | 'failed';
 }
 
 const { reason } = Astro.props;
 ---
 
-<section aria-labelledby="billing-soon-title" class="rounded-[28px] bg-white p-6 shadow-card sm:p-9">
+<section aria-labelledby="billing-soon-title" class="mb-6 rounded-[28px] bg-white p-6 shadow-card sm:p-9">
 	<h2 id="billing-soon-title" class="mb-4 font-mono text-xs font-semibold tracking-[0.14em] text-brand uppercase">
 		Payments
 	</h2>
 	{
-		reason === 'missing' ? (
+		reason === 'failed' ? (
+			<p class="text-[15px] leading-[1.65] text-body">
+				We couldn't load your plan just now. Refresh the page to try again.
+			</p>
+		) : (
 			<>
-				<p class="mb-2 font-display text-[22px] leading-[1.2] font-bold text-ink">Online payments are coming soon</p>
+				<p class="mb-2 font-display text-[22px] leading-[1.2] font-bold text-ink">
+					{reason === 'missing' ? 'Online payments are coming soon' : "Online payments aren't available right now"}
+				</p>
 				<p class="max-w-160 text-[15px] leading-[1.6] text-body">
-					You'll be able to subscribe, update your card and download invoices right here. We'll email you before
-					billing starts, and nothing at your stall changes in the meantime.
+					{reason === 'missing'
+						? "You'll be able to subscribe, update your card and download invoices right here. We'll email you before billing starts, and nothing at your stall changes in the meantime."
+						: 'Please check back soon. Nothing at your stall changes in the meantime.'}
 				</p>
 			</>
-		) : (
-			<p class="text-[15px] leading-[1.65] text-body">
-				We couldn't load your plan and invoices just now. Refresh the page to try again.
-			</p>
 		)
 	}
 </section>

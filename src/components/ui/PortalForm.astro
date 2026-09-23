@@ -22,9 +22,9 @@ export type PortalAction =
 	| 'vendorTeam.revokeInvite'
 	| 'vendorTeam.move'
 	| 'vendorTeam.remove'
+	| 'vendorMarkets.save'
 	| 'vendorBilling.checkout'
-	| 'vendorBilling.portal'
-	| 'vendorBilling.changeSlots';
+	| 'vendorBilling.portal';
 
 interface Props {
 	portalAction: PortalAction;
@@ -78,9 +78,9 @@ const {
 		'vendorTeam.revokeInvite': (input) => actions.vendorTeam.revokeInvite(input),
 		'vendorTeam.move': (input) => actions.vendorTeam.move(input),
 		'vendorTeam.remove': (input) => actions.vendorTeam.remove(input),
+		'vendorMarkets.save': (input) => actions.vendorMarkets.save(input),
 		'vendorBilling.checkout': (input) => actions.vendorBilling.checkout(input),
 		'vendorBilling.portal': (input) => actions.vendorBilling.portal(input),
-		'vendorBilling.changeSlots': (input) => actions.vendorBilling.changeSlots(input),
 	};
 
 	const UNREACHABLE = 'We could not reach the server. Please check your connection and try again.';

@@ -1,0 +1,273 @@
+---
+import PortalForm from '../ui/PortalForm.astro';
+import IconSearch from '../icons/IconSearch.astro';
+import { marketChangeCopy, type MarketOption } from '../../data/vendor-portal';
+import type { BillingOverview, VendorSubscription } from '../../lib/api/vendor-billing';
+
+/**
+ * The markets the business trades at, as a checklist the owner saves in one go
+ * (`vendorMarkets.save`). The bill follows the markets, so any change shows what it does to
+ * the plan before it is saved, and the confirm dialog repeats it.
+ *
+ * - **Pricing** comes from `billingOverview`. Without it the warning says the bill changes
+ *   but quotes no price.
+ * - **Inactive with billing enforced:** the API refuses every join, so the unticked boxes are
+ *   disabled. Leaving still works.
+ * - **Search** filters the rows by name or city, ignoring case and accents. It only hides rows:
+ *   a hidden box still submits, so a filter never leaves a market by accident.
+ * - **Long lists** scroll inside a fixed-height area, and off-screen cards skip rendering
+ *   (`content-visibility: auto`). This is deliberately not a virtual list: every checkbox has to
+ *   stay in the DOM, because the save sends the whole selection and the API leaves any market
+ *   missing from it.
+ */
+interface Props {
+	options: MarketOption[];
+	/** Market ids the vendor trades at now. */
+	current: string[];
+	subscription: VendorSubscription | null;
+	overview: BillingOverview | null;
+}
+
+const { options, current, subscription, overview } = Astro.props;
+
+const mode = !overview
+	? 'unpriced'
+	: subscription?.status === 'COMPLIMENTARY'
+		? 'complimentary'
+		: subscription?.status === 'TRIAL'
+			? 'trial'
+			: overview.hasSubscription
+				? 'paid'
+				: 'unsubscribed';
+
+const cannotJoin = subscription?.status === 'INACTIVE' && subscription.billingEnforced;
+const tradingAt = new Set(current);
+
+/** Lower case, accents stripped, so "fermoy" finds "Fermoy" and "bantrai" finds "Bantraí". */
+const searchKey = (text: string) =>
+	text
+		.normalize('NFD')
+		.replace(/\p{Diacritic}/gu, '')
+		.toLowerCase();
+---
+
+<section aria-labelledby="markets-title" class="mb-6 rounded-[28px] bg-white p-6 shadow-card sm:p-9">
+	<h2 id="markets-title" class="mb-4 font-mono text-xs font-semibold tracking-[0.14em] text-brand uppercase">
+		Your markets
+	</h2>
+	<p class="mb-6 max-w-160 text-[15px] leading-[1.6] text-body">
+		Choose the markets you trade at. Your plan follows them: one slot per market, and adding or leaving one changes
+		what you pay from your next invoice.
+	</p>
+
+	{
+		cannotJoin && (
+			<p class="mb-6 rounded-xl bg-gold/16 px-4 py-3 text-[14.5px] text-[#9a6516]">
+				{marketChangeCopy.inactive}{' '}
+				<a href="/vendor/billing" class="font-semibold underline">
+					Go to billing
+				</a>
+			</p>
+		)
+	}
+
+	{/* Outside the save form, so Enter here can't submit it. The form only keeps Enter from
+		reloading the page, as on the market finder. */}
+	<form role="search" class="mb-2 flex flex-wrap items-center gap-x-4 gap-y-2" data-vendor-market-search-form>
+		<label
+			class="flex h-12 max-w-120 flex-[1_1_18rem] items-center gap-2.75 rounded-[15px] border border-[#E4E0D5] bg-cream px-4 has-focus-visible:border-brand"
+		>
+			<IconSearch class="h-4.5 w-4.5 shrink-0" />
+			<span class="sr-only">Search your markets by name or town</span>
+			<input
+				type="search"
+				autocomplete="off"
+				placeholder="Market name or town"
+				class="min-w-0 flex-1 bg-transparent font-sans text-base text-ink outline-none placeholder:text-muted"
+				data-vendor-market-search
+			/>
+		</label>
+		<p data-market-search-count aria-live="polite" class="text-[13.5px] text-muted">
+			{options.length} {options.length === 1 ? 'market' : 'markets'}
+		</p>
+	</form>
+
+	<PortalForm
+		portalAction="vendorMarkets.save"
+		done="markets"
+		confirm={marketChangeCopy.unpriced}
+		confirmLabel="Save and update plan"
+		data-vendor-markets
+		data-current={JSON.stringify(current)}
+		data-mode={mode}
+		data-first={overview?.pricing.firstMarketCents}
+		data-extra={overview?.pricing.additionalMarketCents}
+		data-currency={overview?.pricing.currency}
+	>
+		<fieldset>
+			<legend class="sr-only">Markets you trade at</legend>
+			{/* As many columns as fit: one on a phone, up to four on a wide screen. Rows stretch to
+				the tallest card in them, so a long name doesn't leave a ragged grid. The list scrolls
+				on its own past about four rows; the padding keeps focus rings from being clipped. */}
+			<ul
+				data-market-grid
+				class="mt-4 grid max-h-[min(36rem,65vh)] grid-cols-[repeat(auto-fill,minmax(min(100%,15rem),1fr))] gap-3 overflow-y-auto overscroll-contain p-1 [scrollbar-gutter:stable]"
+			>
+				{
+					options.map((option) => (
+						<li
+							data-search={searchKey(`${option.name} ${option.city}`)}
+							class="[contain-intrinsic-size:auto_9rem] [content-visibility:auto]"
+						>
+							<label class="flex h-full cursor-pointer flex-col gap-3 rounded-2xl border border-[#E4E0D5] bg-cream p-4 transition-colors hover:border-brand/60 has-checked:border-brand has-checked:bg-mint/60 has-focus-visible:ring-4 has-focus-visible:ring-brand-light/50 has-disabled:cursor-not-allowed has-disabled:opacity-60 has-disabled:hover:border-[#E4E0D5]">
+								<span class="flex items-start justify-between gap-3">
+									<span class="min-w-0 font-mono text-[11.5px] font-semibold tracking-[0.12em] break-words text-muted uppercase">
+										{option.city || 'Market'}
+									</span>
+									<input
+										type="checkbox"
+										name="marketId"
+										value={option.id}
+										data-name={option.name}
+										checked={tradingAt.has(option.id)}
+										disabled={cannotJoin && !tradingAt.has(option.id)}
+										class="h-5 w-5 shrink-0 accent-brand"
+									/>
+								</span>
+								<span class="font-display text-[17px] leading-[1.25] font-bold break-words text-ink">
+									{option.name}
+								</span>
+								<span class="mt-auto text-[13.5px] break-words text-body">{option.detail}</span>
+							</label>
+						</li>
+					))
+				}
+			</ul>
+			<p data-market-search-empty hidden class="py-4 text-[14.5px] text-muted">
+				No markets match that name or town.
+			</p>
+		</fieldset>
+
+		<div data-market-change role="status" aria-live="polite" class="mt-6 hidden rounded-xl bg-gold/16 px-4 py-3 text-[14.5px] text-[#9a6516]">
+		</div>
+
+		<button
+			type="submit"
+			data-submit
+			data-busy-label="Saving…"
+			disabled
+			class="mt-6 flex h-13 w-full items-center justify-center rounded-full bg-brand px-7 text-base font-semibold text-white transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+		>
+			<span data-submit-label>Save changes</span>
+		</button>
+		<p data-form-status role="status" aria-live="polite" class="mt-4 hidden rounded-xl px-4 py-3 text-[14.5px]"></p>
+	</PortalForm>
+</section>
+
+<script>
+	import { marketChangeCopy } from '../../data/vendor-portal';
+	import { formatMoney } from '../../lib/vendor-portal';
+
+	const fill = (template: string, values: Record<string, string>) =>
+		template.replace(/\{(\w+)\}/g, (_, key: string) => values[key] ?? '');
+
+	document.querySelectorAll<HTMLFormElement>('form[data-vendor-markets]').forEach((form) => {
+		const panel = form.querySelector<HTMLElement>('[data-market-change]');
+		const submit = form.querySelector<HTMLButtonElement>('[data-submit]');
+		const boxes = [...form.querySelectorAll<HTMLInputElement>('input[name="marketId"]')];
+		const current = new Set<string>(JSON.parse(form.dataset.current ?? '[]'));
+		const { mode = 'unpriced', currency } = form.dataset;
+		const first = Number(form.dataset.first);
+		const extra = Number(form.dataset.extra);
+
+		// The API bills at least one market (`backend/src/billing/domain/market-slots.ts`).
+		const price = (markets: number) =>
+			formatMoney(first + (Math.max(1, markets) - 1) * extra, currency ?? 'EUR');
+
+		const update = () => {
+			const selected = boxes.filter((box) => box.checked);
+			const added = selected.filter((box) => !current.has(box.value));
+			const removed = boxes.filter((box) => !box.checked && current.has(box.value));
+			const changed = added.length > 0 || removed.length > 0;
+
+			if (submit) submit.disabled = !changed;
+			if (!panel) return;
+			panel.classList.toggle('hidden', !changed);
+			if (!changed) return;
+
+			const names = (list: HTMLInputElement[]) => list.map((box) => box.dataset.name ?? '').join(', ');
+			const values = { from: '', to: '', markets: '' };
+			if (mode !== 'unpriced') {
+				values.from = price(current.size);
+				values.to = price(selected.length);
+			}
+			const billing =
+				mode === 'paid'
+					? values.from === values.to
+						? marketChangeCopy.unchanged
+						: marketChangeCopy.paid
+					: marketChangeCopy[mode as 'trial' | 'complimentary' | 'unsubscribed' | 'unpriced'] ??
+						marketChangeCopy.unpriced;
+
+			const lines = [
+				added.length ? fill(marketChangeCopy.adding, { markets: names(added) }) : '',
+				removed.length ? fill(marketChangeCopy.removing, { markets: names(removed) }) : '',
+				fill(billing, values),
+				selected.length === 0 && mode !== 'unpriced' ? marketChangeCopy.noMarkets : '',
+				removed.length ? marketChangeCopy.leaving : '',
+			].filter(Boolean);
+
+			// textContent only: names are published market names, the rest is our copy.
+			panel.replaceChildren(
+				...lines.map((line) => {
+					const p = document.createElement('p');
+					p.textContent = line;
+					return p;
+				}),
+			);
+			// PortalForm reads these when the form is submitted, so the dialog says the same.
+			form.dataset.confirm = lines.join(' ');
+			form.dataset.confirmTone = removed.length ? 'danger' : 'brand';
+		};
+
+		form.addEventListener('change', update);
+		update();
+	});
+
+	// Same key as `searchKey` in the frontmatter, which builds each row's `data-search`.
+	const searchKey = (text: string) =>
+		text
+			.normalize('NFD')
+			.replace(/\p{Diacritic}/gu, '')
+			.toLowerCase();
+
+	const searchForm = document.querySelector<HTMLFormElement>('[data-vendor-market-search-form]');
+	const searchInput = document.querySelector<HTMLInputElement>('[data-vendor-market-search]');
+	const rows = [...document.querySelectorAll<HTMLElement>('form[data-vendor-markets] li[data-search]')];
+	const empty = document.querySelector<HTMLElement>('[data-market-search-empty]');
+	const count = document.querySelector<HTMLElement>('[data-market-search-count]');
+	const grid = document.querySelector<HTMLElement>('[data-market-grid]');
+
+	const filter = () => {
+		const needle = searchKey(searchInput?.value.trim() ?? '');
+		let shown = 0;
+		for (const row of rows) {
+			const match = !needle || (row.dataset.search ?? '').includes(needle);
+			// `hidden` on the row only: its checkbox stays enabled, so it still submits.
+			row.hidden = !match;
+			if (match) shown += 1;
+		}
+		if (empty) empty.hidden = shown > 0;
+		if (count) {
+			const noun = (n: number) => (n === 1 ? 'market' : 'markets');
+			count.textContent = shown === rows.length ? `${rows.length} ${noun(rows.length)}` : `${shown} of ${rows.length} ${noun(rows.length)}`;
+		}
+		// A new search starts at the top of the results, not wherever the old ones were scrolled.
+		grid?.scrollTo({ top: 0 });
+	};
+
+	searchForm?.addEventListener('submit', (event) => event.preventDefault());
+	searchInput?.addEventListener('input', filter);
+	// A value the browser restored on back/forward.
+	filter();
+</script>

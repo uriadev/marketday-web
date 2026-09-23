@@ -7,6 +7,8 @@ import fallbackImage from '../assets/marketday/market-1.png';
  * (CDN-cached) request — see `src/lib/api/markets.ts`, which maps the API's shape onto this one.
  */
 export interface Market extends Coordinates {
+	/** The API's id. What the vendor portal's Markets tab joins and leaves by. */
+	id: string;
 	/** Card anchor (`#market-<slug>`), and how the finder script pairs a card with its map pin. */
 	slug: string;
 	name: string;

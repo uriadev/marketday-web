@@ -101,7 +101,7 @@ The `/contact` and `/delete-account` forms and the test-build invite dialog are 
 
 ## Vendor portal (`/vendor/*`)
 
-A vendor's **owner** signs in to manage the subscription, see and pay bills, and manage staff. Pages: `/vendor/login`, `/vendor/forgot-password`, `/vendor/billing`, `/vendor/team`, with `/vendor` redirecting to billing. All are `prerender = false` and `noindex`. The API's trial emails link to `/vendor/billing`, so that path is a contract with the backend.
+A vendor's **owner** signs in to manage the subscription, see and pay bills, choose the markets they trade at, and manage staff. Pages: `/vendor/login`, `/vendor/forgot-password`, `/vendor/billing`, `/vendor/markets`, `/vendor/team`, with `/vendor` redirecting to billing. All are `prerender = false` and `noindex`. The API's trial emails link to `/vendor/billing`, so that path is a contract with the backend.
 
 **Owners only.** Every subscription and team operation is owner-only on the API. A STAFF, BUYER or ADMIN sign-in is logged straight back out (no cookie is ever set) and told why. `googleAuth` creates a BUYER for an unknown email, which then gets the "not linked" message.
 
@@ -126,12 +126,23 @@ A vendor's **owner** signs in to manage the subscription, see and pay bills, and
 
 **Google sign-in** uses Google Identity Services in popup mode. The callback posts the ID token to `actions.vendor.googleSignIn`. Redirect mode is a cross-site form POST that `checkOrigin` refuses. `PUBLIC_GOOGLE_CLIENT_ID` must be the backend's `GOOGLE_CLIENT_ID` (the web client), with this site's origins in its Authorized JavaScript origins. Unset, the button is hidden.
 
-**Billing.** `myVendorSubscription` is live. Everything that takes money is the **Billing API contract**, proposed and not yet on the API.
-- **The contract.** It is canonical in the header of `src/lib/api/vendor-billing.ts`: `vendorBillingPlan`, `myVendorInvoices`, `startVendorCheckout`, `openVendorBillingPortal`, `changeVendorMarketSlots`.
-- **Payments are Stripe-hosted.** Checkout subscribes, the customer portal handles card and cancellation, and invoices link to Stripe's hosted page and PDF. Card data never touches this site.
+**Billing** is live on the API's Billing context (`backend/src/billing/`, spec in `backend/specs/vendor-subscriptions.md`). The operations and the rules the site relies on are listed in the header of `src/lib/api/vendor-billing.ts`.
+- **Reads.** `myVendorSubscription` is the status, and it never touches Stripe. `billingOverview` has the prices, `billedMarketSlots` with its `monthlyCostCents`, `hasSubscription` and `canManageBilling`. `billingInvoices(first, after)` is the bills, paged by a Stripe invoice id.
+- **Payments are Stripe-hosted.**
+  - `startSubscriptionCheckout` subscribes.
+  - `openBillingPortal` handles the card, receipts and cancellation.
+  - Invoices link to Stripe's hosted page and PDF.
+  - Card data never touches this site.
+- **Vendors choose markets, never a slot count.** The API bills one slot per market the vendor trades at (at least one). `startSubscriptionCheckout` takes no count, and a live subscription follows every market joined or left on the Markets tab, prorated onto the next invoice. So the billing page only shows the price (`sections/VendorPlan.astro`) and never offers a count to pick. Don't add one back.
 - **Return URLs are built by the API**, from its `WEB_APP_URL`, never passed from here.
-- **Graceful fallback.** Each page read is its own request (`portalRead`), so an operation the API lacks yields `missing` rather than failing the page. The billing page then shows "online payments are coming soon".
+- **Just back from Checkout.** Checkout grants nothing until Stripe's webhook reaches the API. So on `?checkout=success` with no subscription yet, the page hides the checkout button (`VendorPlan`) and "Choose your plan", which would otherwise let the vendor start a second subscription. The success notice asks them to refresh.
+- **Graceful fallback.** Each page read is its own request (`portalRead`), so one failing doesn't fail the page.
+  - An operation the API lacks yields `missing` ("online payments are coming soon").
+  - A 503 from a resolver yields `unavailable` ("not available right now"). That is Stripe not configured on the API, or down. The client reads it from `extensions.originalError.statusCode` into `GraphQLBusinessError.resolverStatus`, because the response itself is a 200.
+  - The subscription summary still renders either way.
 - **Prices come from the API, never hardcoded.** `src/data/pricing.ts` is marketing copy and predates the per-market pricing.
+
+**Markets** (`sections/VendorMarkets.astro`) is a checklist of every published market (`fetchMarkets`), plus any the vendor trades at that isn't listed, so saving can't drop it by accident. `vendorMarkets.save` takes the whole selection and diffs it against a fresh `myVendorMarkets` read inside `withVendorAuth`, so the retry after a 401 can't send a leave twice. It runs joins before leaves: an inactive subscription refuses the first join before anything destructive happens. Leaving deletes the vendor's listings at that market. A search box filters the rows by name or town, case- and accent-insensitive. It only hides rows (`hidden` on the `<li>`), never disables a box, so a filtered-out market still submits and isn't left by accident. Long lists scroll inside a fixed-height grid with `content-visibility: auto` on each card. Don't swap it for a virtual list: every checkbox must stay in the DOM, or an unrendered ticked market would be left on save. Before saving, the page script shows the old and new monthly price from `billingOverview` (copy in `marketChangeCopy`) and repeats it in the confirm dialog.
 
 **Team** uses the API's `vendorMembers` / `pendingVendorInvites` / `myVendorMarkets` and the invite/revoke/move/remove mutations (`src/lib/api/vendor-team.ts`). The invitee redeems the emailed code in the app, not here.
 

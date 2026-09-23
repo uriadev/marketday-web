@@ -12,6 +12,7 @@ import { graphqlRequest } from './client';
 const PUBLISHED_MARKETS = /* GraphQL */ `
 	query PublishedMarkets {
 		markets(isActive: true) {
+			id
 			slug
 			name
 			address
@@ -26,6 +27,7 @@ const PUBLISHED_MARKETS = /* GraphQL */ `
 `;
 
 interface ApiMarket {
+	id: string;
 	slug: string;
 	name: string;
 	address: string;
@@ -80,6 +82,7 @@ function toMarket(row: ApiMarket): Market {
 	const address = row.address.trim();
 
 	return {
+		id: row.id,
 		slug: row.slug,
 		name: row.name,
 		address: !city || address.toLowerCase().includes(city.toLowerCase()) ? address : `${address}, ${city}`,

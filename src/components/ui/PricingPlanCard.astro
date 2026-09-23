@@ -4,7 +4,7 @@ import type { PricingPlan } from '../../data/pricing';
 
 type Props = PricingPlan;
 
-const { name, subtitle, price, priceSuffix, badge, features, cta, variant } = Astro.props;
+const { name, subtitle, price, priceSuffix, badge, features, cta, href, variant } = Astro.props;
 const isDark = variant === 'dark';
 ---
 
@@ -46,12 +46,13 @@ const isDark = variant === 'dark';
 			))
 		}
 	</div>
-	<div
+	<a
+		href={href}
 		class:list={[
 			'flex h-13 items-center justify-center rounded-full text-[15.5px] font-semibold',
 			isDark ? 'bg-brand text-white' : 'border-[1.5px] border-forest text-ink',
 		]}
 	>
 		{cta}
-	</div>
+	</a>
 </div>

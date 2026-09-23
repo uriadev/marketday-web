@@ -6,11 +6,11 @@ export const prerender = false;
 
 import VendorPortalLayout from '../../layouts/VendorPortalLayout.astro';
 import VendorSubscriptionSummary from '../../components/sections/VendorSubscriptionSummary.astro';
-import VendorPlanPicker from '../../components/sections/VendorPlanPicker.astro';
+import VendorPlan from '../../components/sections/VendorPlan.astro';
 import VendorInvoices from '../../components/sections/VendorInvoices.astro';
 import VendorBillingComingSoon from '../../components/sections/VendorBillingComingSoon.astro';
 import VendorPortalUnavailable from '../../components/sections/VendorPortalUnavailable.astro';
-import { getPlan, getSubscription, listInvoices } from '../../lib/api/vendor-billing';
+import { getBillingOverview, getSubscription, listInvoices } from '../../lib/api/vendor-billing';
 import { portalRead } from '../../lib/auth/session';
 
 const portal = Astro.locals.vendorPortal;
@@ -20,48 +20,61 @@ const rawAfter = Astro.url.searchParams.get('after');
 const after = rawAfter && /^[A-Za-z0-9_-]{1,128}$/.test(rawAfter) ? rawAfter : null;
 const checkout = Astro.url.searchParams.get('checkout');
 
-// Separate reads, so an API without the Billing contract still shows the subscription.
-const [subscription, plan, invoices] =
+// Separate reads, so the subscription still shows while Stripe is switched off or down. It is
+// the only one of the three that doesn't reach Stripe.
+const [subscription, overview, invoices] =
 	portal?.status === 'signed-in'
 		? await Promise.all([
 				portalRead(Astro.cookies, 'myVendorSubscription', getSubscription),
-				portalRead(Astro.cookies, 'vendorBillingPlan', getPlan),
-				portalRead(Astro.cookies, 'myVendorInvoices', (token) => listInvoices(token, after ?? undefined)),
+				portalRead(Astro.cookies, 'billingOverview', getBillingOverview),
+				portalRead(Astro.cookies, 'billingInvoices', (token) => listInvoices(token, after ?? undefined)),
 			])
 		: [null, null, null];
 
-if ([subscription, plan, invoices].some((read) => read?.status === 'signed-out')) {
+if ([subscription, overview, invoices].some((read) => read?.status === 'signed-out')) {
 	return Astro.redirect(`/vendor/login?next=${encodeURIComponent('/vendor/billing')}`);
 }
 
-const billingLive = plan?.status === 'ok';
+const billing = overview?.status === 'ok' ? overview.value : null;
 const openInvoice =
 	invoices?.status === 'ok' ? (invoices.value.items.find((invoice) => invoice.status === 'OPEN') ?? null) : null;
+// An empty list says "your first one arrives when you subscribe", which is no use while
+// payments aren't available; the panel standing in for the plan says so instead.
+// Checkout grants nothing until Stripe's webhook reaches the API, so for a moment after paying
+// there is still no subscription. Offering to subscribe then could start a second one; the
+// success notice asks for a refresh instead, and the query string is gone after it.
+const awaitingWebhook = checkout === 'success' && billing !== null && !billing.hasSubscription;
+const showInvoices =
+	invoices?.status === 'failed' ||
+	(invoices?.status === 'ok' && (billing !== null || invoices.value.items.length > 0));
 ---
 
 <VendorPortalLayout title="Billing">
 	{
-		!subscription || !plan || !invoices ? (
+		!subscription || !overview || !invoices ? (
 			<VendorPortalUnavailable />
 		) : (
 			<>
 				<VendorSubscriptionSummary
 					subscription={subscription}
+					overview={billing}
 					openInvoice={openInvoice}
-					billingLive={billingLive}
 					checkout={checkout}
+					awaitingWebhook={awaitingWebhook}
 				/>
 
-				{plan.status === 'ok' ? (
-					<>
-						{subscription.status === 'ok' && subscription.value.status !== 'COMPLIMENTARY' && (
-							<VendorPlanPicker plan={plan.value} subscription={subscription.value} />
-						)}
-						{invoices.status !== 'missing' && <VendorInvoices invoices={invoices} after={after} />}
-					</>
+				{billing ? (
+					subscription.status === 'ok' &&
+					subscription.value.status !== 'COMPLIMENTARY' &&
+					!awaitingWebhook && (
+						<VendorPlan overview={billing} subscription={subscription.value} />
+					)
 				) : (
-					<VendorBillingComingSoon reason={plan.status === 'missing' ? 'missing' : 'failed'} />
+					overview.status !== 'ok' &&
+					overview.status !== 'signed-out' && <VendorBillingComingSoon reason={overview.status} />
 				)}
+
+				{showInvoices && <VendorInvoices invoices={invoices} after={after} />}
 			</>
 		)
 	}
