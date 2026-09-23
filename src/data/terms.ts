@@ -16,7 +16,7 @@ export interface TermsSection {
 }
 
 export const termsMeta = {
-	lastUpdated: 'July 28, 2026',
+	lastUpdated: 'September 23, 2026',
 };
 
 export const termsSections: TermsSection[] = [
@@ -57,8 +57,8 @@ export const termsSections: TermsSection[] = [
 						text: 'We do not own, produce, store, handle, inspect, or deliver any product listed on the Service. Every sale is a contract between the buyer and the vendor directly — we are not a party to that contract.',
 					},
 					{
-						lead: 'We do not process payments',
-						text: "Payment is made by the buyer to the vendor in person, at the stall, on collection. We never take card details or hold money on anyone's behalf.",
+						lead: 'We do not handle payment for goods',
+						text: "Payment is made by the buyer to the vendor in person, at the stall, on collection. We never take a buyer's card details or hold money on anyone's behalf. The only payment taken through the Service is the vendor subscription described below.",
 					},
 					{ lead: 'We do not deliver', text: 'All orders are collected in person by the buyer.' },
 				],
@@ -186,6 +186,54 @@ export const termsSections: TermsSection[] = [
 		],
 	},
 	{
+		id: 'vendor-subscription',
+		navLabel: 'Vendor subscription',
+		title: 'Vendor subscription',
+		blocks: [
+			{
+				kind: 'paragraph',
+				text: 'The Service is free for buyers. Vendors pay a monthly subscription to take pre-orders. You subscribe as a business, not as a consumer.',
+			},
+			{
+				kind: 'list',
+				items: [
+					{
+						lead: 'Price',
+						text: 'a monthly fee for the first market you trade at, and a lower monthly fee for each further market. The current prices are shown on the billing page of the vendor portal before you subscribe, and include any VAT that applies. Any introductory discount applies only as stated at checkout.',
+					},
+					{
+						lead: 'Free trial',
+						text: 'a new vendor account starts with a 30-day free trial, with no card needed. The trial is offered once and does not restart if you cancel and subscribe again.',
+					},
+					{
+						lead: 'Payment',
+						text: 'you subscribe and pay on our website, through our payment provider, Stripe. The fee is charged monthly in advance and renews automatically until you cancel. Your card details are handled by Stripe and never reach us. Invoices are available on the billing page.',
+					},
+					{
+						lead: 'Markets you trade at',
+						text: 'you are billed for every market you trade at, with a minimum of one. When you join or leave a market, the difference is prorated and added to, or credited on, your next invoice.',
+					},
+					{
+						lead: 'Failed payments',
+						text: 'if a payment fails, Stripe will retry it and your stalls keep taking pre-orders in the meantime. If the payment still fails, the subscription ends.',
+					},
+					{
+						lead: 'When a subscription ends',
+						text: 'whether your trial ends without a subscription, a payment fails, or you cancel, your stalls stop taking new pre-orders. Your profile and products stay visible, and you keep full use of your account. You can subscribe again at any time.',
+					},
+					{
+						lead: 'Cancelling',
+						text: 'you can cancel at any time from the billing page. Cancellation takes effect at the end of the billing period you have already paid for, and we do not refund part of a period. Deleting your vendor account cancels the subscription immediately.',
+					},
+					{
+						lead: 'Price changes',
+						text: "we will give you at least 30 days' notice by email of any change to the subscription price. The new price applies from your first billing period after that date, and you may cancel before then.",
+					},
+				],
+			},
+		],
+	},
+	{
 		id: 'prohibited',
 		navLabel: 'Prohibited goods',
 		title: 'Prohibited content and goods',
@@ -307,7 +355,7 @@ export const termsSections: TermsSection[] = [
 		blocks: [
 			{
 				kind: 'paragraph',
-				text: 'The Service is currently provided free of charge as a personal, non-profit project, on an "as is" and "as available" basis. It is operated by Yoan Uria Rodriguez and may be unavailable for maintenance, updates, or reasons beyond our control. We do not guarantee uninterrupted or error-free operation, and we may change or discontinue any feature — or the Service itself — at any time. Where we intend to discontinue the Service entirely, we will give at least 30 days\' notice by email where reasonably possible.',
+				text: 'The Service is provided as a personal project, on an "as is" and "as available" basis. It is free for buyers; vendors pay the subscription described above. It is operated by Yoan Uria Rodriguez and may be unavailable for maintenance, updates, or reasons beyond our control. We do not guarantee uninterrupted or error-free operation, and we may change or discontinue any feature — or the Service itself — at any time. Where we intend to discontinue the Service entirely, we will give at least 30 days\' notice by email where reasonably possible.',
 			},
 		],
 	},
@@ -335,7 +383,7 @@ export const termsSections: TermsSection[] = [
 					{ text: 'We are not liable for the acts or omissions of any buyer or vendor.' },
 					{ text: 'We are not liable for indirect or consequential loss, loss of profit, loss of business, or loss of data.' },
 					{
-						text: 'Our total aggregate liability to you in connection with the Service is limited to €100, reflecting that the Service is provided to you free of charge.',
+						text: 'Our total aggregate liability to you in connection with the Service is limited to the greater of €100 and the subscription fees you paid us in the 12 months before the event giving rise to the claim.',
 					},
 				],
 			},

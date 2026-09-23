@@ -69,6 +69,11 @@ export interface BillingOverview {
 	pricing: BillingPricing;
 	/** What `billedMarketSlots` cost a month. */
 	monthlyCostCents: number;
+	/**
+	 * A checkout started now carries the launch discount: half price on the first six monthly
+	 * bills, for a vendor who joined during launch and has never subscribed.
+	 */
+	launchOfferApplies: boolean;
 }
 
 export type InvoiceStatus = 'DRAFT' | 'OPEN' | 'PAID' | 'VOID' | 'UNCOLLECTIBLE';
@@ -129,6 +134,7 @@ const BILLING_OVERVIEW = /* GraphQL */ `
 				additionalMarketCents
 			}
 			monthlyCostCents
+			launchOfferApplies
 		}
 	}
 `;

@@ -12,6 +12,8 @@ import { formatDate, formatMoney, pluralise } from '../../lib/vendor-portal';
  * - **No live subscription:** a button to Stripe Checkout, which the API sizes from the
  *   markets.
  * - **A live one:** the price, and nothing to change here.
+ * - **Launch offer:** when the API says the checkout will carry the launch coupon, the half
+ *   price is shown beside the full one. Stripe applies it; this only announces it.
  */
 interface Props {
 	overview: BillingOverview;
@@ -30,6 +32,8 @@ const markets = subscription.marketsUsed;
 const first = formatMoney(pricing.firstMarketCents, pricing.currency);
 const extra = formatMoney(pricing.additionalMarketCents, pricing.currency);
 const price = formatMoney(overview.monthlyCostCents, pricing.currency);
+const launchOffer = !subscribed && overview.launchOfferApplies;
+const launchPrice = formatMoney(Math.round(overview.monthlyCostCents / 2), pricing.currency);
 
 const trialCarried =
 	subscription.status === 'TRIAL' &&
@@ -41,6 +45,13 @@ const trialCarried =
 	<h2 id="plan-title" class="mb-4 font-mono text-xs font-semibold tracking-[0.14em] text-brand uppercase">
 		{subscribed ? 'Your plan' : 'Subscribe'}
 	</h2>
+	{
+		launchOffer && (
+			<p class="mb-4 inline-flex rounded-full bg-gold/16 px-3.5 py-1.5 text-[13.5px] font-semibold text-[#7a5212]">
+				Launch offer: 50% off your first 6 months
+			</p>
+		)
+	}
 	<p class="mb-1 font-display text-[22px] leading-[1.2] font-bold text-ink">
 		{first} a month for your first market, {extra} for each extra one
 	</p>
@@ -51,9 +62,18 @@ const trialCarried =
 	</p>
 
 	<div class="flex flex-wrap items-baseline gap-x-5 gap-y-2">
-		<p class="text-[15px] text-body">
-			<span class="font-display text-[26px] font-bold text-ink">{price}</span> / month
-		</p>
+		{
+			launchOffer ? (
+				<p class="text-[15px] text-body">
+					<span class="font-display text-[26px] font-bold text-ink">{launchPrice}</span> / month for 6 months,
+					then <span class="font-semibold text-ink">{price}</span>
+				</p>
+			) : (
+				<p class="text-[15px] text-body">
+					<span class="font-display text-[26px] font-bold text-ink">{price}</span> / month
+				</p>
+			)
+		}
 		<p class="text-[14.5px] text-muted">
 			{
 				markets > 0

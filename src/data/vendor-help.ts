@@ -1,4 +1,5 @@
 import type { FaqEntry } from './home';
+import { launchOffer } from './pricing';
 
 export type VendorHelpTopicIcon = 'card' | 'bag' | 'pin' | 'clock';
 export type VendorHelpAccent = 'brand' | 'clay';
@@ -52,7 +53,7 @@ export const vendorHelpFaqs: FaqEntry[] = [
 	},
 	{
 		q: 'How much does MarketDay cost?',
-		a: 'Every new vendor gets a 30-day free trial with full access to every market, and no card is needed to start. After that it is €10 a month for your first market and €5 for each extra one, VAT included, with no commission on your sales. Manage your plan any time from the vendor portal.',
+		a: `Every new vendor gets a 30-day free trial with full access to every market, and no card is needed to start. After that it is €10 a month for your first market and €5 for each extra one, VAT included, with no commission on your sales. ${launchOffer.active ? 'Vendors who join during our launch get 50% off their first six months of subscription. ' : ''}Manage your plan any time from the vendor portal.`,
 	},
 	{
 		q: 'What happens if I run out of stock?',

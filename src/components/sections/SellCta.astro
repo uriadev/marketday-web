@@ -1,4 +1,5 @@
 ---
+import { launchOffer } from '../../data/pricing';
 ---
 
 <div class="mx-auto max-w-310 px-5 pb-16 text-center sm:px-8 lg:px-14 lg:pb-24">
@@ -6,7 +7,7 @@
 		Ready to trade smarter this weekend?
 	</h2>
 	<p class="mb-7 text-[16.5px] text-body">
-		Your first 30 days are on us. See the plan on our <a href="/pricing">Pricing page</a>, or jump straight in.
+		Your first 30 days are on us{launchOffer.active && ', and launch vendors pay half price for six months after that'}. See the plan on our <a href="/pricing">Pricing page</a>, or jump straight in.
 	</p>
 	<a href="/contact?role=vendor" class="inline-flex h-13.5 items-center rounded-full bg-brand px-7.5 text-base font-semibold text-white">
 		Start selling

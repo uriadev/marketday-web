@@ -16,7 +16,7 @@ export interface PrivacySection {
 }
 
 export const privacyMeta = {
-	lastUpdated: 'September 2, 2026',
+	lastUpdated: 'September 23, 2026',
 };
 
 export const privacySections: PrivacySection[] = [
@@ -62,7 +62,11 @@ export const privacySections: PrivacySection[] = [
 			},
 			{
 				kind: 'paragraph',
-				text: 'We do not process payments. All payment for pre-ordered goods takes place directly between you and the vendor at the point of collection. We do not collect or store card details, bank details, or any financial information.',
+				text: 'We do not process payments for goods. All payment for pre-ordered goods takes place directly between the buyer and the vendor at the point of collection.',
+			},
+			{
+				kind: 'paragraph',
+				text: 'Vendors pay us a monthly subscription, which they manage by signing in to the vendor portal on our website. Those payments are taken by our payment provider, Stripe, on its own secure pages. We never see or store card numbers or bank details — we hold only the status of the subscription and a reference to the vendor\'s Stripe customer record.',
 			},
 		],
 	},
@@ -96,7 +100,11 @@ export const privacySections: PrivacySection[] = [
 					},
 					{
 						lead: 'Vendors',
-						text: 'business or stall name, business description and product category, product listings (names, descriptions, prices, images), profile and product images you upload, and the market at which you trade.',
+						text: 'business or stall name, business description and product category, product listings (names, descriptions, prices, images), profile and product images you upload, and the markets at which you trade.',
+					},
+					{
+						lead: 'Vendor subscription',
+						text: 'your subscription status, trial and billing-period dates, the number of markets you are billed for, and the identifiers Stripe gives your customer record and subscription. Your card details, billing name and address, and payment history are collected and held by Stripe, not by us; we read your invoices from Stripe when you open the billing page, so you can view and download them.',
 					},
 				],
 			},
@@ -168,6 +176,18 @@ export const privacySections: PrivacySection[] = [
 						text: 'vendor business data and product data — necessary to perform our contract with the vendor (Art. 6(1)(b)).',
 					},
 					{
+						lead: 'Billing vendor subscriptions',
+						text: 'subscription status, markets billed, and Stripe identifiers — necessary to perform our contract with the vendor (Art. 6(1)(b)).',
+					},
+					{
+						lead: 'Keeping invoices and billing records',
+						text: 'invoices and payment records — necessary to comply with our legal obligations under Irish tax and accounting law (Art. 6(1)(c)).',
+					},
+					{
+						lead: 'Keeping vendors signed in to the vendor portal',
+						text: 'session cookies holding your sign-in tokens — necessary to perform our contract with the vendor (Art. 6(1)(b)). See Cookies below.',
+					},
+					{
 						lead: 'Keeping the Service secure, preventing abuse and fraud, diagnosing faults',
 						text: 'log data and IP address — our legitimate interest in operating a secure service (Art. 6(1)(f)).',
 					},
@@ -228,8 +248,12 @@ export const privacySections: PrivacySection[] = [
 						text: '"Sign in with Apple" authentication — Apple account identifier, and the email and name you choose to release — Ireland / USA.',
 					},
 					{
+						lead: 'Stripe Payments Europe, Ltd.',
+						text: 'vendor subscription payments, invoices, and the customer billing portal — vendor name, email address, billing details, card details, and payment history — Ireland / USA. Stripe also acts as an independent controller for the data it uses to prevent fraud and meet its own legal obligations, as described in its privacy policy.',
+					},
+					{
 						lead: 'Vercel Inc.',
-						text: 'hosting of the administrative dashboard — administrator session data — USA.',
+						text: 'hosting of this website, the vendor portal, and the administrative dashboard — IP address, request logs, and signed-in session data — USA.',
 					},
 				],
 			},
@@ -293,6 +317,10 @@ export const privacySections: PrivacySection[] = [
 					{
 						lead: 'Guest order tracking token',
 						text: 'kept for the life of the order record. Anyone holding it can view that order, so treat your tracking link as private.',
+					},
+					{
+						lead: 'Vendor billing records (invoices, payments)',
+						text: '6 years from the end of the financial year they relate to, as Irish tax law requires. They are kept at Stripe even after you delete your account.',
 					},
 					{ lead: 'Password reset codes', text: '15 minutes, then deleted.' },
 					{ lead: 'Refresh tokens', text: 'until logout, password reset, or expiry (7 days).' },
@@ -403,7 +431,32 @@ export const privacySections: PrivacySection[] = [
 			},
 			{
 				kind: 'paragraph',
-				text: 'The administrative dashboard, used only by our own staff, uses strictly necessary cookies to maintain a login session. We do not use analytics, advertising, or tracking cookies anywhere in the Service. If this changes, we will request your consent in advance in accordance with the ePrivacy Regulations (S.I. No. 336 of 2011).',
+				text: 'The public pages of this website do not set any cookies. The vendor portal on this website sets two cookies, only after a vendor signs in, and only so that the vendor stays signed in:',
+			},
+			{
+				kind: 'list',
+				items: [
+					{
+						lead: '__Host-md_vendor_at',
+						text: 'holds your short-lived sign-in token. It expires after about 15 minutes and is renewed automatically while you use the portal.',
+					},
+					{
+						lead: '__Host-md_vendor_rt',
+						text: 'holds the token used to renew your session. It expires after 7 days, or as soon as you sign out.',
+					},
+				],
+			},
+			{
+				kind: 'paragraph',
+				text: 'Both are first-party cookies that page scripts cannot read, and neither is used to track you. Because they are strictly necessary to provide the vendor portal you have asked to use, they are exempt from consent under Regulation 5(5) of the ePrivacy Regulations (S.I. No. 336 of 2011).',
+			},
+			{
+				kind: 'paragraph',
+				text: 'If you choose "Sign in with Google" on the vendor sign-in page, Google loads its sign-in button and may set or read its own cookies to do so. When you pay or manage your subscription, you are taken to pages hosted by Stripe, which set their own cookies, for example to prevent fraud. Those cookies are governed by Google\'s and Stripe\'s own privacy policies.',
+			},
+			{
+				kind: 'paragraph',
+				text: 'The administrative dashboard, used only by our own staff, uses strictly necessary cookies to maintain a login session. We do not use analytics, advertising, or tracking cookies anywhere in the Service. If this changes, we will request your consent in advance in accordance with the ePrivacy Regulations.',
 			},
 		],
 	},
@@ -414,7 +467,7 @@ export const privacySections: PrivacySection[] = [
 		blocks: [
 			{
 				kind: 'paragraph',
-				text: 'We may update this policy from time to time. The "last updated" date at the top will always reflect the current version. If we make material changes — for example, introducing online payments or a new category of processing — we will notify you in the app or by email before the changes take effect.',
+				text: 'We may update this policy from time to time. The "last updated" date at the top will always reflect the current version. If we make material changes — for example, introducing payments for goods or a new category of processing — we will notify you in the app or by email before the changes take effect.',
 			},
 		],
 	},
