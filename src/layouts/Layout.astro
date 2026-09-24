@@ -1,5 +1,7 @@
 ---
 import { getImage } from 'astro:assets';
+import Analytics from '@vercel/analytics/astro';
+import SpeedInsights from '@vercel/speed-insights/astro';
 import '../styles/global.css';
 import { brand, seo } from '../data/site';
 
@@ -109,6 +111,23 @@ const structuredData = {
 		<meta name="twitter:image:alt" content={imageAlt} />
 
 		<script type="application/ld+json" set:html={JSON.stringify(structuredData)} is:inline />
+
+		<!--
+			Vercel Web Analytics and Speed Insights. Query strings and fragments are dropped before
+			anything is sent: some carry secrets (the `/delete-account?token=` link), and none are
+			worth reporting. Must be a classic inline script so it is set before the components'
+			modules run.
+		-->
+		<script is:inline>
+			window.webAnalyticsBeforeSend = window.speedInsightsBeforeSend = (event) => {
+				const url = new URL(event.url);
+				url.search = '';
+				url.hash = '';
+				return { ...event, url: url.href };
+			};
+		</script>
+		<Analytics />
+		<SpeedInsights />
 	</head>
 	<body class="m-0 w-full">
 		<slot />
