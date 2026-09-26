@@ -9,8 +9,9 @@ export const sellReasons: Feature[] = [
 		accent: 'brand',
 	},
 	{
-		title: 'Weekly payouts, no per-order fees',
-		description: 'Money lands in your account every week. We never take a cut of what a shopper pays you.',
+		title: 'Paid at the stall, 0% commission',
+		description:
+			'Shoppers pay you directly when they collect, so every euro is yours on the day. One flat monthly price, never a cut of your sales.',
 		icon: 'receipt',
 		accent: 'clay',
 	},

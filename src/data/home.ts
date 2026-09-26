@@ -130,7 +130,7 @@ export interface VendorBenefit {
 export const vendorBenefits: VendorBenefit[] = [
 	{ label: 'One queue for orders across all your markets' },
 	{ label: 'Per-stall inventory, updated in a tap' },
-	{ label: 'Weekly payouts, no per-order fees' },
+	{ label: 'Paid at the stall, 0% commission' },
 ];
 
 export interface FaqEntry {
