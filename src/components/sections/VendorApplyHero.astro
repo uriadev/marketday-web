@@ -1,0 +1,30 @@
+---
+import { ChevronLeft } from '@lucide/astro';
+import SiteNav from './SiteNav.astro';
+---
+
+<div class="relative overflow-hidden bg-forest">
+	<div
+		class="absolute -top-40 -right-25 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(76,166,126,0.55),rgba(76,166,126,0)_70%)] lg:h-130 lg:w-130"
+	>
+	</div>
+	<div class="relative mx-auto max-w-310">
+		<SiteNav />
+		<div class="relative max-w-190 px-5 pt-6 pb-32 sm:px-8 lg:px-14 lg:pb-37.5">
+			<a
+				href="/sell-with-us"
+				class="mb-5.5 inline-flex items-center gap-1.5 text-[14px] font-semibold text-white/75 hover:text-white"
+			>
+				<ChevronLeft class="h-4 w-4" stroke-width={2} />
+				Sell with us
+			</a>
+			<h1 class="mb-4 font-display text-[36px] leading-[1.02] font-bold tracking-[-0.03em] text-white sm:text-[44px] lg:text-[52px]">
+				Apply to sell on MarketDay
+			</h1>
+			<p class="m-0 max-w-135 text-pretty text-[16px] leading-[1.55] text-white/82 sm:text-[18px]">
+				Tell us about your stall and where you trade. We review every application and get back to you
+				within two working days.
+			</p>
+		</div>
+	</div>
+</div>

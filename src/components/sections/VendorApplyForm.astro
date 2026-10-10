@@ -1,0 +1,442 @@
+---
+import { Check } from '@lucide/astro';
+import { contactCards } from '../../data/contact';
+import { launchOffer } from '../../data/pricing';
+import {
+	vendorApplyFormLimits as limits,
+	vendorApplyHoneypotField,
+	vendorApplySteps,
+	vendorCategories,
+} from '../../data/vendor-apply';
+
+const vendorEmail = contactCards.find((card) => card.icon === 'bag')?.detail ?? 'vendors@marketday.ie';
+
+const fieldClass =
+	'h-12.5 w-full rounded-[14px] border-[1.5px] border-[#E6E1D5] bg-cream px-4 text-[15.5px] text-ink placeholder:text-[#9a958a] focus:border-brand focus:outline-none aria-[invalid=true]:border-danger';
+const labelClass = 'text-[14px] font-semibold text-ink';
+const optionalClass = 'font-medium text-muted';
+const errorClass = 'hidden text-[13px] text-danger';
+const sectionNumberClass = 'font-mono text-[12px] font-bold text-brand';
+const sectionTitleClass = 'font-display text-[22px] font-bold tracking-[-0.01em] text-ink';
+---
+
+<div
+	class="relative mx-auto -mt-24 grid max-w-310 grid-cols-1 items-start gap-7 px-5 pb-16 sm:px-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:px-14 lg:pb-24"
+>
+	<div class="rounded-[28px] bg-white p-6 shadow-[0_8px_40px_rgba(31,42,37,0.10)] sm:p-11">
+		<div data-apply-success hidden class="px-3 py-12 text-center" tabindex="-1">
+			<div class="mx-auto mb-6 flex h-18 w-18 items-center justify-center rounded-full bg-brand/14">
+				<Check class="h-8.5 w-8.5 text-brand" stroke-width={2.4} />
+			</div>
+			<h2 class="mb-3 font-display text-[30px] font-bold tracking-[-0.02em] text-ink sm:text-[34px]">
+				Application received
+			</h2>
+			<p class="mx-auto mb-7 max-w-110 text-pretty text-[16.5px] leading-[1.55] text-body">
+				Thanks, <span data-success-name></span>. We'll reply to{' '}
+				<strong class="text-ink" data-success-email></strong> about{' '}
+				<span data-success-stall></span> within two working days.
+			</p>
+			<div class="flex flex-wrap justify-center gap-3">
+				<a
+					href="/sell-with-us"
+					class="flex h-12.5 items-center rounded-full bg-brand px-6 text-[15.5px] font-semibold text-white hover:bg-[#3f8f68] hover:text-white"
+				>
+					Back to Sell with us
+				</a>
+				<button
+					type="button"
+					data-apply-again
+					class="flex h-12.5 cursor-pointer items-center rounded-full bg-sand px-6 text-[15.5px] font-semibold text-ink"
+				>
+					Submit another
+				</button>
+			</div>
+		</div>
+
+		<form data-apply-form novalidate class="flex flex-col gap-9">
+			{/* Honeypot — same treatment as the contact form, see ContactGrid.astro. */}
+			<div class="absolute left-[-9999px] h-px w-px overflow-hidden" aria-hidden="true">
+				<label for="apply-company">Company</label>
+				<input id="apply-company" name={vendorApplyHoneypotField} type="text" tabindex="-1" autocomplete="off" />
+			</div>
+			<input type="hidden" name="renderedAt" value="" data-rendered-at />
+
+			<fieldset class="flex flex-col gap-4.5">
+				<legend class="mb-4.5 flex items-baseline gap-3">
+					<span class={sectionNumberClass}>01</span>
+					<span class={sectionTitleClass}>About you</span>
+				</legend>
+				<div class="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
+					<div class="flex flex-col gap-2">
+						<label for="apply-name" class={labelClass}>Your name</label>
+						<input
+							id="apply-name"
+							name="name"
+							type="text"
+							required
+							autocomplete="name"
+							minlength={limits.name.min}
+							maxlength={limits.name.max}
+							placeholder="Aoife McNally"
+							aria-describedby="apply-name-error"
+							data-required-message="Please add your name"
+							class={fieldClass}
+						/>
+						<p id="apply-name-error" data-error-for="name" class={errorClass}></p>
+					</div>
+					<div class="flex flex-col gap-2">
+						<label for="apply-email" class={labelClass}>Email</label>
+						<input
+							id="apply-email"
+							name="email"
+							type="email"
+							required
+							autocomplete="email"
+							maxlength={limits.email.max}
+							placeholder="you@yourfarm.ie"
+							aria-describedby="apply-email-error"
+							data-required-message="Enter a valid email address"
+							class={fieldClass}
+						/>
+						<p id="apply-email-error" data-error-for="email" class={errorClass}></p>
+					</div>
+					<div class="flex flex-col gap-2">
+						<label for="apply-phone" class={labelClass}>Phone <span class={optionalClass}>(optional)</span></label>
+						<input
+							id="apply-phone"
+							name="phone"
+							type="tel"
+							autocomplete="tel"
+							maxlength={limits.phone.max}
+							placeholder="+353 87 123 4567"
+							aria-describedby="apply-phone-error"
+							class={fieldClass}
+						/>
+						<p id="apply-phone-error" data-error-for="phone" class={errorClass}></p>
+					</div>
+				</div>
+			</fieldset>
+
+			<fieldset class="flex flex-col gap-4.5">
+				<legend class="mb-4.5 flex items-baseline gap-3">
+					<span class={sectionNumberClass}>02</span>
+					<span class={sectionTitleClass}>Your stall</span>
+				</legend>
+				<div class="grid grid-cols-[repeat(auto-fit,minmax(240px,1fr))] gap-4">
+					<div class="flex flex-col gap-2">
+						<label for="apply-stall" class={labelClass}>Stall or business name</label>
+						<input
+							id="apply-stall"
+							name="stall"
+							type="text"
+							required
+							autocomplete="organization"
+							minlength={limits.stall.min}
+							maxlength={limits.stall.max}
+							placeholder="McNally Family Farm"
+							aria-describedby="apply-stall-error"
+							data-required-message="Please add your stall name"
+							class={fieldClass}
+						/>
+						<p id="apply-stall-error" data-error-for="stall" class={errorClass}></p>
+					</div>
+					<div class="flex flex-col gap-2">
+						<label for="apply-web" class={labelClass}>
+							Website or Instagram <span class={optionalClass}>(optional)</span>
+						</label>
+						<input
+							id="apply-web"
+							name="web"
+							type="text"
+							maxlength={limits.web.max}
+							placeholder="@mcnallyfarm"
+							aria-describedby="apply-web-error"
+							class={fieldClass}
+						/>
+						<p id="apply-web-error" data-error-for="web" class={errorClass}></p>
+					</div>
+				</div>
+				<fieldset class="group/cats flex flex-col gap-2.5" aria-describedby="apply-categories-error" data-categories>
+					<legend class:list={[labelClass, 'mb-2.5']}>
+						What do you sell? <span class={optionalClass}>Pick all that apply</span>
+					</legend>
+					<div class="flex flex-wrap gap-2">
+						{
+							vendorCategories.map((category) => (
+								<label class="flex h-10 cursor-pointer items-center rounded-full border-[1.5px] border-[#E6E1D5] bg-cream px-4 text-[14.5px] font-semibold text-ink select-none group-data-[invalid=true]/cats:border-danger has-checked:border-brand has-checked:bg-brand has-checked:text-white has-focus-visible:ring-2 has-focus-visible:ring-brand/40">
+									<input type="checkbox" name="categories" value={category.id} class="sr-only" />
+									{category.label}
+								</label>
+							))
+						}
+					</div>
+					<p id="apply-categories-error" data-error-for="categories" class={errorClass}></p>
+				</fieldset>
+			</fieldset>
+
+			<fieldset class="flex flex-col gap-4.5">
+				<legend class="mb-4.5 flex items-baseline gap-3">
+					<span class={sectionNumberClass}>03</span>
+					<span class={sectionTitleClass}>Where you trade</span>
+				</legend>
+				<div class="flex flex-col gap-2">
+					<label for="apply-markets" class={labelClass}>Markets you trade at</label>
+					<input
+						id="apply-markets"
+						name="markets"
+						type="text"
+						required
+						minlength={limits.markets.min}
+						maxlength={limits.markets.max}
+						placeholder="e.g. English Market, Mahon Point Thursday"
+						aria-describedby="apply-markets-error"
+						data-required-message="Tell us at least one market"
+						class={fieldClass}
+					/>
+					<p id="apply-markets-error" data-error-for="markets" class={errorClass}></p>
+				</div>
+				<div class="flex flex-col gap-2">
+					<label for="apply-note" class={labelClass}>
+						Anything else we should know? <span class={optionalClass}>(optional)</span>
+					</label>
+					<textarea
+						id="apply-note"
+						name="note"
+						rows="4"
+						maxlength={limits.note.max}
+						placeholder="Seasonal produce, how often you trade, questions for us…"
+						aria-describedby="apply-note-error"
+						class="w-full resize-y rounded-[14px] border-[1.5px] border-[#E6E1D5] bg-cream px-4 py-3.5 text-[15.5px] leading-normal text-ink placeholder:text-[#9a958a] focus:border-brand focus:outline-none aria-[invalid=true]:border-danger"
+					></textarea>
+					<p id="apply-note-error" data-error-for="note" class={errorClass}></p>
+				</div>
+			</fieldset>
+
+			<div class="flex flex-col gap-5.5 border-t border-[#ECE7DC] pt-7">
+				<div class="flex flex-col gap-2">
+					<label class="flex cursor-pointer items-start gap-3 select-none">
+						<input
+							type="checkbox"
+							name="agree"
+							required
+							aria-describedby="apply-agree-error"
+							data-required-message="Please agree to the vendor terms and privacy policy"
+							class="peer sr-only"
+						/>
+						<span
+							class="mt-px flex h-5.5 w-5.5 flex-none items-center justify-center rounded-[7px] border-[1.5px] border-[#CFC9BB] bg-white peer-checked:border-brand peer-checked:bg-brand peer-focus-visible:ring-2 peer-focus-visible:ring-brand/40 peer-aria-[invalid=true]:border-danger [&>svg]:invisible peer-checked:[&>svg]:visible"
+						>
+							<Check class="h-3.5 w-3.5 text-white" stroke-width={3} />
+						</span>
+						<span class="text-[14.5px] leading-normal text-body">
+							I agree to the <a href="/terms">vendor terms</a> and <a href="/privacy">privacy policy</a>.
+						</span>
+					</label>
+					<p id="apply-agree-error" data-error-for="agree" class={errorClass}></p>
+				</div>
+
+				<div class="flex flex-wrap items-center gap-4">
+					<button
+						type="submit"
+						data-submit
+						class="flex h-13.5 cursor-pointer items-center rounded-full bg-brand px-7.5 text-base font-semibold text-white transition-colors hover:bg-[#3f8f68] disabled:cursor-not-allowed disabled:opacity-60"
+					>
+						<span data-submit-label>Submit application</span>
+					</button>
+					<span class="text-[14px] text-muted">
+						30-day free trial{launchOffer.active ? ` · ${launchOffer.short}` : ' · no setup cost'}
+					</span>
+				</div>
+
+				<p data-form-status role="status" aria-live="polite" class="hidden rounded-xl px-4 py-3 text-[14.5px]"></p>
+
+				<noscript>
+					<p class="rounded-xl bg-cream px-4 py-3 text-[14.5px] text-body">
+						This form needs JavaScript. You can apply by email at{' '}
+						<a href={`mailto:${vendorEmail}`}>{vendorEmail}</a>.
+					</p>
+				</noscript>
+			</div>
+		</form>
+	</div>
+
+	<aside class="flex flex-col gap-5">
+		<div class="rounded-3xl bg-ink p-7.5">
+			<div class="mb-4.5 font-mono text-[12px] font-semibold tracking-[0.14em] text-amber uppercase">
+				What happens next
+			</div>
+			<ol class="flex flex-col gap-4.5">
+				{
+					vendorApplySteps.map((step) => (
+						<li class="flex gap-3.5">
+							<span class="pt-0.75 font-mono text-[12px] font-bold text-brand">{step.number}</span>
+							<div>
+								<div class="mb-1 text-[15.5px] font-semibold text-white">{step.title}</div>
+								<div class="text-[14px] leading-normal text-white/70">{step.description}</div>
+							</div>
+						</li>
+					))
+				}
+			</ol>
+		</div>
+		<div class="rounded-3xl bg-white px-7.5 py-6.5 shadow-card">
+			<div class="mb-1.5 text-[15.5px] font-semibold text-ink">Questions first?</div>
+			<div class="text-[14px] leading-[1.55] text-body">
+				Read the <a href="/vendor-help">vendor help</a> guide, check <a href="/pricing">pricing</a>, or{' '}
+				<a href="/contact?role=vendor">contact us</a>.
+			</div>
+		</div>
+	</aside>
+</div>
+
+<script>
+	import { actions, isInputError } from 'astro:actions';
+
+	const form = document.querySelector<HTMLFormElement>('[data-apply-form]');
+	const success = document.querySelector<HTMLElement>('[data-apply-success]');
+
+	if (form && success) {
+		const renderedAtInput = form.querySelector<HTMLInputElement>('[data-rendered-at]');
+		const categories = form.querySelector<HTMLElement>('[data-categories]');
+		const categoryBoxes = form.querySelectorAll<HTMLInputElement>('input[name="categories"]');
+		const submitButton = form.querySelector<HTMLButtonElement>('[data-submit]');
+		const submitLabel = form.querySelector<HTMLElement>('[data-submit-label]');
+		const status = form.querySelector<HTMLElement>('[data-form-status]');
+
+		// Records when the page actually reached a browser; see MIN_FILL_MS in src/actions/index.ts.
+		const stampRenderedAt = () => {
+			if (renderedAtInput) renderedAtInput.value = String(Date.now());
+		};
+		stampRenderedAt();
+
+		const setStatus = (message: string) => {
+			if (!status) return;
+			// textContent, never innerHTML — see ContactGrid.astro.
+			status.textContent = message;
+			status.classList.remove('hidden');
+			status.classList.add('bg-danger/10', 'text-danger');
+		};
+
+		const setFieldError = (field: string, message: string) => {
+			const slot = form.querySelector<HTMLElement>(`[data-error-for="${field}"]`);
+			if (slot) {
+				slot.textContent = message;
+				slot.classList.remove('hidden');
+			}
+			if (field === 'categories') {
+				categories?.setAttribute('data-invalid', 'true');
+				return categoryBoxes[0] ?? null;
+			}
+			const input = form.querySelector<HTMLElement>(`[name="${field}"]`);
+			input?.setAttribute('aria-invalid', 'true');
+			return input;
+		};
+
+		const clearErrors = () => {
+			status?.classList.add('hidden');
+			form.querySelectorAll<HTMLElement>('[data-error-for]').forEach((el) => {
+				el.textContent = '';
+				el.classList.add('hidden');
+			});
+			form.querySelectorAll<HTMLElement>('[aria-invalid]').forEach((el) => el.removeAttribute('aria-invalid'));
+			categories?.removeAttribute('data-invalid');
+		};
+
+		/** Client-side pass with the design's static messages; the server re-checks everything. */
+		const validate = () => {
+			let firstInvalid: HTMLElement | null = null;
+			form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-required-message]').forEach((input) => {
+				if (input.checkValidity()) return;
+				const invalid = setFieldError(input.name, input.dataset.requiredMessage ?? '');
+				firstInvalid ??= invalid;
+			});
+			form.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[name]:not([data-required-message])').forEach((input) => {
+				if (input.type === 'hidden' || input.type === 'checkbox' || input.checkValidity()) return;
+				const invalid = setFieldError(input.name, 'That is too long.');
+				firstInvalid ??= invalid;
+			});
+			if (!Array.from(categoryBoxes).some((box) => box.checked)) {
+				const invalid = setFieldError('categories', 'Choose at least one');
+				firstInvalid ??= invalid;
+			}
+			firstInvalid?.focus();
+			return firstInvalid === null;
+		};
+
+		// Once an error is showing, clear it as soon as the field is fixed.
+		form.addEventListener('input', (event) => {
+			const target = event.target as HTMLInputElement;
+			if (target.name === 'categories') {
+				categories?.removeAttribute('data-invalid');
+				form.querySelector('[data-error-for="categories"]')?.classList.add('hidden');
+			} else if (target.getAttribute('aria-invalid') && target.checkValidity()) {
+				target.removeAttribute('aria-invalid');
+				form.querySelector(`[data-error-for="${target.name}"]`)?.classList.add('hidden');
+			}
+		});
+
+		const setBusy = (busy: boolean) => {
+			if (submitButton) submitButton.disabled = busy;
+			if (submitLabel) submitLabel.textContent = busy ? 'Sending...' : 'Submit application';
+		};
+
+		const showSuccess = (data: FormData) => {
+			const text = (key: string) => String(data.get(key) ?? '').trim();
+			const fill = (selector: string, value: string) => {
+				const el = success.querySelector<HTMLElement>(selector);
+				if (el) el.textContent = value;
+			};
+			fill('[data-success-name]', text('name').split(/\s+/)[0] ?? '');
+			fill('[data-success-email]', text('email'));
+			fill('[data-success-stall]', text('stall'));
+			form.hidden = true;
+			success.hidden = false;
+			success.focus({ preventScroll: true });
+			window.scrollTo({ top: 0, behavior: 'smooth' });
+		};
+
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+			if (submitButton?.disabled) return;
+
+			clearErrors();
+			if (!validate()) return;
+
+			const data = new FormData(form);
+			setBusy(true);
+			try {
+				const { error } = await actions.vendorApplication.submit(data);
+
+				if (isInputError(error)) {
+					let firstInvalid: HTMLElement | null = null;
+					for (const [field, messages] of Object.entries(error.fields)) {
+						if (!messages?.length) continue;
+						firstInvalid ??= setFieldError(field, messages.join(' '));
+					}
+					firstInvalid?.focus();
+					setStatus('Please check the highlighted fields and try again.');
+					return;
+				}
+				if (error) {
+					setStatus(error.message);
+					return;
+				}
+
+				showSuccess(data);
+			} catch {
+				setStatus('We could not reach the server. Please check your connection and try again.');
+			} finally {
+				setBusy(false);
+			}
+		});
+
+		success.querySelector('[data-apply-again]')?.addEventListener('click', () => {
+			form.reset();
+			stampRenderedAt();
+			clearErrors();
+			success.hidden = true;
+			form.hidden = false;
+			form.querySelector<HTMLInputElement>('[name="name"]')?.focus();
+		});
+	}
+</script>

@@ -49,7 +49,7 @@ export const pricingPlans: PricingPlan[] = [
 		],
 		cta: 'Start your free trial',
 		// No self-serve sign-up: the team creates the vendor, which starts the trial.
-		href: '/contact?role=vendor',
+		href: '/sell-with-us/apply',
 		variant: 'light',
 	},
 	{

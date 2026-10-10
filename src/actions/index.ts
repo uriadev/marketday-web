@@ -16,7 +16,13 @@ import {
 	deleteAccountHoneypotField,
 	deleteAccountSupportEmail,
 } from '../data/delete-account';
+import {
+	vendorApplyFormLimits,
+	vendorApplyHoneypotField,
+	vendorCategoryIds,
+} from '../data/vendor-apply';
 import { submitAppInviteRequest } from '../lib/api/app-invite';
+import { submitVendorApplication } from '../lib/api/vendor-application';
 import { submitContactMessage } from '../lib/api/contact';
 import {
 	checkAccountDeletionLink,
@@ -153,6 +159,66 @@ function isObviousAppInviteSpam(input: z.infer<typeof appInviteInput>): string |
 	return timingSpamReason(input.renderedAt, MIN_INVITE_FILL_MS);
 }
 
+/** Optional text inputs arrive as `null` when left empty, so they default to ''. */
+const optionalText = (max: number) =>
+	z
+		.string()
+		.trim()
+		.max(max, 'That is too long.')
+		.nullish()
+		.transform((value) => value ?? '');
+
+/**
+ * Vendor application from `/sell-with-us/apply`. Categories are a closed set, read with
+ * `getAll` because each ticked box submits its own `categories` entry.
+ */
+const vendorApplicationInput = z.object({
+	name: z
+		.string()
+		.trim()
+		.min(vendorApplyFormLimits.name.min, 'Please add your name.')
+		.max(vendorApplyFormLimits.name.max, 'That name is too long.'),
+	email: z
+		.string()
+		.trim()
+		.max(vendorApplyFormLimits.email.max)
+		.pipe(z.email('Enter a valid email address.')),
+	phone: optionalText(vendorApplyFormLimits.phone.max),
+	stall: z
+		.string()
+		.trim()
+		.min(vendorApplyFormLimits.stall.min, 'Please add your stall name.')
+		.max(vendorApplyFormLimits.stall.max, 'That name is too long.'),
+	web: optionalText(vendorApplyFormLimits.web.max),
+	categories: z.array(z.enum(vendorCategoryIds)).min(1, 'Choose at least one.'),
+	markets: z
+		.string()
+		.trim()
+		.min(vendorApplyFormLimits.markets.min, 'Tell us at least one market.')
+		.max(vendorApplyFormLimits.markets.max, 'That is too long.'),
+	note: optionalText(vendorApplyFormLimits.note.max),
+	agree: z.coerce.boolean(),
+
+	// Spam signals — same heuristics as the contact form, see isObviousSpam above.
+	[vendorApplyHoneypotField]: z.string().nullish(),
+	renderedAt: z.coerce.number().nullish(),
+});
+
+/** Same reasoning as isObviousSpam: discarded silently, never surfaced to the caller. */
+function isObviousVendorApplicationSpam(
+	input: z.infer<typeof vendorApplicationInput>,
+	text: string,
+): string | null {
+	if (input[vendorApplyHoneypotField]) return 'honeypot filled';
+
+	const timingReason = timingSpamReason(input.renderedAt, MIN_FILL_MS);
+	if (timingReason) return timingReason;
+
+	if (countLinks(text) > MAX_LINKS) return 'link spam';
+
+	return null;
+}
+
 /**
  * 128 matches the backend DTO's `@MaxLength` (`AccountDeletionLinkInput`, deliberately not
  * pinned to the exact token length — see that file). Not a form field, so no honeypot/timing
@@ -231,6 +297,91 @@ export const server = {
 					throw new ActionError({
 						code: 'INTERNAL_SERVER_ERROR',
 						message: 'We could not send your message right now. Please email us directly.',
+					});
+				}
+
+				return { ok: true as const };
+			},
+		}),
+	},
+
+	vendorApplication: {
+		/**
+		 * Forwards an application to the vendor inbox — see `src/lib/api/vendor-application.ts`
+		 * for why it rides the contact channel. Shares the contact form's limits but not its
+		 * counter, so an applicant who also wrote in isn't locked out.
+		 */
+		submit: defineAction({
+			accept: 'form',
+			input: vendorApplicationInput,
+			handler: async (input, context) => {
+				const ip = getClientIp(context.request);
+				const rateLimit = checkRateLimit(
+					`vendor-apply:${ip}`,
+					CONTACT_RATE_LIMIT_MAX,
+					CONTACT_RATE_LIMIT_WINDOW_MS,
+				);
+				if (!rateLimit.allowed) {
+					throw new ActionError({
+						code: 'TOO_MANY_REQUESTS',
+						message: 'You have sent several applications already. Please try again a little later.',
+					});
+				}
+
+				if (!input.agree) {
+					throw new ActionError({
+						code: 'BAD_REQUEST',
+						message: 'Please agree to the vendor terms and privacy policy.',
+					});
+				}
+
+				// Normalise after the length checks, same order as the contact form. One-line
+				// values go through sanitizeHeaderValue (the stall name reaches the subject);
+				// the free-text ones keep their newlines.
+				const name = sanitizeHeaderValue(input.name, vendorApplyFormLimits.name.max);
+				const stall = sanitizeHeaderValue(input.stall, vendorApplyFormLimits.stall.max);
+				const phone = sanitizeHeaderValue(input.phone, vendorApplyFormLimits.phone.max);
+				const web = sanitizeHeaderValue(input.web, vendorApplyFormLimits.web.max);
+				const markets = normalizeText(input.markets);
+				const note = normalizeText(input.note);
+
+				// Re-check after normalisation: input made entirely of stripped characters passes
+				// the length rules above but is empty by the time it reaches the template.
+				if (
+					name.length < vendorApplyFormLimits.name.min ||
+					stall.length < vendorApplyFormLimits.stall.min ||
+					markets.length < vendorApplyFormLimits.markets.min
+				) {
+					throw new ActionError({
+						code: 'BAD_REQUEST',
+						message: 'Please check your details and try again.',
+					});
+				}
+
+				const spamReason = isObviousVendorApplicationSpam(input, [web, markets, note].join('\n'));
+				if (spamReason) {
+					console.warn(`[vendor-apply] dropped submission (${spamReason})`);
+					return { ok: true as const };
+				}
+
+				try {
+					await submitVendorApplication({
+						name,
+						email: input.email.trim().toLowerCase(),
+						phone,
+						stall,
+						web,
+						categories: [...new Set(input.categories)],
+						markets,
+						note,
+					});
+				} catch (error) {
+					// Log the cause, return a generic message: API errors can carry configuration
+					// detail that shouldn't reach the browser.
+					console.error('[vendor-apply] failed to submit application', error);
+					throw new ActionError({
+						code: 'INTERNAL_SERVER_ERROR',
+						message: 'We could not send your application right now. Please email vendors@marketday.ie.',
 					});
 				}
 

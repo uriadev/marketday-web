@@ -44,7 +44,7 @@ Consult these guides before working on related tasks:
 
 ## Architecture
 
-**Page composition**: every route in `src/pages/` (`index`, `about`, `contact`, `delete-account`, `markets`, `pricing`, `privacy`, `sell-with-us`, `terms`, `vendor-help`, `app/[...path]`) is a thin shell that renders `Layout.astro` wrapping a fixed, page-specific sequence of section components — typically `<Page>Hero` → two or three content sections → `<Page>Cta` → `SiteFooter`. The home page is the one exception where `SiteNav` lives inside `Hero`; every other page renders `SiteNav` directly above its `Hero`. To add or reorder a page's content, edit that page file's stack directly — there's no CMS or content collection layer. `Layout.astro` also takes per-page `title`/`description`/`image`/`ogType`/`noindex` props (falling back to `seo` in `src/data/site.ts`) that drive the `<title>`, meta description, canonical, and Open Graph/Twitter tags; pass `noindex` for transactional or link-gated pages (see `app/[...path].astro`). The vendor portal's pages (`vendor/*`) are the exception to the shell: they render `layouts/VendorPortalLayout.astro`, which wraps `Layout` with the nav, the portal header, the footer and the portal's shared dialog/status UI.
+**Page composition**: every route in `src/pages/` (`index`, `about`, `contact`, `delete-account`, `markets`, `pricing`, `privacy`, `sell-with-us`, `sell-with-us/apply`, `terms`, `vendor-help`, `app/[...path]`) is a thin shell that renders `Layout.astro` wrapping a fixed, page-specific sequence of section components — typically `<Page>Hero` → two or three content sections → `<Page>Cta` → `SiteFooter`. The home page is the one exception where `SiteNav` lives inside `Hero`; every other page renders `SiteNav` directly above its `Hero`. To add or reorder a page's content, edit that page file's stack directly — there's no CMS or content collection layer. `Layout.astro` also takes per-page `title`/`description`/`image`/`ogType`/`noindex` props (falling back to `seo` in `src/data/site.ts`) that drive the `<title>`, meta description, canonical, and Open Graph/Twitter tags; pass `noindex` for transactional or link-gated pages (see `app/[...path].astro`). The vendor portal's pages (`vendor/*`) are the exception to the shell: they render `layouts/VendorPortalLayout.astro`, which wraps `Layout` with the nav, the portal header, the footer and the portal's shared dialog/status UI.
 
 **Component layers** (`src/components/`):
 - `sections/` — full-width page sections, one per page block, grouped by a `<Page>` prefix (e.g. `AboutHero`, `AboutStory`, `AboutCta`); each is self-contained and imports the `ui/` and `icons/` pieces it needs.
@@ -76,15 +76,17 @@ Components that render one of these arrays typically map an icon-name union (e.g
 
 **Path conventions**: Imports are relative (no `@/`-style aliases configured in `tsconfig.json`).
 
-## Forms (contact, delete-account, app invite)
+## Forms (contact, delete-account, app invite, vendor application)
 
-The `/contact` and `/delete-account` forms and the test-build invite dialog are the site's only anonymous server-side writes (the vendor portal's are signed in — see "Vendor portal"). The pages themselves stay prerendered — Astro injects the `/_actions/*` endpoint as on-demand, so only that becomes a Vercel function.
+The `/contact`, `/delete-account` and `/sell-with-us/apply` forms and the test-build invite dialog are the site's only anonymous server-side writes (the vendor portal's are signed in — see "Vendor portal"). The pages themselves stay prerendered — Astro injects the `/_actions/*` endpoint as on-demand, so only that becomes a Vercel function.
 
 **This site sends no email.** It validates, filters spam, and forwards to the MarketDay API, which owns the templating, the inbox routing and the actual send.
 
 **Flow**: `sections/ContactGrid.astro` → `actions.contact.send(FormData)` → `src/actions/index.ts` → `src/lib/api/contact.ts` → GraphQL mutation on the API. The delete-account form follows the same path through `src/lib/api/delete-account.ts`.
 
 **App invite dialog**: store listings live in `storeLinks` (`src/data/site.ts`) — both the App Store and Google Play are live, so no badge currently opens the dialog. A `ui/StoreBadge.astro` with no `href` (and no `storeLinks` entry for its store) becomes a button that opens `ui/AppInviteModal.astro` — a native `<dialog>`, rendered once per page, collecting a name and address for the iOS/Android test build. It has no mutation of its own: `src/lib/api/app-invite.ts` composes a fixed message and rides `submitContactMessage`, so requests land in the team inbox with the requester as Reply-To. It stays wired up for any store left `undefined` in `storeLinks`.
+
+**Vendor application** (`/sell-with-us/apply`, where every "Start selling" CTA points): `sections/VendorApplyForm.astro` → `actions.vendorApplication.submit` → `src/lib/api/vendor-application.ts`. The API has no application mutation, so it composes a labelled message and rides `submitContactMessage` as `vendor`, landing in the vendor inbox with the applicant as Reply-To. Categories are a closed set in `src/data/vendor-apply.ts`; it shares the contact form's rate limits under its own key.
 
 **API client** (`src/lib/api/client.ts`): raw `fetch` POST to `API_URL`, no SDK, one operation per document, `AbortSignal.timeout(API_TIMEOUT_MS)` so a slow API can't outlive the function. Every failure — transport, HTTP status, or a `200` carrying GraphQL `errors` — surfaces as `ApiError`. Three subclasses matter to callers:
 - `GraphQLBusinessError`: a `200` carrying `errors`. The resolver's own sentence, safe to show.
