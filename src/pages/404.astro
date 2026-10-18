@@ -1,0 +1,18 @@
+---
+import Layout from '../layouts/Layout.astro';
+import NotFoundHero from '../components/sections/NotFoundHero.astro';
+import NotFoundLinks from '../components/sections/NotFoundLinks.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+---
+
+<Layout
+	title="Page not found — MarketDay"
+	description="The page you're looking for has moved or never existed."
+	noindex
+>
+	<div class="w-full overflow-hidden">
+		<NotFoundHero />
+		<NotFoundLinks />
+		<SiteFooter />
+	</div>
+</Layout>

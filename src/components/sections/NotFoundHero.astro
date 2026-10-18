@@ -1,0 +1,48 @@
+---
+import SiteNav from './SiteNav.astro';
+import { notFoundHero } from '../../data/not-found';
+---
+
+<div class="relative overflow-hidden bg-forest">
+	<div
+		class="absolute -top-40 -right-30 h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(76,166,126,0.55),rgba(76,166,126,0)_70%)] lg:h-140 lg:w-140"
+	>
+	</div>
+	<div class="mx-auto max-w-310">
+		<SiteNav />
+		<div class="relative flex flex-col items-center px-5 pt-10 pb-18 text-center sm:px-8 lg:px-14 lg:pt-18 lg:pb-26">
+			<div class="mb-6.5 inline-flex h-8 items-center gap-2 rounded-full bg-white/14 px-3.5">
+				<div class="h-1.75 w-1.75 rounded-full bg-gold"></div>
+				<span class="text-[13px] font-semibold text-white/92">{notFoundHero.badge}</span>
+			</div>
+			<div
+				aria-hidden="true"
+				class="mb-7 font-display text-[120px] leading-[0.82] font-extrabold tracking-[-0.06em] text-white sm:text-[160px] lg:text-[200px]"
+			>
+				4<span class="text-gold">0</span>4
+			</div>
+			<h1
+				class="mb-4 text-balance font-display text-[34px] leading-[1.02] font-bold tracking-[-0.025em] text-white sm:text-[42px] lg:text-[48px]"
+			>
+				{notFoundHero.title}
+			</h1>
+			<p class="mb-8.5 max-w-120 text-pretty text-[16px] leading-[1.55] text-white/82 sm:text-[18px]">
+				{notFoundHero.body}
+			</p>
+			<div class="flex flex-wrap items-center justify-center gap-3">
+				<a
+					href={notFoundHero.primary.href}
+					class="flex h-13 items-center rounded-full bg-white px-6.5 text-base font-semibold text-ink hover:text-ink"
+				>
+					{notFoundHero.primary.label}
+				</a>
+				<a
+					href={notFoundHero.secondary.href}
+					class="flex h-13 items-center rounded-full border-[1.5px] border-white/35 bg-white/14 px-6.5 text-base font-semibold text-white hover:text-white"
+				>
+					{notFoundHero.secondary.label}
+				</a>
+			</div>
+		</div>
+	</div>
+</div>
