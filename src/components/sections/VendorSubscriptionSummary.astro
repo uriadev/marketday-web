@@ -2,6 +2,7 @@
 import PortalForm from '../ui/PortalForm.astro';
 import StatusBadge from '../ui/StatusBadge.astro';
 import { checkoutNotices, subscriptionStatusCopy } from '../../data/vendor-portal';
+import { coveredByPilot, pilot } from '../../data/pricing';
 import type { BillingOverview, Invoice, VendorSubscription } from '../../lib/api/vendor-billing';
 import type { PortalRead } from '../../lib/auth/session';
 import { isStripeUrl } from '../../lib/security/redirects';
@@ -32,7 +33,11 @@ const noticeClass = {
 const sub = subscription.status === 'ok' ? subscription.value : null;
 const monthly = overview ? formatMoney(overview.monthlyCostCents, overview.pricing.currency) : null;
 
+// A vendor on the free pilot sees no trial countdown, price or subscribe button.
+const onPilot = !!sub && coveredByPilot(sub);
+
 function describe(s: VendorSubscription): { headline: string; body: string } {
+	if (onPilot) return { headline: pilot.headline, body: pilot.body };
 	switch (s.status) {
 		case 'TRIAL': {
 			const days = daysUntil(s.trialEndsAt);
@@ -72,13 +77,14 @@ function describe(s: VendorSubscription): { headline: string; body: string } {
 	}
 }
 
-const copy = sub ? subscriptionStatusCopy[sub.status] : null;
+const copy = onPilot ? ({ label: 'Pilot', tone: 'brand' } as const) : sub ? subscriptionStatusCopy[sub.status] : null;
 const text = sub ? describe(sub) : null;
 const invoiceUrl = openInvoice?.hostedInvoiceUrl;
 const payHref = sub?.status === 'PAST_DUE' && isStripeUrl(invoiceUrl) ? invoiceUrl : null;
 const canManage = !!sub && !!overview?.canManageBilling;
 // The picker renders for everyone but a comped vendor; this only points at it.
 const canSubscribe =
+	!onPilot &&
 	!!sub && !!overview && !overview.hasSubscription && sub.status !== 'COMPLIMENTARY' && !awaitingWebhook;
 ---
 
@@ -123,7 +129,7 @@ const canSubscribe =
 							<dd class="mt-1 font-display text-[22px] font-bold text-ink">{sub.marketsUsed}</dd>
 						</div>
 						{/* Priced from the markets the vendor trades at; the vendor never picks a count. */}
-						{monthly && sub.status !== 'COMPLIMENTARY' && (
+						{monthly && sub.status !== 'COMPLIMENTARY' && !onPilot && (
 							<div class="rounded-2xl bg-cream px-4 py-3.5">
 								<dt class="text-[12.5px] font-semibold text-muted">
 									{overview?.hasSubscription ? 'Monthly price' : 'Monthly price if you subscribe'}
@@ -133,7 +139,7 @@ const canSubscribe =
 						)}
 					</dl>
 
-					{!sub.billingEnforced && (
+					{!sub.billingEnforced && !onPilot && (
 						<p class="mt-5 max-w-160 rounded-xl bg-sand px-4 py-3 text-[14px] leading-normal text-body">
 							Subscriptions aren't required yet, so nothing at your stall is paused whatever this page says.
 							We'll email you well before that changes.

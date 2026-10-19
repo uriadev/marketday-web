@@ -10,6 +10,8 @@ import VendorPlan from '../../components/sections/VendorPlan.astro';
 import VendorInvoices from '../../components/sections/VendorInvoices.astro';
 import VendorBillingComingSoon from '../../components/sections/VendorBillingComingSoon.astro';
 import VendorPortalUnavailable from '../../components/sections/VendorPortalUnavailable.astro';
+import VendorPilotNotice from '../../components/sections/VendorPilotNotice.astro';
+import { coveredByPilot } from '../../data/pricing';
 import { getBillingOverview, getSubscription, listInvoices } from '../../lib/api/vendor-billing';
 import { portalRead } from '../../lib/auth/session';
 
@@ -44,9 +46,12 @@ const openInvoice =
 // there is still no subscription. Offering to subscribe then could start a second one; the
 // success notice asks for a refresh instead, and the query string is gone after it.
 const awaitingWebhook = checkout === 'success' && billing !== null && !billing.hasSubscription;
+// On the free pilot there is no plan to pick and, unless they paid before, no bills: the empty
+// list's "arrives when you subscribe" would only suggest one is coming.
+const onPilot = subscription?.status === 'ok' && coveredByPilot(subscription.value);
 const showInvoices =
 	invoices?.status === 'failed' ||
-	(invoices?.status === 'ok' && (billing !== null || invoices.value.items.length > 0));
+	(invoices?.status === 'ok' && ((billing !== null && !onPilot) || invoices.value.items.length > 0));
 ---
 
 <VendorPortalLayout title="Billing">
@@ -63,7 +68,9 @@ const showInvoices =
 					awaitingWebhook={awaitingWebhook}
 				/>
 
-				{billing ? (
+				{onPilot ? (
+					<VendorPilotNotice />
+				) : billing ? (
 					subscription.status === 'ok' &&
 					subscription.value.status !== 'COMPLIMENTARY' &&
 					!awaitingWebhook && (

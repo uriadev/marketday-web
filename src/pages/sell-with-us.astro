@@ -6,11 +6,16 @@ import SellSteps from '../components/sections/SellSteps.astro';
 import SellTestimonial from '../components/sections/SellTestimonial.astro';
 import SellCta from '../components/sections/SellCta.astro';
 import SiteFooter from '../components/layout/SiteFooter.astro';
+import { pilot } from '../data/pricing';
 ---
 
 <Layout
 	title="Sell With Us — MarketDay"
-	description="List your stall on MarketDay for free. Only pay when you want to take pre-orders through the app, and your first 30 days are free."
+	description={
+		pilot.active
+			? 'Take pre-orders at every market you trade at. MarketDay is free for vendors during our pilot, with no commission on your sales.'
+			: 'List your stall on MarketDay for free. Only pay when you want to take pre-orders through the app, and your first 30 days are free.'
+	}
 >
 	<div class="w-full overflow-hidden">
 		<SellHero />

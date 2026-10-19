@@ -60,6 +60,7 @@ export const portalNotices: Record<string, string> = {
 	moved: 'Staff member moved to their new market.',
 	removed: "Staff member removed. They keep their MarketDay account but can no longer run your stall.",
 	markets: 'Your markets are updated. Your plan follows them, and any difference is prorated on your next invoice.',
+	marketsPilot: 'Your markets are updated.',
 };
 
 /** One row on the Markets tab. */
@@ -87,6 +88,8 @@ export const marketChangeCopy = {
 	trial: "You're on a free trial, so nothing changes today. After it, your plan is {to} a month.",
 	complimentary: 'Your access is complimentary, so nothing changes today. Afterwards your plan is {to} a month.',
 	unsubscribed: 'When you subscribe, your plan will be {to} a month.',
+	/** Covered by the free pilot (`coveredByPilot` in `src/data/pricing.ts`): no prices at all. */
+	pilot: "MarketDay is free during our pilot, so this doesn't change what you pay.",
 	/** The billing overview couldn't be read, so there are no prices to quote. */
 	unpriced: 'Your subscription follows your markets, so this changes what you are billed.',
 	/** Every box unticked: the API still bills one market. */

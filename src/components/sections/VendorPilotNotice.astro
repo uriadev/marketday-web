@@ -1,0 +1,15 @@
+---
+/**
+ * Stands in for the plan picker while the pilot is free (`pilot` in `src/data/pricing.ts`). No
+ * prices and no checkout button: there is nothing to pay.
+ */
+import { pilot } from '../../data/pricing';
+---
+
+<section aria-labelledby="billing-pilot-title" class="mb-6 rounded-[28px] bg-white p-6 shadow-card sm:p-9">
+	<h2 id="billing-pilot-title" class="mb-4 font-mono text-xs font-semibold tracking-[0.14em] text-brand uppercase">
+		Your plan
+	</h2>
+	<p class="mb-2 font-display text-[22px] leading-[1.2] font-bold text-ink">{pilot.headline}</p>
+	<p class="max-w-160 text-[15px] leading-[1.6] text-body">{pilot.body}</p>
+</section>

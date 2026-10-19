@@ -11,12 +11,36 @@ export interface PricingPlan {
 }
 
 /**
+ * MarketDay is free for vendors during the pilot. While `active`, every vendor-facing price (the
+ * marketing pages and the portal's billing and markets pages) is replaced by this copy, and the
+ * launch offer is hidden. Set it to false when billing starts and the paid copy comes back.
+ */
+export const pilot = {
+	active: true,
+	badge: 'Free during our pilot',
+	headline: 'MarketDay is free while we pilot',
+	body: "No subscription, no card, no commission. Pilot vendors get every feature free, and we'll give you plenty of notice before anything changes.",
+	short: 'Free during our pilot',
+};
+
+/**
+ * Whether the portal shows a vendor the pilot instead of a price: anyone without a live
+ * subscription, unless the API is actually enforcing billing on them. A vendor who really pays
+ * (ACTIVE or PAST_DUE) still sees their real bill. An unreadable subscription (`null`) counts as
+ * covered, since nearly every vendor is during the pilot.
+ */
+export function coveredByPilot(sub: { status: string; billingEnforced: boolean } | null): boolean {
+	return pilot.active && sub?.status !== 'ACTIVE' && sub?.status !== 'PAST_DUE' && !sub?.billingEnforced;
+}
+
+/**
  * The launch discount advertised across the vendor pages. The API applies it (the Stripe coupon
  * behind `STRIPE_LAUNCH_COUPON_ID`) to vendors created before `LAUNCH_OFFER_JOINED_BEFORE`.
  * Set `active` to false when that date passes, and every mention of it disappears.
  */
 export const launchOffer = {
-	active: true,
+	// Hidden while the pilot is free: half price of nothing scares more than it helps.
+	active: !pilot.active,
 	badge: 'Launch offer · 50% off',
 	headline: 'Launch offer: 50% off your first 6 months',
 	body: 'Join MarketDay during our launch and your plan is half price for your first six months, after your 30-day free trial. From just €5 a month.',
@@ -34,7 +58,27 @@ const paidPlanFeatures = [
 	'VAT included, cancel any time',
 ];
 
-export const pricingPlans: PricingPlan[] = [
+const pilotPlans: PricingPlan[] = [
+	{
+		name: 'Pilot',
+		subtitle: 'Everything MarketDay does, on us',
+		price: '€0',
+		priceSuffix: 'while we pilot',
+		badge: pilot.badge,
+		features: [
+			'Full access at every market you trade at',
+			'Pre-orders & stock tools from day one',
+			'No subscription, no card needed',
+			'0% commission on orders',
+			'Email & chat support',
+		],
+		cta: 'Apply to sell',
+		href: '/sell-with-us/apply',
+		variant: 'dark',
+	},
+];
+
+const paidPlans: PricingPlan[] = [
 	{
 		name: 'Free trial',
 		subtitle: 'Your first 30 days, on us',
@@ -67,6 +111,8 @@ export const pricingPlans: PricingPlan[] = [
 		variant: 'dark',
 	},
 ];
+
+export const pricingPlans = pilot.active ? pilotPlans : paidPlans;
 
 export interface FeeExampleRow {
 	label: string;

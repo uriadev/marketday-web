@@ -2,6 +2,7 @@
 import PortalForm from '../ui/PortalForm.astro';
 import IconSearch from '../icons/IconSearch.astro';
 import { marketChangeCopy, type MarketOption } from '../../data/vendor-portal';
+import { coveredByPilot } from '../../data/pricing';
 import type { BillingOverview, VendorSubscription } from '../../lib/api/vendor-billing';
 
 /**
@@ -10,7 +11,7 @@ import type { BillingOverview, VendorSubscription } from '../../lib/api/vendor-b
  * the plan before it is saved, and the confirm dialog repeats it.
  *
  * - **Pricing** comes from `billingOverview`. Without it the warning says the bill changes
- *   but quotes no price.
+ *   but quotes no price. A vendor on the free pilot (`coveredByPilot`) sees no price talk at all.
  * - **Inactive with billing enforced:** the API refuses every join, so the unticked boxes are
  *   disabled. Leaving still works.
  * - **Search** filters the rows by name or city, ignoring case and accents. It only hides rows:
@@ -30,7 +31,10 @@ interface Props {
 
 const { options, current, subscription, overview } = Astro.props;
 
-const mode = !overview
+const onPilot = coveredByPilot(subscription);
+const mode = onPilot
+	? 'pilot'
+	: !overview
 	? 'unpriced'
 	: subscription?.status === 'COMPLIMENTARY'
 		? 'complimentary'
@@ -56,8 +60,11 @@ const searchKey = (text: string) =>
 		Your markets
 	</h2>
 	<p class="mb-6 max-w-160 text-[15px] leading-[1.6] text-body">
-		Choose the markets you trade at. Your plan follows them: one slot per market, and adding or leaving one changes
-		what you pay from your next invoice.
+		{
+			onPilot
+				? 'Choose the markets you trade at. MarketDay is free during our pilot, however many you pick.'
+				: 'Choose the markets you trade at. Your plan follows them: one slot per market, and adding or leaving one changes what you pay from your next invoice.'
+		}
 	</p>
 
 	{
@@ -94,9 +101,9 @@ const searchKey = (text: string) =>
 
 	<PortalForm
 		portalAction="vendorMarkets.save"
-		done="markets"
-		confirm={marketChangeCopy.unpriced}
-		confirmLabel="Save and update plan"
+		done={onPilot ? 'marketsPilot' : 'markets'}
+		confirm={onPilot ? marketChangeCopy.pilot : marketChangeCopy.unpriced}
+		confirmLabel={onPilot ? 'Save markets' : 'Save and update plan'}
 		data-vendor-markets
 		data-current={JSON.stringify(current)}
 		data-mode={mode}
@@ -197,7 +204,7 @@ const searchKey = (text: string) =>
 
 			const names = (list: HTMLInputElement[]) => list.map((box) => box.dataset.name ?? '').join(', ');
 			const values = { from: '', to: '', markets: '' };
-			if (mode !== 'unpriced') {
+			if (mode !== 'unpriced' && mode !== 'pilot') {
 				values.from = price(current.size);
 				values.to = price(selected.length);
 			}
@@ -206,14 +213,14 @@ const searchKey = (text: string) =>
 					? values.from === values.to
 						? marketChangeCopy.unchanged
 						: marketChangeCopy.paid
-					: marketChangeCopy[mode as 'trial' | 'complimentary' | 'unsubscribed' | 'unpriced'] ??
+					: marketChangeCopy[mode as 'trial' | 'complimentary' | 'unsubscribed' | 'unpriced' | 'pilot'] ??
 						marketChangeCopy.unpriced;
 
 			const lines = [
 				added.length ? fill(marketChangeCopy.adding, { markets: names(added) }) : '',
 				removed.length ? fill(marketChangeCopy.removing, { markets: names(removed) }) : '',
 				fill(billing, values),
-				selected.length === 0 && mode !== 'unpriced' ? marketChangeCopy.noMarkets : '',
+				selected.length === 0 && mode !== 'unpriced' && mode !== 'pilot' ? marketChangeCopy.noMarkets : '',
 				removed.length ? marketChangeCopy.leaving : '',
 			].filter(Boolean);
 

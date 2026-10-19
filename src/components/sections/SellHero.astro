@@ -1,6 +1,6 @@
 ---
 import SiteNav from './SiteNav.astro';
-import { launchOffer } from '../../data/pricing';
+import { launchOffer, pilot } from '../../data/pricing';
 ---
 
 <div class="relative overflow-hidden bg-forest">
@@ -19,15 +19,18 @@ import { launchOffer } from '../../data/pricing';
 				Sell more, waste less, know your day before it starts
 			</h1>
 			<p class="mb-7.5 max-w-135 text-pretty text-[16px] leading-[1.55] text-white/82 sm:text-[18px]">
-				List your stall on MarketDay for free, so shoppers find you at every market you trade at. Only
-				pay when you want to take pre-orders through the app, and your first 30 days are free.
+				{
+					pilot.active
+						? 'List your stall and take pre-orders at every market you trade at. MarketDay is free for vendors during our pilot, with no card and no commission.'
+						: 'List your stall on MarketDay for free, so shoppers find you at every market you trade at. Only pay when you want to take pre-orders through the app, and your first 30 days are free.'
+				}
 			</p>
 			<div class="flex flex-wrap items-center gap-4">
 				<a href="/sell-with-us/apply" class="flex h-13.5 items-center rounded-full bg-brand px-6.5 text-base font-semibold text-white">
 					Start selling
 				</a>
 				<span class="text-[14.5px] text-white/70">
-					30-day free trial{launchOffer.active ? ` · ${launchOffer.short}` : ' · no setup cost'}
+					{pilot.active ? `${pilot.short} · no setup cost` : `30-day free trial${launchOffer.active ? ` · ${launchOffer.short}` : ' · no setup cost'}`}
 				</span>
 			</div>
 		</div>

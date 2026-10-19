@@ -1,4 +1,5 @@
 import type { Feature } from './home';
+import { pilot } from './pricing';
 
 export const sellReasons: Feature[] = [
 	{
@@ -11,7 +12,7 @@ export const sellReasons: Feature[] = [
 	{
 		title: 'Paid at the stall, 0% commission',
 		description:
-			'Shoppers pay you directly when they collect, so every euro is yours on the day. One flat monthly price, never a cut of your sales.',
+			`Shoppers pay you directly when they collect, so every euro is yours on the day. ${pilot.active ? 'Free during our pilot, and never a cut of your sales.' : 'One flat monthly price, never a cut of your sales.'}`,
 		icon: 'receipt',
 		accent: 'clay',
 	},

@@ -1,5 +1,5 @@
 import type { FaqEntry } from './home';
-import { launchOffer } from './pricing';
+import { launchOffer, pilot } from './pricing';
 
 export type VendorHelpTopicIcon = 'card' | 'bag' | 'pin' | 'clock';
 export type VendorHelpAccent = 'brand' | 'clay';
@@ -45,7 +45,7 @@ export const vendorHelpFaqs: FaqEntry[] = [
 	},
 	{
 		q: 'Can I sell at more than one market?',
-		a: 'Yes — every market you trade at gets its own inventory and order queue, all reachable from one account. Your plan is €10 a month for your first market and €5 for each one you add, so you only pay for the markets you actually trade at.',
+		a: `Yes — every market you trade at gets its own inventory and order queue, all reachable from one account. ${pilot.active ? 'It is all free during our pilot, however many markets you trade at.' : 'Your plan is €10 a month for your first market and €5 for each one you add, so you only pay for the markets you actually trade at.'}`,
 	},
 	{
 		q: 'When do I get paid?',
@@ -53,7 +53,9 @@ export const vendorHelpFaqs: FaqEntry[] = [
 	},
 	{
 		q: 'How much does MarketDay cost?',
-		a: `Every new vendor gets a 30-day free trial with full access to every market, and no card is needed to start. After that it is €10 a month for your first market and €5 for each extra one, VAT included, with no commission on your sales. ${launchOffer.active ? 'Vendors who join during our launch get 50% off their first six months of subscription. ' : ''}Manage your plan any time from the vendor portal.`,
+		a: pilot.active
+			? "Nothing during our pilot. Every vendor gets full access to every market they trade at, with no subscription, no card and no commission on your sales. We'll give you plenty of notice before that changes."
+			: `Every new vendor gets a 30-day free trial with full access to every market, and no card is needed to start. After that it is €10 a month for your first market and €5 for each extra one, VAT included, with no commission on your sales. ${launchOffer.active ? 'Vendors who join during our launch get 50% off their first six months of subscription. ' : ''}Manage your plan any time from the vendor portal.`,
 	},
 	{
 		q: 'What happens if I run out of stock?',

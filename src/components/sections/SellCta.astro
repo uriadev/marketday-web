@@ -1,5 +1,5 @@
 ---
-import { launchOffer } from '../../data/pricing';
+import { launchOffer, pilot } from '../../data/pricing';
 ---
 
 <div class="mx-auto max-w-310 px-5 pb-16 text-center sm:px-8 lg:px-14 lg:pb-24">
@@ -7,7 +7,7 @@ import { launchOffer } from '../../data/pricing';
 		Ready to trade smarter this weekend?
 	</h2>
 	<p class="mb-7 text-[16.5px] text-body">
-		Your first 30 days are on us{launchOffer.active && ', and launch vendors pay half price for six months after that'}. See the plan on our <a href="/pricing">Pricing page</a>, or jump straight in.
+		{pilot.active ? 'MarketDay is free for vendors during our pilot, with no card and no commission' : `Your first 30 days are on us${launchOffer.active ? ', and launch vendors pay half price for six months after that' : ''}`}. See the details on our <a href="/pricing">Pricing page</a>, or jump straight in.
 	</p>
 	<a href="/sell-with-us/apply" class="inline-flex h-13.5 items-center rounded-full bg-brand px-7.5 text-base font-semibold text-white">
 		Start selling

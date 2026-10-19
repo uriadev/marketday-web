@@ -5,12 +5,17 @@ import PricingHero from '../components/sections/PricingHero.astro';
 import PricingPlans from '../components/sections/PricingPlans.astro';
 import PricingFeeNote from '../components/sections/PricingFeeNote.astro';
 import PricingCta from '../components/sections/PricingCta.astro';
+import { pilot } from '../data/pricing';
 import SiteFooter from '../components/layout/SiteFooter.astro';
 ---
 
 <Layout
 	title="Pricing — MarketDay"
-	description="Try MarketDay free for 30 days, then pay €10 a month for your first market and €5 for each extra one. No commission on your sales, ever."
+	description={
+		pilot.active
+			? 'MarketDay is free for vendors during our pilot. No subscription, no card, and no commission on your sales.'
+			: 'Try MarketDay free for 30 days, then pay €10 a month for your first market and €5 for each extra one. No commission on your sales, ever.'
+	}
 >
 	<div class="w-full overflow-hidden">
 		<div class="mx-auto max-w-310">
