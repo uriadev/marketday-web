@@ -1,6 +1,13 @@
 ---
 import SiteNav from './SiteNav.astro';
-import { notFoundHero } from '../../data/not-found';
+import type { ErrorPage } from '../../data/error-pages';
+
+interface Props {
+	page: ErrorPage;
+}
+
+const { page } = Astro.props;
+const [first, middle, last] = page.code;
 ---
 
 <div class="relative overflow-hidden bg-forest">
@@ -13,34 +20,34 @@ import { notFoundHero } from '../../data/not-found';
 		<div class="relative flex flex-col items-center px-5 pt-10 pb-18 text-center sm:px-8 lg:px-14 lg:pt-18 lg:pb-26">
 			<div class="mb-6.5 inline-flex h-8 items-center gap-2 rounded-full bg-white/14 px-3.5">
 				<div class="h-1.75 w-1.75 rounded-full bg-gold"></div>
-				<span class="text-[13px] font-semibold text-white/92">{notFoundHero.badge}</span>
+				<span class="text-[13px] font-semibold text-white/92">{page.badge}</span>
 			</div>
 			<div
 				aria-hidden="true"
 				class="mb-7 font-display text-[120px] leading-[0.82] font-extrabold tracking-[-0.06em] text-white sm:text-[160px] lg:text-[200px]"
 			>
-				4<span class="text-gold">0</span>4
+				{first}<span class="text-gold">{middle}</span>{last}
 			</div>
 			<h1
 				class="mb-4 text-balance font-display text-[34px] leading-[1.02] font-bold tracking-[-0.025em] text-white sm:text-[42px] lg:text-[48px]"
 			>
-				{notFoundHero.title}
+				{page.title}
 			</h1>
 			<p class="mb-8.5 max-w-120 text-pretty text-[16px] leading-[1.55] text-white/82 sm:text-[18px]">
-				{notFoundHero.body}
+				{page.body}
 			</p>
 			<div class="flex flex-wrap items-center justify-center gap-3">
 				<a
-					href={notFoundHero.primary.href}
+					href={page.primary.href}
 					class="flex h-13 items-center rounded-full bg-white px-6.5 text-base font-semibold text-ink hover:text-ink"
 				>
-					{notFoundHero.primary.label}
+					{page.primary.label}
 				</a>
 				<a
-					href={notFoundHero.secondary.href}
+					href={page.secondary.href}
 					class="flex h-13 items-center rounded-full border-[1.5px] border-white/35 bg-white/14 px-6.5 text-base font-semibold text-white hover:text-white"
 				>
-					{notFoundHero.secondary.label}
+					{page.secondary.label}
 				</a>
 			</div>
 		</div>

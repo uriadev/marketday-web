@@ -3,21 +3,34 @@ import SectionEyebrow from '../ui/SectionEyebrow.astro';
 import IconClock from '../icons/IconClock.astro';
 import IconStall from '../icons/IconStall.astro';
 import IconChat from '../icons/IconChat.astro';
-import { notFoundLinks, notFoundLinksEyebrow, type NotFoundAccent, type NotFoundIcon } from '../../data/not-found';
+import IconPin from '../icons/IconPin.astro';
+import type { ErrorLinkAccent, ErrorLinkIcon, ErrorPage } from '../../data/error-pages';
 
-const accents: Record<NotFoundAccent, { card: string; tile: string; title: string; detail: string }> = {
+interface Props {
+	page: ErrorPage;
+}
+
+const { page } = Astro.props;
+
+const icons: Record<ErrorLinkIcon, typeof IconClock> = {
+	clock: IconClock,
+	stall: IconStall,
+	chat: IconChat,
+	pin: IconPin,
+};
+
+const accents: Record<ErrorLinkAccent, { card: string; tile: string; title: string; detail: string }> = {
 	brand: { card: 'bg-white hover:shadow-[0_8px_26px_rgba(31,42,37,0.1)]', tile: 'bg-brand/13 text-brand', title: 'text-ink', detail: 'text-body' },
 	clay: { card: 'bg-white hover:shadow-[0_8px_26px_rgba(31,42,37,0.1)]', tile: 'bg-clay/14 text-clay', title: 'text-ink', detail: 'text-body' },
 	ink: { card: 'bg-ink hover:shadow-[0_8px_26px_rgba(31,42,37,0.2)]', tile: 'bg-clay text-white', title: 'text-white', detail: 'text-white/75' },
 };
-const icons: Record<NotFoundIcon, typeof IconClock> = { clock: IconClock, stall: IconStall, chat: IconChat };
 ---
 
 <div class="mx-auto max-w-310 px-5 py-16 sm:px-8 lg:px-14 lg:pt-18 lg:pb-22">
-	<SectionEyebrow class="mb-5 text-brand">{notFoundLinksEyebrow}</SectionEyebrow>
+	<SectionEyebrow class="mb-5 text-brand">{page.linksEyebrow}</SectionEyebrow>
 	<div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
 		{
-			notFoundLinks.map((link) => {
+			page.links.map((link) => {
 				const accent = accents[link.accent];
 				const Icon = icons[link.icon];
 				return (

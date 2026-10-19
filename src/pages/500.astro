@@ -1,0 +1,18 @@
+---
+// Astro renders this for any error thrown by an on-demand route (/markets, /app/*, /vendor/*,
+// /_actions/*). It is passed an `error` prop, deliberately unused: the API's messages and stack
+// traces stay in the server log, never in the page (see "Security invariants" in CLAUDE.md).
+import Layout from '../layouts/Layout.astro';
+import ErrorHero from '../components/sections/ErrorHero.astro';
+import ErrorLinks from '../components/sections/ErrorLinks.astro';
+import SiteFooter from '../components/layout/SiteFooter.astro';
+import { serverErrorPage as page } from '../data/error-pages';
+---
+
+<Layout title={page.seo.title} description={page.seo.description} noindex>
+	<div class="w-full overflow-hidden">
+		<ErrorHero page={page} />
+		<ErrorLinks page={page} />
+		<SiteFooter />
+	</div>
+</Layout>

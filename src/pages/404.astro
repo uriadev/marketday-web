@@ -1,18 +1,15 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import NotFoundHero from '../components/sections/NotFoundHero.astro';
-import NotFoundLinks from '../components/sections/NotFoundLinks.astro';
+import ErrorHero from '../components/sections/ErrorHero.astro';
+import ErrorLinks from '../components/sections/ErrorLinks.astro';
 import SiteFooter from '../components/layout/SiteFooter.astro';
+import { notFoundPage as page } from '../data/error-pages';
 ---
 
-<Layout
-	title="Page not found — MarketDay"
-	description="The page you're looking for has moved or never existed."
-	noindex
->
+<Layout title={page.seo.title} description={page.seo.description} noindex>
 	<div class="w-full overflow-hidden">
-		<NotFoundHero />
-		<NotFoundLinks />
+		<ErrorHero page={page} />
+		<ErrorLinks page={page} />
 		<SiteFooter />
 	</div>
 </Layout>
